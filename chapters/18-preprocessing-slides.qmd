@@ -1,0 +1,721 @@
+---
+title: "Preprocesamiento, Feature Engineering y Data Leakage"
+subtitle: "MDS7201 - Master of Data Science"
+author: "Universidad de Chile"
+format:
+  revealjs:
+    theme: [default, ../custom-slides.scss]
+    slide-number: true
+    chalkboard: true
+    preview-links: auto
+    code-fold: false
+    code-tools: true
+    transition: slide
+    background-transition: fade
+  beamer:
+    theme: Madrid
+    colortheme: default
+    fonttheme: professionalfonts
+    aspectratio: 169
+    navigation: horizontal
+    section-titles: true
+    toc: true
+jupyter: python3
+---
+
+```{python}
+#| include: false
+import warnings
+warnings.filterwarnings('ignore')
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+from sklearn import set_config
+set_config(display='diagram')
+
+RANDOM_STATE = 42
+np.random.seed(RANDOM_STATE)
+plt.rcParams['figure.figsize'] = (8, 4)
+```
+
+# La Regla de Oro {background-color="#1a1a1a"}
+
+## El Hilo que Une Todo
+
+::: {.callout-important}
+## La Regla
+
+Ninguna estadística, parámetro, modelo, decisión ni feature derivada de los datos de **validación o test** puede influir en el entrenamiento.
+:::
+
+::: {.incremental}
+- Cada paso ajustable (imputador, scaler, encoder, selector, resampler…) pertenece *dentro* de un pipeline validado con CV
+- Si se viola esta regla, los scores reportados son optimistas
+- El modelo parece funcionar bien, pero fallará en producción
+:::
+
+## Temario
+
+| § | Tema |
+|---|---|
+| 1 | Un baseline con leakage — cómo engañarse fácilmente |
+| 2 | `Pipeline` + `ColumnTransformer` |
+| 3 | Datos faltantes |
+| 4 | Escalado, sesgo, encoding |
+| 5 | Feature engineering motivado |
+| 6 | Splitting más allá del aleatorio |
+| 7 | Desbalance de clases sin leakage |
+| 8 | Tuning de hiperparámetros sin leakage |
+| 9 | Evaluación final y producción |
+
+# §1 — Un Baseline con Leakage {background-color="#2a2a2a"}
+
+## El Dataset
+
+- **ALeRCE**: features de curvas de luz de objetos astronómicos
+- Target: `classALeRCE` (20 clases)
+- ~2000 objetos, columnas numéricas con missingness
+
+```{python}
+#| echo: false
+featfile = "../chapter_files/data/pkls/features_small.pickle"
+featfile_alternative = "MDS7201/libro/chapter_files/data/pkls/features_small.pickle"
+xmatchfile = "../chapter_files/data/pkls/dfcrossmatches_small.pickle"
+xmatchfile_alternative = "MDS7201/libro/chapter_files/data/pkls/dfcrossmatches_small.pickle"
+
+ordered_classes = ['SNIbc', 'SNII', 'SNIIn', 'SNIIb', 'SNIa', 'SLSN', 'TDE',
+       'CV/Nova', 'AGN', 'QSO', 'Blazar', 'YSO', 
+       'DSCT', 'RRL','EB/EW', 'EA', 'Ceph', 'LPV', 'RSCVn', 'Periodic-Other']
+
+def getdata(nsample=2000, nmin=50):
+    try:
+        df = pd.read_pickle(featfile)
+    except:
+        df = pd.read_pickle(featfile_alternative)
+    df = df.reset_index()
+    df["fname"] = df.name + "_" + df.fid.astype(str)
+    df = df.pivot(index="oid", columns=["fname"], values="value")
+    try:
+        labels = pd.read_pickle(xmatchfile)
+    except:
+        labels = pd.read_pickle(xmatchfile_alternative)
+    labels = labels.loc[df.index].classALeRCE
+    mask = labels.isin(ordered_classes)
+    labels = labels.loc[mask]
+    df = df.loc[mask]
+    df = df.sample(nsample, random_state=RANDOM_STATE)
+    labels = labels.loc[df.index]
+    sellabels = labels.value_counts().loc[labels.value_counts() >= nmin].index
+    df = df.loc[labels.isin(sellabels)]
+    labels = labels.loc[labels.isin(sellabels)]
+    return df, labels
+
+df, labels = getdata(2000, 50)
+```
+
+```{python}
+fig, ax = plt.subplots(figsize=(8, 3))
+labels.value_counts().plot.bar(ax=ax)
+ax.set_ylabel("# objetos"); ax.set_title("Distribución de clases"); plt.tight_layout();
+```
+
+## El Pipeline Descuidado
+
+```{python}
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import cross_val_score
+
+imputer = SimpleImputer(strategy='median')
+scaler  = StandardScaler()
+
+# fit sobre TODAS las filas — ¡incluyendo los futuros folds de validación!
+X_all = scaler.fit_transform(imputer.fit_transform(df))
+y_all = labels.values
+
+score_leaky = cross_val_score(
+    LogisticRegression(max_iter=2000), X_all, y_all,
+    cv=5, scoring='f1_macro').mean()
+print(f"CV f1_macro (leaky): {score_leaky:.3f}")
+```
+
+**¿Cuál es el error?**
+
+## El Error: Información del Futuro en el Pasado
+
+::: {.incremental}
+- Las medianas del imputador y las estadísticas del scaler se calcularon usando **todas las filas**
+- Eso incluye las filas que luego serán los folds de validación
+- El modelo "sabe" algo sobre la distribución de los datos de validación antes de verlos
+- El score CV sobreestima la generalización real
+:::
+
+## Leakage Dramático: Selección de Features
+
+```{python}
+from sklearn.feature_selection import SelectKBest, f_classif
+from sklearn.pipeline import Pipeline
+
+rng = np.random.default_rng(0)
+X_noise = rng.standard_normal((1000, 2000))
+y_noise = rng.integers(0, 2, size=1000)
+
+# Leaky: seleccionar sobre todo el dataset, luego CV
+X_sel = SelectKBest(f_classif, k=5).fit_transform(X_noise, y_noise)
+leaky = cross_val_score(LogisticRegression(max_iter=2000), X_sel,
+                        y_noise, cv=5, scoring='f1_macro').mean()
+
+# Honesto: selector dentro del pipeline
+honest = cross_val_score(
+    Pipeline([("select", SelectKBest(f_classif, k=5)),
+              ("model",  LogisticRegression(max_iter=2000))]),
+    X_noise, y_noise, cv=5, scoring='f1_macro').mean()
+
+print(f"leaky : {leaky:.3f}   <- ¡no hay señal!")
+print(f"honesto: {honest:.3f}  <- ~azar, como debe ser")
+```
+
+# §2 — `Pipeline` + `ColumnTransformer` {background-color="#1a1a1a"}
+
+## La Solución Estructural
+
+::: {.incremental}
+- Todo paso que aprende parámetros va **dentro de un `Pipeline`**
+- El CV re-fittea esos pasos en cada fold de entrenamiento únicamente
+- Separamos un test set real **ahora mismo** y no lo tocamos hasta el final
+:::
+
+```{python}
+from sklearn.model_selection import train_test_split, StratifiedKFold
+
+X_train, X_test, y_train, y_test = train_test_split(
+    df, labels, test_size=0.2, stratify=labels, random_state=RANDOM_STATE
+)
+print("train:", X_train.shape, " test:", X_test.shape)
+```
+
+## Pipeline Básico Correcto
+
+```{python}
+pipe = Pipeline(steps=[
+    ("impute", SimpleImputer(strategy='median')),
+    ("scale",  StandardScaler()),
+    ("model",  LogisticRegression(max_iter=2000)),
+])
+pipe
+```
+
+## `ColumnTransformer`: Columnas Heterogéneas
+
+```{python}
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OneHotEncoder
+
+numeric_cols = X_train.columns.tolist()
+
+numeric_pipe = Pipeline([
+    ("impute", SimpleImputer(strategy='median')),
+    ("scale",  StandardScaler()),
+])
+
+preproc = ColumnTransformer(
+    transformers=[
+        ("num", numeric_pipe, numeric_cols),
+        # ("cat", OneHotEncoder(handle_unknown='ignore'), categorical_cols),
+    ],
+    remainder='drop',
+)
+preproc
+```
+
+## A Partir de Aquí
+
+::: {.callout-note}
+## Arquitectura Fija
+
+Desde este punto, **cada técnica** que introduzcamos entra como un paso en `numeric_pipe` o como hermano en `preproc`.
+
+El leakage es **estructuralmente imposible** dentro de `cross_val_score(pipeline, X, y)`.
+:::
+
+```{python}
+cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=RANDOM_STATE)
+pipe = Pipeline([("preproc", preproc), ("model", LogisticRegression(max_iter=2000))])
+score = cross_val_score(pipe, X_train, y_train, cv=cv, scoring='f1_macro').mean()
+print(f"CV f1_macro (pipeline correcto): {score:.3f}")
+```
+
+# §3 — Datos Faltantes {background-color="#2a2a2a"}
+
+## Dos Estrategias Complementarias
+
+::: {.columns}
+::: {.column width="50%"}
+**Imputación**
+
+Rellenar con algo razonable:
+
+- Media / mediana / moda
+- KNN: vecinos más cercanos
+- MICE: modelo iterativo
+- Valor centinela (ej: -99)
+:::
+
+::: {.column width="50%"}
+**Indicador de Missingness**
+
+Agregar columna binaria: "¿este valor estaba faltante?"
+
+Vale la pena cuando la ausencia es *informativa*:
+
+- Sensor que falla bajo condiciones extremas
+- Pregunta que se evita cuando la respuesta es sensible
+:::
+:::
+
+## Comparación de Estrategias
+
+```{python}
+from sklearn.experimental import enable_iterative_imputer  # noqa
+from sklearn.impute import IterativeImputer, KNNImputer
+
+def cv_with_imputer(imputer, name):
+    p = Pipeline([("impute", imputer), ("scale", StandardScaler()),
+                  ("model", LogisticRegression(max_iter=2000))])
+    score = cross_val_score(p, X_train, y_train, cv=cv, scoring='f1_macro').mean()
+    print(f"{name:25s}  f1_macro = {score:.3f}")
+    return score
+
+results = {}
+results["mean"]      = cv_with_imputer(SimpleImputer(strategy='mean'),   "SimpleImputer(mean)")
+results["median"]    = cv_with_imputer(SimpleImputer(strategy='median'), "SimpleImputer(median)")
+results["-99"]       = cv_with_imputer(SimpleImputer(fill_value=-99),    "SimpleImputer(-99)")
+results["knn-5"]     = cv_with_imputer(KNNImputer(n_neighbors=5),        "KNNImputer(k=5)")
+results["iterative"] = cv_with_imputer(
+    IterativeImputer(max_iter=10, random_state=RANDOM_STATE), "IterativeImputer (MICE)")
+```
+
+## Indicador de Missingness
+
+```{python}
+from sklearn.pipeline import FeatureUnion
+from sklearn.impute import MissingIndicator
+
+preproc_with_indicator = FeatureUnion([
+    ("imputed",   SimpleImputer(strategy='median')),
+    ("indicator", MissingIndicator(features='all')),
+])
+
+pipe = Pipeline([("preproc", preproc_with_indicator),
+                 ("scale",   StandardScaler()),
+                 ("model",   LogisticRegression(max_iter=2000))])
+score = cross_val_score(pipe, X_train, y_train, cv=cv, scoring='f1_macro').mean()
+print(f"con indicador: {score:.3f}")
+print(f"sin indicador: {results['median']:.3f}")
+```
+
+# §4 — Escalado, Sesgo y Encoding {background-color="#1a1a1a"}
+
+## ¿Por Qué Escalar?
+
+::: {.incremental}
+- **Modelos lineales**: los coeficientes dependen de la escala de las features
+- **Modelos de distancia** (kNN, k-means): la distancia está dominada por features de mayor escala
+- **Gradiente descendente**: converge más lento con escalas dispares
+- **Modelos de árbol**: no necesitan scaling — pero tampoco les hace daño
+:::
+
+## Tres Scalers
+
+::: {.columns}
+::: {.column width="33%"}
+**StandardScaler**
+
+$x' = \frac{x - \mu}{\sigma}$
+
+Sensible a outliers
+:::
+
+::: {.column width="33%"}
+**RobustScaler**
+
+$x' = \frac{x - Q_2}{Q_3 - Q_1}$
+
+Usa percentiles → robusto
+:::
+
+::: {.column width="33%"}
+**MinMaxScaler**
+
+$x' = \frac{x - x_{min}}{x_{max} - x_{min}}$
+
+Comprime a [0,1]
+:::
+:::
+
+::: {.callout-tip}
+## Regla Práctica
+Usa `RobustScaler` cuando hay outliers frecuentes y no quieres que dominen la estimación de varianza.
+:::
+
+## Reducción de Sesgo: `PowerTransformer`
+
+```{python}
+from sklearn.preprocessing import PowerTransformer
+
+col = df.notna().sum().sort_values(ascending=False).index[100]
+x = df[col].dropna().values.reshape(-1, 1)
+x_pt = PowerTransformer(method='yeo-johnson').fit_transform(x).ravel()
+
+fig, axes = plt.subplots(1, 2, figsize=(10, 3))
+axes[0].hist(x.ravel(), bins=60); axes[0].set_title("raw"); axes[0].set_xscale('asinh')
+axes[1].hist(x_pt, bins=60);      axes[1].set_title("yeo-johnson")
+plt.suptitle("Efecto de PowerTransformer"); plt.tight_layout();
+```
+
+## Encoding de Categóricas
+
+| Encoder | Cuándo | Pitfall |
+|---|---|---|
+| `OneHotEncoder` | baja cardinalidad | explosión dimensional |
+| Label / Ordinal | solo árboles | los lineales leen el entero como magnitud |
+| `TargetEncoder` | alta cardinalidad | **leakage clásico** — solo dentro del pipeline |
+| Hashing | cardinalidad muy alta | colisiones |
+
+# §5 — Feature Engineering Motivado {background-color="#2a2a2a"}
+
+## El Protocolo
+
+::: {.callout-note}
+## Patrón Correcto
+
+1. Identificar algo que el modelo está haciendo **mal**
+2. Proponer una feature que lo corrija
+3. Agregarla como paso en el pipeline
+4. Re-ejecutar CV
+5. Conservar **solo si ayuda**
+:::
+
+::: {.incremental}
+- El feature engineering es principalmente pequeñas ganancias y muchos callejones sin salida
+- Lo importante no es el resultado aislado, sino el protocolo
+:::
+
+## Features de Cruce / Razón
+
+```{python}
+from sklearn.preprocessing import FunctionTransformer
+
+a, b = "Amplitude_1", "Amplitude_2"
+
+def add_ratio(X):
+    X = pd.DataFrame(X, columns=numeric_cols).copy() \
+        if not isinstance(X, pd.DataFrame) else X.copy()
+    safe_b = X[b].replace(0, np.nan)
+    X[f"ratio_{a[:8]}_over_{b[:8]}"] = X[a] / safe_b
+    return X
+
+numeric_pipe_with_ratio = Pipeline([
+    ("ratio",  FunctionTransformer(add_ratio, validate=False)),
+    ("power",  PowerTransformer(method='yeo-johnson', standardize=False)),
+    ("impute", SimpleImputer(strategy='median')),
+    ("scale",  StandardScaler()),
+])
+pipe = Pipeline([
+    ("preproc", ColumnTransformer([("num", numeric_pipe_with_ratio, numeric_cols)])),
+    ("model",   LogisticRegression(max_iter=2000)),
+])
+score = cross_val_score(pipe, X_train, y_train, cv=cv, scoring='f1_macro').mean()
+print(f"CV f1_macro (con razón): {score:.3f}")
+```
+
+## Encoding Cíclico para Fechas y Ángulos
+
+Si una feature es un ángulo, hora del día o día del año:
+
+$$x_{sin} = \sin\left(\frac{2\pi t}{T}\right), \quad x_{cos} = \cos\left(\frac{2\pi t}{T}\right)$$
+
+```{python}
+synthetic = pd.DataFrame({'hour': np.arange(0, 24)})
+synthetic['hour_sin'] = np.sin(2*np.pi * synthetic['hour'] / 24)
+synthetic['hour_cos'] = np.cos(2*np.pi * synthetic['hour'] / 24)
+
+fig, ax = plt.subplots(figsize=(5, 4))
+ax.scatter(synthetic['hour_sin'], synthetic['hour_cos'],
+           c=synthetic['hour'], cmap='twilight')
+for _, r in synthetic.iterrows():
+    ax.annotate(int(r['hour']), (r['hour_sin'], r['hour_cos']), fontsize=7)
+ax.set_xlabel('sin'); ax.set_ylabel('cos'); ax.set_title('Encoding cíclico de hora');
+```
+
+## Extractores de Dominio: `tsfresh`
+
+::: {.incremental}
+- Extrae automáticamente cientos de features estadísticas de series de tiempo
+- `extract_features`: extracción sin etiquetas (puede ir antes del split)
+- `select_features`: selección usando etiquetas — **¡debe ir dentro del pipeline!**
+- `extract_relevant_features` combina ambos → leakage si se usa sobre todo el dataset
+:::
+
+::: {.callout-warning}
+## Regla para `tsfresh`
+
+Extraer features: OK antes del split.  
+Seleccionar features: solo dentro del fold de entrenamiento.
+:::
+
+# §6 — Splitting Más Allá del Aleatorio {background-color="#1a1a1a"}
+
+## Cuándo el Split Aleatorio Está Mal
+
+| Situación | Split Correcto |
+|---|---|
+| Clases desbalanceadas | `stratify=y` |
+| Datos con orden temporal | `TimeSeriesSplit` |
+| Múltiples filas por entidad | `GroupKFold` |
+
+## `TimeSeriesSplit` — El Futuro No Puede Entrenar
+
+```{python}
+from sklearn.model_selection import TimeSeriesSplit
+
+fig, ax = plt.subplots(figsize=(8, 3))
+n = 120
+tscv = TimeSeriesSplit(n_splits=5)
+for i, (tr, va) in enumerate(tscv.split(np.arange(n))):
+    ax.scatter(tr, [i]*len(tr), c='tab:blue',  marker='_', lw=8,
+               label='train' if i==0 else "")
+    ax.scatter(va, [i]*len(va), c='tab:orange', marker='_', lw=8,
+               label='val'   if i==0 else "")
+ax.set_yticks(range(5)); ax.set_xlabel('índice de fila (≈ tiempo)')
+ax.set_title('Folds de TimeSeriesSplit'); ax.legend(loc='upper left');
+```
+
+## `GroupKFold` — Entidades que Se Repiten
+
+```{python}
+from sklearn.model_selection import GroupKFold
+from sklearn.tree import DecisionTreeClassifier
+
+n_patients, n_visits = 100, 10
+patient_id = np.repeat(np.arange(n_patients), n_visits)
+y_synth    = np.tile([0]*5 + [1]*5, n_patients)
+X_synth    = (patient_id + np.random.randn(len(patient_id))*0.01).reshape(-1, 1)
+
+random_cv = cross_val_score(DecisionTreeClassifier(), X_synth, y_synth, cv=5).mean()
+group_cv  = cross_val_score(DecisionTreeClassifier(), X_synth, y_synth,
+                            cv=GroupKFold(n_splits=5), groups=patient_id).mean()
+print(f"random KFold (LEAKY) accuracy: {random_cv:.3f}")
+print(f"GroupKFold (correcto)        : {group_cv:.3f}")
+```
+
+Con folds aleatorios el modelo memoriza ids de pacientes. Con `GroupKFold`, los pacientes de validación son siempre *nuevos*.
+
+# §7 — Desbalance de Clases sin Leakage {background-color="#2a2a2a"}
+
+## El Anti-Patrón
+
+```{python}
+from imblearn.over_sampling import SMOTE
+from imblearn.pipeline import Pipeline as ImbPipeline
+
+# SMOTE antes del CV — INCORRECTO
+X_imp = SimpleImputer(strategy='median').fit_transform(
+            StandardScaler().fit_transform(X_train))
+X_res, y_res = SMOTE(random_state=RANDOM_STATE).fit_resample(X_imp, y_train)
+leaky_smote = cross_val_score(LogisticRegression(max_iter=2000), X_res, y_res,
+                              cv=cv, scoring='f1_macro').mean()
+
+# SMOTE dentro del pipeline — CORRECTO
+pipe = ImbPipeline([
+    ("preproc", preproc),
+    ("smote",   SMOTE(random_state=RANDOM_STATE)),
+    ("model",   LogisticRegression(max_iter=2000)),
+])
+honest_smote = cross_val_score(pipe, X_train, y_train, cv=cv, scoring='f1_macro').mean()
+
+print(f"SMOTE antes del CV (leaky)   : {leaky_smote:.3f}")
+print(f"SMOTE dentro de pipeline     : {honest_smote:.3f}")
+```
+
+## Alternativas a SMOTE
+
+```{python}
+variants = {
+    "sin rebalanceo":         Pipeline([("preproc", preproc),
+                                        ("m", LogisticRegression(max_iter=2000))]),
+    "class_weight=balanced":  Pipeline([("preproc", preproc),
+                                        ("m", LogisticRegression(max_iter=2000,
+                                                                  class_weight='balanced'))]),
+    "SMOTE en pipeline":      ImbPipeline([("preproc", preproc),
+                                           ("s", SMOTE(random_state=RANDOM_STATE)),
+                                           ("m", LogisticRegression(max_iter=2000))]),
+}
+for name, p in variants.items():
+    s = cross_val_score(p, X_train, y_train, cv=cv, scoring='f1_macro').mean()
+    print(f"{name:27s}: {s:.3f}")
+```
+
+::: {.callout-tip}
+## ¿Cuándo usar SMOTE?
+Cuando la clase minoritaria tiene estructura compleja (multimodal, frontera no lineal). Si no, `class_weight='balanced'` es más simple y sin riesgo.
+:::
+
+# §8 — Tuning sin Leakage {background-color="#1a1a1a"}
+
+## El Problema del Tuning
+
+::: {.incremental}
+- Tunear hiperparámetros en los mismos folds sobre los que *reportas* sesga el score hacia arriba
+- Has usado esos folds para tomar una decisión
+- La respuesta limpia: **CV anidado**
+:::
+
+::: {.columns}
+::: {.column width="50%"}
+**Loop externo**
+
+Estima la generalización
+:::
+::: {.column width="50%"}
+**Loop interno**
+
+Elige hiperparámetros
+:::
+:::
+
+## Tuning con Optuna
+
+```{python}
+import optuna
+import lightgbm as lgb
+optuna.logging.set_verbosity(optuna.logging.WARNING)
+
+preproc_lgb = ColumnTransformer([("num",
+    Pipeline([("impute", SimpleImputer(strategy='median'))]),
+    numeric_cols)])
+
+inner_cv = StratifiedKFold(n_splits=3, shuffle=True, random_state=RANDOM_STATE)
+
+def objective(trial):
+    params = {
+        "n_estimators":      trial.suggest_int("n_estimators", 100, 600),
+        "num_leaves":        trial.suggest_int("num_leaves", 15, 127),
+        "learning_rate":     trial.suggest_float("learning_rate", 1e-3, 3e-1, log=True),
+        "min_child_samples": trial.suggest_int("min_child_samples", 5, 100),
+        "verbosity":         -1,
+    }
+    p = Pipeline([("preproc", preproc_lgb),
+                  ("model",   lgb.LGBMClassifier(**params, random_state=RANDOM_STATE))])
+    return cross_val_score(p, X_train, y_train, cv=inner_cv, scoring='f1_macro').mean()
+
+study = optuna.create_study(direction="maximize",
+                            sampler=optuna.samplers.TPESampler(seed=RANDOM_STATE))
+study.optimize(objective, n_trials=20, show_progress_bar=False)
+print(f"mejor CV f1_macro: {study.best_value:.3f}")
+```
+
+## Historial de Optimización
+
+```{python}
+trials = pd.DataFrame([{**t.params, "value": t.value} for t in study.trials])
+fig, ax = plt.subplots(figsize=(7, 3))
+ax.plot(trials.index, trials['value'], 'o-')
+ax.plot(trials.index, trials['value'].cummax(), color='red', label='mejor hasta ahora')
+ax.set_xlabel("trial"); ax.set_ylabel("CV f1_macro")
+ax.legend(); ax.set_title("Trials de Optuna"); plt.tight_layout();
+```
+
+# §9 — Evaluación Final {background-color="#2a2a2a"}
+
+## El Test Set Se Toca Una Sola Vez
+
+```{python}
+best_pipe = Pipeline([
+    ("preproc", preproc_lgb),
+    ("model",   lgb.LGBMClassifier(**study.best_params,
+                                    random_state=RANDOM_STATE, verbosity=-1)),
+])
+best_pipe.fit(X_train, y_train)
+y_pred = best_pipe.predict(X_test)
+
+from sklearn.metrics import f1_score
+print(f"f1_macro en test held-out: {f1_score(y_test, y_pred, average='macro'):.3f}")
+```
+
+```{python}
+from sklearn.metrics import ConfusionMatrixDisplay
+fig, ax = plt.subplots(figsize=(8, 8))
+ConfusionMatrixDisplay.from_estimator(best_pipe, X_test, y_test, ax=ax,
+    xticks_rotation='vertical', normalize='true', colorbar=False)
+ax.set_title("Matriz de confusión — test (normalizada por fila)");
+```
+
+## El Flujo Completo Hacia Producción
+
+::: {.incremental}
+1. **Tunear** en `X_train` con CV → `best_params`
+2. **Reportar** una vez en `X_test` → confirmar que el CV fue honesto
+3. **Re-entrenar** con `best_params` en `X_train + X_test` → modelo de producción
+:::
+
+::: {.callout-note}
+## Por Qué Re-entrenar en Todo
+
+Una vez que el test set cumplió su función, no hay razón para no usar esas filas. Más datos ⇒ generalmente mejor modelo. El score de CV/test ya te dijo qué esperar.
+:::
+
+## Antes de Hacer Deploy
+
+::: {.incremental}
+- **Estabilidad del CV**: mira la dispersión de fold scores, no solo la media
+- **Regla de 1 SE (Breiman)**: entre configuraciones dentro de 1 SE del mejor, elige la más simple
+- **Ensemble gratuito**: N seeds distintas sobre datos completos, promedia predicciones → 1–3% de mejora
+- **Datos temporales**: no hacer shuffle si el orden importa
+:::
+
+## Después del Deploy
+
+::: {.incremental}
+- **Monitorear** distribuciones de inputs y predicciones (drift)
+- **Cadencia de re-entrenamiento**: semanal, mensual, o disparada por drift
+- **Cada re-entrenamiento incluye re-tuning**: la producción es ahora datos de entrenamiento
+- **Mantener el patrón de test**: cada re-entrenamiento necesita un nuevo slice held-out
+:::
+
+# Resumen {background-color="#1a1a1a"}
+
+## Reglas Anti-Leakage
+
+| Técnica | Regla |
+|---|---|
+| Imputación / Escalado / Encoding | Dentro del pipeline, fitteado por fold |
+| Selección de features | Dentro del pipeline |
+| Feature engineering estadístico | Dentro del pipeline |
+| SMOTE / resampling | `ImbPipeline` — nunca antes del CV |
+| Tuning de hiperparámetros | CV anidado; reportar test solo una vez |
+| Splits temporales | `TimeSeriesSplit`; no shuffle |
+| Splits de grupo | `GroupKFold` cuando hay entidades repetidas |
+
+## Qué Añadiríamos con Más Tiempo
+
+::: {.incremental}
+- **Drift & re-entrenamiento** — los datos de producción cambian
+- **Calibración** — `CalibratedClassifierCV`; las probabilidades deben coincidir con frecuencias observadas
+- **Group-aware splits en producción** — diseñar splits que imiten el deployment real
+- **Features causales vs. predictivas** — consecuencias downstream del target = leakage con otro nombre
+- **Feature stores** — mismo código en entrenamiento e inferencia; si no, train/serve skew
+- **Documentación** — el model card existe o muere por la reproducibilidad
+:::
+
+# ¿Preguntas? {background-color="#2a2a2a"}
+
+## Referencias
+
+- Pedregosa, F. et al. (2011). Scikit-learn: Machine Learning in Python. *JMLR*, 12.
+- Christ, M. et al. (2018). tsfresh: Time Series FeatuRe Extraction. *Neurocomputing*.
+- Akiba, T. et al. (2019). Optuna: A Next-generation Hyperparameter Optimization Framework. *KDD*.
+- Ke, G. et al. (2017). LightGBM: A Highly Efficient Gradient Boosting Decision Tree. *NeurIPS*.

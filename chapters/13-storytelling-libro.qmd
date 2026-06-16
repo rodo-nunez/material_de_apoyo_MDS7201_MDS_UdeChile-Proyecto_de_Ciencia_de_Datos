@@ -1,0 +1,399 @@
+# Storytelling con Datos
+
+Saber analizar datos no es suficiente. Si no puedes comunicar tus hallazgos de manera clara y convincente, el análisis pierde su valor. El storytelling — contar historias con datos — es la habilidad que transforma un análisis correcto en un mensaje que mueve a las personas a actuar.
+
+Este capítulo está basado principalmente en el libro **Storytelling with Data** de Cole Nussbaumer Knaflic (2015), considerado una referencia fundamental en visualización y comunicación de datos para contextos profesionales.
+
+## ¿Qué es el Storytelling con Datos?
+
+El storytelling con datos es el proceso de comunicar información de manera clara, relevante y memorable, combinando datos con narrativa y visualización. No se trata de hacer gráficos bonitos, sino de construir un mensaje que tu audiencia entienda y recuerde.
+
+### Análisis Exploratorio vs. Análisis Explicativo
+
+Una distinción fundamental que introduce Knaflic es la diferencia entre dos modos de trabajo con datos:
+
+**Análisis exploratorio** es lo que haces para *entender* los datos. Es el proceso iterativo de buscar patrones, anomalías y relaciones. La mayoría de los gráficos que produces en esta etapa son para ti mismo o tu equipo técnico. No importa si son prolijos.
+
+**Análisis explicativo** es lo que haces para *comunicar* lo que encontraste. Tienes un mensaje específico, una audiencia específica y un contexto específico. Cada elemento del gráfico debe servir a ese mensaje.
+
+::: {.callout-important}
+## El error más común
+Comunicar el análisis exploratorio como si fuera explicativo: mostrar todo lo que encontraste, en lugar de enfocarse en lo que tu audiencia necesita saber.
+:::
+
+La gran mayoría de los gráficos que ves en presentaciones y reportes son análisis exploratorio disfrazado de análisis explicativo. El resultado es audiencias abrumadas que no saben qué mirar ni qué concluir.
+
+### Por Qué es Importante Contar Historias
+
+Los humanos estamos cableados para procesar y recordar historias. Un dato aislado se olvida; un dato dentro de una narrativa se recuerda. Las historias:
+
+- Crean contexto que hace que los datos sean comprensibles
+- Generan un arco emocional que mantiene la atención
+- Facilitan la retención de la información
+- Mueven a las personas a actuar
+
+::: {.callout-note}
+## Video recomendado
+[Storytelling with Data — Cole Nussbaumer Knaflic](https://www.youtube.com/watch?v=8EMW7io4rSI)
+:::
+
+## Los Seis Capítulos del Libro
+
+Knaflic estructura su propuesta en seis principios que forman una secuencia lógica:
+
+### 1. Understand the Context (Entender el Contexto)
+
+Antes de hacer cualquier gráfico, responde tres preguntas:
+
+- **¿Quién es tu audiencia?** No es "todos". Es una persona o grupo específico, con conocimiento, intereses y tiempo específicos.
+- **¿Qué quieres que hagan?** Cada comunicación tiene un objetivo concreto: aprobar un presupuesto, cambiar un proceso, entender un riesgo.
+- **¿Cómo vas a comunicarlo?** El medio (presentación en vivo, informe escrito, dashboard) cambia radicalmente cómo debes diseñar tu visualización.
+
+La herramienta que propone Knaflic es el **Big Idea**: una sola frase que articula tu punto único, refleja tu perspectiva, y es un argumento completo.
+
+### 2. Choose an Appropriate Visual Display (Elegir el Gráfico Correcto)
+
+No existe el gráfico "mejor". Existe el gráfico más adecuado para el tipo de relación que quieres mostrar y la audiencia a la que te diriges. Knaflic propone un framework simple basado en la relación que quieres mostrar:
+
+- **Comparación** → barras
+- **Cambio en el tiempo** → líneas
+- **Parte del todo** → barras apiladas (nunca pie charts)
+- **Relación entre variables** → scatter plots
+- **Distribución** → histogramas, box plots
+
+El libro también incluye una postura clara: evitar los tipos de gráficos que confunden más de lo que comunican.
+
+### 3. Eliminate Clutter (Eliminar el Desorden)
+
+Todo elemento en un gráfico que no añade información es ruido que compite con tu mensaje. Knaflic introduce el concepto de **carga cognitiva**: el esfuerzo mental que requiere procesar una visualización. Tu objetivo es minimizarla.
+
+Elementos que típicamente generan ruido sin añadir valor:
+
+- Grillas pesadas y ejes con muchas marcas
+- Bordes y cajas innecesarios alrededor de gráficos
+- Efectos 3D y sombras
+- Leyendas cuando se puede etiquetar directamente
+- Decimales innecesarios en los ejes
+- Títulos redundantes que solo repiten lo que el gráfico ya dice
+
+### 4. Focus Attention Where You Want It (Dirigir la Atención)
+
+Esta es la habilidad central del diseño de comunicación: decidir conscientemente qué debe ver primero tu audiencia, y usar herramientas visuales para lograrlo. Se desarrolla en detalle en la sección siguiente.
+
+### 5. Think Like a Designer (Pensar como Diseñador)
+
+Knaflic propone adoptar principios de diseño gráfico para la comunicación de datos:
+
+- **Affordances**: los elementos visuales deben sugerir cómo usarlos
+- **Accesibilidad**: funcionar para personas con daltonismo u otras limitaciones visuales
+- **Alineación**: crear orden visual mediante consistencia en la posición de los elementos
+- **Jerarquía visual**: usar tamaño, peso y posición para indicar importancia
+
+### 6. Tell a Story (Contar una Historia)
+
+El último principio integra todos los anteriores en una narrativa coherente. Se desarrolla en detalle más adelante.
+
+## Ejemplos: Antes y Después
+
+Una de las fortalezas del libro de Knaflic son sus transformaciones concretas de visualizaciones reales. Veamos tres ejemplos paradigmáticos.
+
+### Ejemplo 1: Gráfico de Barras a Líneas — Contrataciones
+
+![Tickets - Before](../chapter_files/images/storytelling/ticket_1.PNG)
+
+![Tickets - After](../chapter_files/images/storytelling/ticket_2.PNG)
+
+El problema con el gráfico original de barras agrupadas para datos temporales es que obliga al ojo a saltar entre barras para detectar tendencias. Las líneas, en cambio, hacen que la tendencia temporal sea el objeto visual principal — que es exactamente lo que el análisis quiere comunicar.
+
+**Lección:** Cuando el tiempo es la variable explicativa, las líneas comunican mejor que las barras.
+
+### Ejemplo 2: Pie Chart a Barras — Cómo se Siente la Gente Haciendo Ciencia
+
+![Ciencia - Before](../chapter_files/images/storytelling/science_1.PNG)
+
+![Ciencia - After](../chapter_files/images/storytelling/science_2.PNG)
+
+
+Los pie charts tienen un problema fundamental: los humanos somos malos comparando ángulos. Cuando los segmentos tienen tamaños similares — que es precisamente cuando más importa distinguirlos — el pie chart falla. Las barras horizontales ordenadas permiten comparar con mucha más precisión.
+
+**Lección:** Los pie charts solo funcionan cuando hay un segmento claramente dominante y no hay más de dos o tres categorías. En la práctica, casi siempre hay una mejor alternativa.
+
+::: {.callout-tip}
+## Lectura recomendada
+[Death to Pie Charts](https://www.storytellingwithdata.com/blog/2011/07/death-to-pie-charts) — Cole Nussbaumer Knaflic
+:::
+
+### Ejemplo 3: Barras a Líneas con Elementos Extra — Precio Competitivo
+
+![Precio - Before](../chapter_files/images/storytelling/price_1.PNG)
+
+![Precio - After](../chapter_files/images/storytelling/price_2.PNG)
+
+Este ejemplo introduce algo importante: a veces la transformación no es solo cambiar el tipo de gráfico, sino añadir contexto (la línea de referencia) y usar el color para comunicar la conclusión directamente en el gráfico.
+
+**Lección:** La línea de referencia y el color como señal de alerta convierten un gráfico descriptivo en uno que genera acción.
+
+## Dirigir la Atención: Foco y Contraste
+
+### El Experimento de Conteo
+
+Uno de los ejemplos más poderosos del libro involucra contar cuántas veces aparece el número 3 en una tabla. Pruébalo mentalmente:
+
+
+![Números - Before](../chapter_files/images/storytelling/count_3s_1.PNG)
+
+![Números - After](../chapter_files/images/storytelling/count_3s_2.PNG)
+
+
+
+Contar los 3s toma tiempo y esfuerzo. Ahora imagina la misma tabla donde todos los 3s están en **negrita y color rojo**: los encuentras instantáneamente.
+
+La diferencia entre las dos versiones no es el contenido — es exactamente el mismo — sino el uso de atributos pre-atentivos para dirigir la atención.
+
+### Atributos Pre-Atentivos
+
+![Pre-attentive](../chapter_files/images/storytelling/preattentive_attributes.PNG)
+
+Los atributos pre-atentivos son propiedades visuales que el cerebro procesa de manera instantánea, antes de la atención consciente. No requieren esfuerzo: simplemente "saltan" a la vista. Los más importantes son:
+
+**Para destacar datos individuales:**
+
+- **Color** — el más poderoso y versátil
+- **Tamaño** — objetos más grandes atraen más atención
+- **Intensidad** — mayor saturación o contraste llama la atención
+- **Forma** — una forma diferente entre formas iguales destaca
+
+**Para mostrar estructura:**
+
+- **Posición** — la ubicación en el espacio comunica relación
+- **Movimiento** — cualquier elemento que se mueve capta la atención inmediatamente
+
+La regla práctica de Knaflic: **en cada visualización, debería haber solo una cosa que "salte" a la vista**. Si todo es importante, nada es importante.
+
+### Ejemplos de Uso del Color para Llamar la Atención
+
+El color es la herramienta más usada — y más abusada — para dirigir la atención. Knaflic propone una estrategia precisa:
+
+**Estrategia base:** Usa gris para todo, excepto lo que quieres destacar. El contraste entre el gris y el color hace que lo importante sea inmediatamente visible.
+
+**Ejemplo en gráfico de barras:**
+
+- *Antes:* Todas las barras en el mismo azul corporativo. ¿Qué debería mirar la audiencia?
+- *Después:* Todas las barras en gris excepto la que comunica el mensaje principal, que está en azul oscuro. La audiencia sabe inmediatamente dónde mirar.
+
+![Barras con un color para destacar - Before](../chapter_files/images/storytelling/barras_color.PNG)
+
+::: {.callout-note}
+## Video recomendado
+[How to use color in your data visualization](https://www.youtube.com/watch?v=AiD6etOB6qI) — storytellingwithdata
+:::
+
+### Ejemplo: Llamada de Atención en Gráfico de Barras
+
+![Barras - Before](../chapter_files/images/storytelling/barras_1.PNG)
+
+![Barras - After](../chapter_files/images/storytelling/barras_2.PNG)
+
+El proceso que propone Knaflic para diseñar el foco en un gráfico:
+
+1. Decide cuál es el mensaje principal
+2. Identifica el elemento visual que lo representa
+3. Destaca ese elemento con color, tamaño o posición
+4. Convierte todo lo demás a gris o reduce su peso visual
+5. Añade una anotación textual que refuerza el mensaje directamente en el gráfico
+
+## Contar una Historia
+
+### Por Qué Funciona la Narrativa
+
+Las historias tienen una estructura que el cerebro humano reconoce y procesa eficientemente. No es metáfora: hay evidencia neurocientífica de que el cerebro de quien escucha una historia se sincroniza con el de quien la cuenta (neural coupling). Las historias:
+
+- Generan tensión que mantiene la atención
+- Crean contexto que hace que la información sea interpretable
+- Producen una respuesta emocional que refuerza la memoria
+- Llevan a la audiencia a una conclusión de manera natural
+
+### Estructura Básica: Plot, Twist, Ending
+
+Knaflic propone adaptar la estructura clásica de narrativa a la comunicación de datos:
+
+**Plot (Situación):** El contexto. ¿Cuál es la situación actual? ¿Qué está pasando? Esta parte establece la línea base que hace que lo que viene después tenga significado.
+
+**Twist (Complicación):** El problema o hallazgo. ¿Qué es diferente de lo esperado? ¿Qué cambió? ¿Qué problema surgió? Esta es la tensión narrativa que hace que la audiencia quiera saber más.
+
+**Ending (Solución/Llamada a la acción):** La resolución propuesta. ¿Qué debería hacerse? ¿Qué decisión debería tomarse? Esta es la razón por la que hiciste el análisis.
+
+### Ejemplo: Estudio sobre Niños y Ciencias
+
+![Ciencia - Before](../chapter_files/images/storytelling/science_2.PNG)
+
+La estructura aplicada al ejemplo:
+
+- **Plot:** Los programas de ciencias en escuelas primarias tienen buenos indicadores de participación
+- **Twist:** Sin embargo, al preguntar a los niños cómo se sienten, la mayoría reporta aburrimiento o desconexión
+- **Ending:** Se propone revisar la metodología de enseñanza, con énfasis en experimentos prácticos; se solicita aprobación para piloto en tres escuelas
+
+Sin la estructura narrativa, los datos son un reporte. Con ella, son un argumento.
+
+## Siete Lecciones sobre el Color
+
+El color es la herramienta más poderosa en visualización de datos, y también la más mal usada. Knaflic dedica un capítulo completo a su uso consciente:
+
+### 1. El Color Llama la Atención
+
+El color es un atributo pre-atentivo: el ojo lo detecta antes de que la atención consciente entre en juego. Un elemento de color en una página de grises siempre capturará la mirada primero. Esta propiedad es exactamente la que queremos explotar — pero conscientemente.
+
+### 2. El Color Señala Dónde Mirar
+
+Usar color es equivalente a decirle a la audiencia: "mira aquí". Por eso, usar color en múltiples lugares simultáneamente es equivalente a decir "mira aquí, y aquí, y aquí" — lo que no dirige la atención, la dispersa.
+
+**Regla práctica:** Un color de énfasis por visualización. Si todo está en color, nada está destacado.
+
+### 3. El Color Debe Usarse Mesuradamente
+
+Cuantos más colores uses, menos énfasis tiene cada uno. Knaflic recomienda empezar con una paleta de grises y añadir color solo donde sea necesario para el mensaje.
+
+Una paleta típica en sus ejemplos: gris claro, gris medio, gris oscuro, y un color de énfasis (azul, naranja o rojo, dependiendo del contexto).
+
+### 4. El Color Puede Tomar un Valor Cuantitativo
+
+En escalas de color secuenciales (como las vistas en el capítulo de Visualización), la intensidad del color codifica un valor numérico. En este caso el color no está señalando algo específico — está siendo una variable en sí mismo. Es un uso completamente diferente y legítimo, pero no debe mezclarse con el uso de color como énfasis en el mismo gráfico.
+
+### 5. El Color Tiene Tono y Significado
+
+Los colores no son neutros. Tienen asociaciones culturales y emocionales que deben considerarse:
+
+- **Rojo:** Alarma, problema, pérdida, detención
+- **Verde:** Positivo, ganancia, avance, seguridad
+- **Amarillo/Naranja:** Precaución, atención
+- **Azul:** Neutralidad, datos, confianza
+
+Si usas rojo para destacar el mejor mes de ventas del año, estás enviando una señal contradictoria aunque el dato sea positivo.
+
+### 6. No Todos Ven el Color Igual
+
+Aproximadamente el 8% de los hombres y el 0.5% de las mujeres tienen algún tipo de daltonismo. La combinación rojo-verde es la más problemática. 
+
+**Reglas prácticas:**
+- Nunca usar rojo y verde como únicos diferenciadores
+- Preferir paletas diseñadas para accesibilidad (Wong, IBM, Viridis)
+- Usar forma o posición además del color cuando sea posible
+- Verificar con simuladores de daltonismo antes de publicar
+
+### 7. El Color Debe Usarse Consistentemente
+
+Si en la página 3 de un reporte el rojo significa "por debajo del objetivo", en la página 7 el rojo también debe significar "por debajo del objetivo". La inconsistencia en el uso del color rompe la confianza de la audiencia y aumenta la carga cognitiva.
+
+La consistencia aplica también entre distintas visualizaciones sobre el mismo tema: si el producto A siempre es azul y el producto B siempre es naranja, la audiencia construye esa asociación y puede procesar gráficos nuevos más rápidamente.
+
+## Tipos de Gráficos
+
+### La Importancia de Elegir el Gráfico Correcto
+
+El tipo de gráfico que eliges no es una decisión estética — es una decisión sobre qué relación quieres que tu audiencia vea. Cada tipo de gráfico es bueno para mostrar ciertos tipos de relaciones y malo para otros.
+
+Un framework práctico: empieza por preguntarte qué tipo de comparación quieres hacer.
+
+### Los Gráficos Principales
+
+![Tipos de gráficos 1](../chapter_files/images/storytelling/common_plots_1.PNG)
+
+![Tipos de gráficos 2](../chapter_files/images/storytelling/common_plots_2.PNG)
+
+#### Gráfico de Barras
+
+**Cuándo usarlo:** Para comparar categorías entre sí, especialmente cuando las categorías no tienen orden natural.
+
+**Variantes:**
+- Barras verticales: cuando los nombres de las categorías son cortos
+- Barras horizontales: cuando los nombres son largos o hay muchas categorías (más legible)
+- Barras apiladas: para mostrar composición dentro de categorías (con precaución — dificulta comparar las partes intermedias)
+
+**Reglas clave:**
+- El eje debe empezar en cero — truncar el eje exagera las diferencias
+- Ordenar las barras por valor (de mayor a menor) a menos que el orden tenga significado propio
+- Evitar barras 3D — distorsionan las proporciones
+
+#### Gráfico de Líneas
+
+**Cuándo usarlo:** Para mostrar cambio en el tiempo o tendencias continuas. Las líneas comunican de manera natural que los valores intermedios entre puntos existen (continuidad). Por eso no deben usarse para datos categóricos.
+
+**Reglas clave:**
+- Usar cuando el eje x es tiempo u otra variable continua
+- Se pueden mostrar múltiples series en el mismo gráfico, pero con máximo 5-7 líneas antes de que se vuelva difícil de leer
+- Etiquetar las líneas directamente en el gráfico en lugar de usar leyendas cuando sea posible
+
+#### Gráfico de Puntos (Scatter Plot)
+
+**Cuándo usarlo:** Para mostrar la relación entre dos variables continuas. Es el gráfico más adecuado para detectar correlaciones, clusters y valores atípicos.
+
+**Variantes:**
+- Scatter simple: dos variables
+- Bubble chart: tres variables (la tercera codificada en tamaño del punto)
+
+**Reglas clave:**
+- Añadir una línea de tendencia cuando la correlación es el mensaje
+- Con muchos puntos, usar transparencia para ver la densidad
+- Cuidado con inferir causalidad de la correlación
+
+#### Gráfico de Área
+
+**Cuándo usarlo:** Para mostrar cambio acumulado en el tiempo, o para enfatizar el volumen total además de la tendencia. Es un gráfico de líneas donde el área bajo la curva está rellena.
+
+**Precaución:** Las áreas apiladas son difíciles de leer para las series intermedias — solo la inferior y la superior tienen una línea base estable. Usar con pocas series (2-3 máximo).
+
+### Otros Tipos de Gráficos en Storytelling with Data
+
+Knaflic menciona otros tipos con más reservas, recomendando usarlos solo en contextos específicos:
+
+- **Tablas de calor (heatmaps):** Para mostrar patrones en matrices de datos, cuando el valor exacto importa menos que el patrón general
+- **Mapas:** Cuando la distribución geográfica es el mensaje (no solo porque los datos tienen una variable geográfica)
+- **Waterfall charts:** Para mostrar cómo un valor inicial llega a un valor final a través de adiciones y sustracciones
+- **Bullet charts:** Como alternativa a los indicadores tipo velocímetro (gauge charts), para comparar un valor con un objetivo de referencia
+
+### Prácticas a Evitar
+
+**No usar gráficos 3D.** La perspectiva 3D distorsiona las proporciones y hace imposible leer valores con precisión. No añade información — solo confusión.
+
+**No usar pie charts** cuando hay más de 2-3 categorías o cuando los valores son similares. Como vimos en los ejemplos, las barras ordenadas siempre son más legibles.
+
+**No sobrecargar con información.** Si un gráfico requiere más de 5 segundos para entenderse, probablemente necesita ser dividido en dos gráficos más simples.
+
+**No usar leyendas cuando se puede etiquetar directamente.** Una leyenda obliga a la audiencia a ir y volver entre la leyenda y el gráfico. Etiquetar directamente las series o barras elimina esa fricción.
+
+**No usar colores solo por decoración.** Cada color debe significar algo. Si estás usando color solo para hacer el gráfico "más dinámico", estás añadiendo ruido.
+
+::: {.callout-tip}
+## Recursos prácticos
+
+- [Documentación matplotlib](https://matplotlib.org/stable/index.html)
+- [Documentación seaborn](https://seaborn.pydata.org/index.html)
+- [Documentación plotly](https://plotly.com/python/)
+- [Raincloud plots en Python](https://medium.com/mlearning-ai/getting-started-with-raincloud-plots-in-python-2ea5c2d01c11)
+- [Raincloud plots en ggplot2](https://www.cedricscherer.com/2021/06/06/visualizing-distributions-with-raincloud-plots-and-how-to-create-them-with-ggplot2/)
+:::
+
+## Resumen
+
+El storytelling con datos es la disciplina que conecta el análisis técnico con la comunicación efectiva. Sus principios centrales:
+
+1. **Distingue exploración de explicación** — no comuniques el proceso, comunica el hallazgo
+2. **Conoce a tu audiencia** — diseña para ellos, no para ti
+3. **Elige el gráfico correcto** — según la relación que quieres mostrar
+4. **Elimina el ruido** — todo lo que no añade información resta claridad
+5. **Dirige la atención** — usa color y contraste de manera consciente y moderada
+6. **Estructura como historia** — Plot, Twist, Ending
+7. **Usa el color con intención** — mesuradamente, consistentemente, considerando accesibilidad
+
+::: {.callout-note}
+## Canal recomendado
+[@storytellingwithdata en YouTube](https://www.youtube.com/@storytellingwithdata) — ejemplos prácticos y transformaciones antes/después permanentemente actualizados
+:::
+
+## Referencias
+
+- Nussbaumer Knaflic, C. (2015). *Storytelling with Data: A Data Visualization Guide for Business Professionals*. Wiley.
+- [Storytelling with Data — video introductorio](https://www.youtube.com/watch?v=8EMW7io4rSI)
+- [How to use color in your data visualization](https://www.youtube.com/watch?v=AiD6etOB6qI)
+- [Death to Pie Charts](https://www.storytellingwithdata.com/blog/2011/07/death-to-pie-charts)
+- [storytellingwithdata.com](https://www.storytellingwithdata.com)

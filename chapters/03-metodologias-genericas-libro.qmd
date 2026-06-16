@@ -1,0 +1,838 @@
+# Metodologías de Trabajo Genéricas
+
+## Introducción
+
+Mientras que las metodologías específicas de Ciencia de Datos (CRISP-DM, TDSP, etc.) abordan las particularidades del trabajo con datos y modelos, las metodologías de trabajo genéricas nos ofrecen marcos probados para gestionar proyectos, coordinar equipos y entregar valor de manera efectiva.
+
+En este capítulo exploraremos las principales metodologías de gestión de proyectos, con especial énfasis en el Manifiesto Ágil y sus principios fundamentales. Aunque estas metodologías fueron diseñadas originalmente para desarrollo de software, muchos de sus principios son directamente aplicables a proyectos de Ciencia de Datos.
+
+::: {.callout-note}
+## Metodologías de DS vs. Metodologías Genéricas
+Las metodologías específicas de DS definen **QUÉ** hacer en cada fase del proyecto (comprensión del negocio, preparación de datos, modelamiento, etc.). Las metodologías genéricas definen **CÓMO** trabajar en equipo para lograrlo eficientemente.
+:::
+
+## Waterfall - El Modelo en Cascada
+
+### Origen y Concepto
+
+El modelo Waterfall (cascada) es la metodología de gestión de proyectos más tradicional y establecida. Desarrollado en las décadas de 1950-1970 para proyectos de ingeniería y construcción, se basa en un enfoque **secuencial y lineal** donde cada fase debe completarse antes de iniciar la siguiente.
+
+### Fases del Modelo Waterfall
+
+El modelo típicamente incluye estas fases secuenciales:
+
+1. **Requerimientos**: Documentación exhaustiva de todas las necesidades del proyecto
+2. **Diseño**: Arquitectura completa del sistema antes de construir
+3. **Implementación**: Construcción del producto según el diseño
+4. **Verificación**: Testing y control de calidad
+5. **Mantenimiento**: Soporte y correcciones post-lanzamiento
+
+Cada fase produce entregables específicos que son entrada para la fase siguiente. Una vez completada una fase, idealmente no se vuelve atrás.
+
+### Características Principales
+
+**Documentación Exhaustiva**
+
+- Cada fase genera documentación detallada
+- Los requerimientos se definen completamente al inicio
+- Cambios posteriores son costosos y generalmente desalentados
+
+**Planificación Detallada**
+
+- Timeline completo definido desde el principio
+- Presupuesto cerrado al inicio del proyecto
+- Recursos asignados por fase
+
+**Proceso Lineal y Secuencial**
+
+- Progresión secuencial sin vuelta atrás
+- Gates de aprobación entre fases
+- Testing solo al final del desarrollo
+
+### Fortalezas de Waterfall
+
+- **Claridad y estructura**: Todos saben qué se espera y cuándo
+- **Documentación completa**: Útil para proyectos regulados o sistemas legacy
+- **Fácil de gestionar**: Milestones claros y medibles
+- **Predecibilidad**: Timeline y presupuesto definidos desde el inicio
+- **Apropiado cuando**:
+  - Los requerimientos están muy claros y no cambiarán
+  - La tecnología es bien conocida y estable
+  - El proyecto tiene regulaciones estrictas de documentación
+  - El equipo está geográficamente distribuido sin comunicación frecuente
+
+### Limitaciones de Waterfall
+
+- **Inflexibilidad**: Los cambios son costosos y difíciles de implementar
+- **Testing tardío**: Los problemas se descubren solo al final
+- **Feedback retrasado**: El cliente ve resultados muy tarde en el proceso
+- **Alto riesgo**: Enfoque de "todo o nada" al final del proyecto
+- **Inadecuado para incertidumbre**: No funciona bien cuando hay exploración o descubrimiento
+
+::: {.callout-warning}
+## Waterfall en Data Science
+El modelo Waterfall es generalmente **inadecuado** para proyectos de Ciencia de Datos debido a su naturaleza exploratoria e iterativa. Es imposible definir todos los requerimientos al inicio cuando no sabemos qué contienen los datos o qué patrones descubriremos.
+
+Sin embargo, ciertos elementos pueden ser útiles:
+
+- Gates de calidad de datos
+- Documentación de decisiones críticas
+- Procesos de aprobación para deployment
+:::
+
+### Cuándo Considerar Waterfall
+
+Aunque raro en Data Science, Waterfall podría ser apropiado cuando:
+
+- El proyecto es principalmente de **ingeniería de datos** con requerimientos claros (ej: migrar un data warehouse)
+- Hay **regulaciones estrictas** que requieren documentación exhaustiva antes de implementar
+- El proyecto es una **réplica** de algo ya hecho en otro contexto
+- Los **stakeholders requieren** un presupuesto y timeline fijos antes de aprobar el proyecto
+
+## Metodologías Ágiles vs. Manifiesto Ágil
+
+### Una Distinción Importante
+
+Es crucial entender que **Metodologías Ágiles ≠ Manifiesto Ágil**:
+
+- El **Manifiesto Ágil** es un conjunto de valores y principios sobre cómo trabajar efectivamente en equipo
+- Las **Metodologías Ágiles** (Scrum, Kanban, XP, etc.) son implementaciones específicas con reglas y prácticas concretas
+
+Esta distinción es fundamental porque:
+
+1. Puedes seguir los valores ágiles sin implementar ninguna metodología específica
+2. Puedes implementar Scrum mecánicamente sin ser realmente "ágil"
+3. Diferentes proyectos pueden beneficiarse de diferentes prácticas ágiles
+
+::: {.callout-tip}
+## El Manifiesto Ágil para Ingenieros
+Una forma práctica de entender el Manifiesto Ágil: es básicamente **cómo trabajar en equipo para ingenieros sin tantas habilidades sociales**.
+
+El manifiesto reconoce que los ingenieros y científicos tienden a:
+
+- Sobrevalorar procesos y herramientas sobre comunicación humana
+- Preferir documentación exhaustiva sobre resultados tangibles
+- Esconderse tras contratos en lugar de colaborar abiertamente
+- Resistirse al cambio una vez que tienen un plan
+
+El manifiesto nos recuerda que el éxito depende más de las personas y su colaboración que de procesos perfectos.
+:::
+
+### Por Qué Esta Distinción Importa en Data Science
+
+En proyectos de Ciencia de Datos, es especialmente importante:
+
+- Los **valores ágiles** de iteración, colaboración y adaptabilidad son esenciales
+- Pero implementar **Scrum puro** (sprints de 2 semanas, historias de usuario, etc.) puede ser forzado y contraproducente
+- Necesitamos adaptar prácticas ágiles a la naturaleza exploratoria de DS
+
+## El Manifiesto Ágil
+
+### Contexto e Historia
+
+En febrero de 2001, diecisiete desarrolladores de software se reunieron en Snowbird, Utah, frustrados con los procesos de desarrollo pesados, burocráticos y poco efectivos que dominaban la industria. Después de dos días de discusión, produjeron el **Manifiesto por el Desarrollo Ágil de Software**.
+
+El manifiesto no inventó nada nuevo, sino que **codificó prácticas** que equipos exitosos ya estaban usando. Su poder radica en su simplicidad: cuatro valores y doce principios que capturan la esencia de cómo trabajar efectivamente.
+
+### Los Cuatro Valores Fundamentales
+
+El Manifiesto Ágil establece cuatro valores fundamentales. Es crucial entender que no dice que lo de la derecha no es valioso, sino que **valora más** lo de la izquierda:
+
+#### 1. Individuos e interacciones sobre procesos y herramientas
+
+**Qué significa:**
+
+- La comunicación humana y la colaboración son más importantes que seguir procesos rígidos
+- Un equipo que se comunica bien puede adaptarse y resolver problemas que podrían ser más complejos con un proceso documentado.
+- Las herramientas deben servir al equipo, no al revés
+
+**En la práctica:**
+
+- Una conversación de 5 minutos puede resolver lo que una cadena de correos de 50 mensajes no logra. No tengan miedo a llamar por teléfono.
+- A veces es bueno tener a todo el equió en una reunión para interactuar rápidamente. Pero tengan cuidado con reuniones innecesarias.
+- Si la herramienta de gestión se vuelve más trabajo que el proyecto mismo, algo está mal
+
+**Aplicación en Data Science:**
+
+- Hablar directamente con stakeholders en lugar de solo leer el brief o enviar un correo.
+- Pair programming en análisis complejos
+- Demos informales frecuentes en lugar de solo reportes escritos
+- Usar las herramientas que el equipo conoce, no las "de moda". A menos de que haya un motivo claro para cambiar.
+
+::: {.callout-note}
+## Ejemplo Real
+Un equipo de DS pasaba horas cada semana documentando experimentos en una herramienta compleja de gestión. Cuando cambiaron a un simple Google Doc compartido y una reunión semanal de 30 minutos, la productividad aumentó dramáticamente. La comunicación directa superó al proceso elaborado.
+:::
+
+#### 2. Software funcionando sobre documentación extensiva
+
+**Qué significa:**
+
+- Es más valioso tener un producto que funciona (aunque sea parcialmente) que documentación perfecta sobre lo que eventualmente se construirá
+- La documentación sigue siendo importante, pero es secundaria al producto funcional
+- El código que funciona es la verdad última, no los documentos
+
+**En la práctica:**
+
+- Prototipos rápidos sobre especificaciones cortas
+- Demos tempranas aunque el producto no esté "perfecto"
+- Documentación "suficiente" que se mantiene actualizada, no exhaustiva que queda obsoleta. Para esto es importante que el código se documente solo.
+- README claro > documentación técnica extensa que nadie lee
+
+**Aplicación en Data Science:**
+
+- Un modelo baseline simple que funciona > semanas de análisis sin resultados
+- Scripts con análisis y conclusiones claras > presentación PowerPoint de 50 slides
+- Dashboard funcional con métricas clave > reporte PDF estático de 100 páginas
+- Código con buenos nombres y reproducible > documento separado describiendo qué hace el código
+
+::: {.callout-warning}
+## Cuidado con el Extremo
+Esto NO significa "no documentar nada". Significa priorizar. En Data Science, cierta documentación es crítica:
+
+- Decisiones sobre calidad de datos
+- Supuestos del modelo
+- Limitaciones conocidas
+- Instrucciones de reproducibilidad
+- Instrucciones sobre cómo de ejecuta el modelo en producción (periodicidad, argumentos, etc.)
+
+Pero debe ser documentación que **agrega valor**, no burocracia.
+:::
+
+#### 3. Colaboración con el cliente sobre negociación contractual
+
+**Qué significa:**
+
+- Trabajar de cerca con el cliente/stakeholder para entender sus necesidades reales es más efectivo que definir todo en un contrato inicial
+- Las necesidades reales emergen durante el proyecto, no están todas claras al inicio
+- Una relación de confianza y comunicación abierta genera mejores resultados que protegerse legalmente. Obviamente, dentro de lo razonable. No hay que dejar de firmar NDAs por esto.
+
+**En la práctica:**
+
+- Reuniones regulares con stakeholders durante el proyecto
+- Ajustar prioridades basándose en aprendizajes
+- Transparencia sobre qué es posible y qué no
+- Enfoque en resolver el problema real, no cumplir la especificación original
+
+**Aplicación en Data Science:**
+
+- Check-ins semanales con el business owner, no solo presentación al final
+- Mostrar resultados intermedios y pedir feedback
+- Explicar limitaciones de los datos tempranamente
+- Ajustar scope basándose en hallazgos preliminares
+- Educar a stakeholders sobre qué es realista esperar
+
+::: {.callout-tip}
+## El Problema del Contrato Fijo
+Un stakeholder dice: "Necesito predecir churn con 95% de accuracy". El equipo firma un contrato comprometiéndose a esto.
+
+Semanas después descubren que:
+
+- Los datos tienen solo 60% de calidad con alguna métrica
+- El mejor modelo posible da 75% accuracy
+- Pero hay insights valiosos sobre drivers de churn
+
+Con enfoque contractual: Proyecto "falla", todos infelices.
+Con enfoque colaborativo: Pivotean a entender drivers de churn, generan valor real.
+:::
+
+#### 4. Respuesta ante el cambio sobre seguir un plan
+
+**Qué significa:**
+
+- Los planes son útiles, pero adaptarse a nueva información es más valioso que seguir el plan original ciegamente
+- El cambio no es un fracaso del proceso, sino una oportunidad de mejorar el resultado
+- La flexibilidad y adaptabilidad generan mejores resultados que la rigidez
+
+**En la práctica:**
+
+- Revisar y ajustar el plan regularmente
+- Ver el cambio como información nueva, no como problema
+- Iteraciones cortas que permiten cambiar dirección rápidamente
+- Validar supuestos tempranamente en lugar de al final
+
+**Aplicación en Data Science:**
+
+- Si los datos resultan ser diferentes de lo esperado, ajustar el enfoque
+- Si descubres un patrón inesperado, explorarlo aunque no estaba en el plan
+- Si un stakeholder cambia de prioridad basándose en tus hallazgos, celebrarlo
+- Si un modelo no funciona, probar otro enfoque sin sentir que "fallaste"
+
+::: {.callout-important}
+## Fundamental en Data Science
+Este valor es **especialmente crítico** en Ciencia de Datos porque:
+
+- No sabemos qué contienen realmente los datos hasta que los exploramos
+- Los modelos que creíamos funcionarían pueden no funcionar
+- Nuevos insights pueden cambiar completamente el enfoque
+- Las prioridades del negocio pueden cambiar basándose en hallazgos preliminares
+
+Un proyecto de DS que no está dispuesto a cambiar el plan está destinado al fracaso o a resultados subóptimos.
+:::
+
+### Relación Entre los Valores
+
+Estos cuatro valores están interconectados:
+
+- **Individuos e interacciones** facilitan la **colaboración con el cliente**
+- **Software funcionando** permite obtener feedback y **responder al cambio**
+- **Respuesta al cambio** requiere **colaboración** continua
+- Todo esto depende de **individuos** comunicándose efectivamente
+
+## Los 12 Principios del Manifiesto Ágil
+
+Los cuatro valores se materializan en doce principios más específicos. Aquí los exploramos con énfasis en su aplicación en Data Science:
+
+### Principio 1: Satisfacción del Cliente
+
+> "Nuestra mayor prioridad es satisfacer al cliente mediante la entrega temprana y continua de software con valor."
+
+**Interpretación:**
+
+- No esperar al final para entregar valor
+- Cada iteración debe producir algo útil
+- "Software" en DS significa: modelos, análisis, insights, dashboards. El software es una forma que tenemos de materializar un producto.
+
+::: {.callout-note}
+## Ejemplo
+En lugar de pasar 3 meses construyendo el modelo perfecto, entregar en el mes 1 un análisis de los principales drivers del problema. El stakeholder ya puede actuar sobre esto mientras mejoras el modelo.
+:::
+
+### Principio 2: Aceptar el Cambio
+
+> "Aceptamos que los requisitos cambien, incluso en etapas tardías del desarrollo. Los procesos Ágiles aprovechan el cambio para proporcionar ventaja competitiva al cliente."
+
+**Interpretación:**
+
+- El cambio no es el enemigo, es información valiosa
+- Cambios tardíos a menudo reflejan mejor comprensión del problema
+- Flexibilidad para cambiar es una fortaleza, no debilidad
+
+**Aplicación en Data Science:**
+
+- Si en semana 10 descubres que el problema real es diferente, pivotea
+- Si aparecen nuevas fuentes de datos, incorpóralas
+- Si el stakeholder reprioriza basándose en tus hallazgos, adáptate
+- Diseña tu arquitectura para facilitar cambios (modular, bien documentada)
+
+**Prácticas que facilitan esto:**
+
+- Sprints o iteraciones cortas
+- Código modular y bien estructurado
+- Versionamiento de código, datos y modelos
+- Documentación actualizada de decisiones
+
+::: {.callout-warning}
+## Balance Necesario
+Aceptar cambio ≠ Aceptar cambio constante y caótico
+
+Si los requisitos cambian cada semana sin razón clara, hay un problema de communication o planning. El principio asume cambios basados en aprendizaje genuino, no indecisión.
+:::
+
+### Principio 3: Entregas Frecuentes
+
+> "Entregamos software funcional frecuentemente, entre dos semanas y dos meses, con preferencia al periodo de tiempo más corto posible."
+
+**Interpretación:**
+
+- Iteraciones cortas mantienen foco y momentum
+- Feedback frecuente previene desarrollar en dirección incorrecta
+- Entregas pequeñas son menos riesgosas que entregas grandes
+
+**Aplicación en Data Science:**
+
+- Reuniones semanales o quincenales con stakeholders
+- Demos de análisis en progreso, no solo al final
+- Versiones iterativas del modelo (v0.1.0, v0.2.0, v0.3.0 usando versionamiento semántico)
+- Compartir scripts y dashboards conforme se desarrollan
+
+::: {.callout-tip}
+## Ritmo Sostenible
+En proyectos académicos, las entregas cada 3-4 semanas (los hitos) son razonables. En proyectos profesionales, demos semanales o quincenales son más comunes.
+:::
+
+### Principio 4: Trabajo Conjunto
+
+> "Los responsables de negocio y los desarrolladores trabajamos juntos de forma cotidiana durante todo el proyecto."
+
+**Interpretación:**
+
+- No es un handoff: "aquí está el problema, vuelve en 3 meses con la solución"
+- Colaboración continua genera mejores resultados
+- Ambos lados aprenden: negocio entiende las posibilidades técnicas, técnicos entienden el contexto
+
+**Aplicación en Data Science:**
+
+- Reuniones semanales con business owner
+- Stakeholder involucrado en revisar análisis intermedios
+- Data scientist participa en discusiones de negocio
+- Comunicación abierta sobre limitaciones y oportunidades
+
+**En el curso:**
+
+- Reuniones regulares con tu profesor auxiliar (el "business owner" proxy)
+- Presentaciones a la clase (feedback de "stakeholders")
+- Comunicación con la contraparte real del proyecto
+
+::: {.callout-important}
+## Red Flag
+Si pasas semanas sin hablar con tu stakeholder/profesor auxiliar, algo está mal. La falta de comunicación es el predictor #1 de fracaso en proyectos de DS.
+:::
+
+### Principio 5: Individuos Motivados
+
+> "Los proyectos se desarrollan en torno a individuos motivados. Hay que darles el entorno y el apoyo que necesitan, y confiarles la ejecución del trabajo."
+
+**Interpretación:**
+
+- Las personas motivadas producen mejores resultados que procesos perfectos
+- La microgestión mata la motivación y creatividad
+- Confiar en el equipo y darles autonomía
+
+**Aplicación en Data Science:**
+
+- Permitir al DS team elegir sus herramientas (Python/R, IDE, etc.)
+- Dar libertad para explorar enfoques diferentes
+- Enfocarse en resultados, no en horas trabajadas
+- Proporcionar recursos (compute, datos, capacitación)
+
+**Para tu equipo:**
+
+- Dividir responsabilidades según fortalezas
+- Dar autonomía en cómo cada quien contribuye
+- Apoyarse mutuamente, no competir
+- Celebrar los logros del equipo
+
+::: {.callout-note}
+## Motivación en Contexto Académico
+En el MDS, la motivación viene de:
+
+- Resolver un problema real
+- Aprender nuevas habilidades
+- Trabajar con datos interesantes
+- Contribuir valor a una empresa real
+- Obtener una buena nota es secundario a estos motivadores intrínsecos
+:::
+
+### Principio 6: Comunicación Cara a Cara
+
+> "El método más eficiente y efectivo de comunicar información al equipo de desarrollo y entre sus miembros es la conversación cara a cara."
+
+**Interpretación:**
+
+- La comunicación sincrónica y rica (presencial o video) es superior
+- Emails y mensajes son buenos para documentar, malos para discutir
+- El tono, contexto y retroalimentación inmediata son valiosos
+
+**Aplicación en Data Science:**
+
+- Reuniones cortas diarias o semanales del equipo
+- Videollamadas con stakeholders, no solo emails
+- Pair programming/análisis para problemas complejos
+- Whiteboard sessions para diseñar soluciones
+
+**Uso balanceado:**
+
+- **Cara a cara/video**: Discusiones, decisiones, brainstorming
+- **Mensajería (Slack)**: Coordinación rápida, preguntas simples
+- **Email**: Documentar decisiones, compartir resultados formales
+- **Documentos**: Referencias, conocimiento permanente
+
+::: {.callout-tip}
+## En Tiempos de Trabajo Remoto
+"Cara a cara" hoy incluye videollamadas. Lo importante es la riqueza de la comunicación, no la presencia física. Una videollamada de 15 minutos > 50 mensajes de Slack.
+:::
+
+### Principio 7: Software Funcionando como Medida de Progreso
+
+> "El software funcionando es la medida principal de progreso."
+
+**Interpretación:**
+
+- El progreso real es código/modelos que funcionan, no documentos o planes
+- "90% completo" sin producto funcional = 0% completo
+- Demos > PowerPoints sobre lo que harás
+
+**Aplicación en Data Science:**
+
+- Modelo que hace predicciones > presentación sobre arquitectura del modelo
+- Dashboard con visualizaciones > mockups de cómo se verá
+- Análisis reproducible > descripción del análisis
+- Código en GitHub > "avancé mucho esta semana"
+
+**Medidas de progreso válidas:**
+
+- Script ejecutable con análisis completo
+- Modelo entrenado con métricas de evaluación
+- Pipeline de datos funcionando end-to-end
+- Dashboard deployed que stakeholders pueden usar
+
+::: {.callout-warning}
+## Trampa Común en Data Science
+"Experimenté con 50 modelos esta semana" ≠ Progreso
+
+Si no tienes un modelo seleccionado, evaluado y documentado, no has progresado. La experimentación debe resultar en conocimiento accionable.
+:::
+
+### Principio 8: Desarrollo Sostenible
+
+> "Los procesos Ágiles promueven el desarrollo sostenible. Los promotores, desarrolladores y usuarios debemos ser capaces de mantener un ritmo constante de forma indefinida."
+
+**Interpretación:**
+
+- El burnout no es sostenible ni productivo
+- Trabajar 80 horas una semana resulta en productividad negativa las siguientes
+- La calidad requiere equipo descansado y enfocado
+- El proyecto es una maratón, no una carrera de velocidad
+
+**Aplicación en Data Science:**
+
+- Planificar con buffers, no al límite
+- Descansos y tiempo fuera del proyecto
+- No dejar todo para última hora antes de entregas
+- Trabajo consistente > crunch time
+
+**Para el curso:**
+
+- Distribuir trabajo uniformemente a lo largo del semestre
+- No sacrificar salud o vida personal por el proyecto
+- Pedir ayuda tempranamente si algo no está funcionando
+- Los profesores auxiliares están para apoyar, no para presionar
+
+::: {.callout-important}
+## Señales de Alerta
+
+- Trabajar hasta tarde constantemente
+- No tomar fines de semana libres
+- Estrés crónico sobre el proyecto
+- Cancelar otros compromisos repetidamente
+
+Si experimentas esto, habla con tu profesor auxiliar inmediatamente. El proyecto debe ajustarse, no tu salud.
+:::
+
+### Principio 9: Excelencia Técnica
+
+> "La atención continua a la excelencia técnica y al buen diseño mejora la Agilidad."
+
+**Interpretación:**
+
+- Los atajos técnicos eventualmente se cobran con interés
+- Código limpio y bien diseñado es más fácil de cambiar
+- "Hacerlo rápido" sin calidad no es ágil, es descuidado
+- La deuda técnica reduce la agilidad con el tiempo
+
+**Aplicación en Data Science:**
+
+- Código limpio y bien comentado
+- Tests para funciones críticas
+- Documentación clara de decisiones
+- Git con commits descriptivos
+- Scripts organizados y reproducibles
+- Validación rigurosa de modelos
+
+**Prácticas de calidad:**
+
+- Code reviews entre el equipo
+- Usar linters (black, pylint)
+- Estructura de proyecto clara
+- Requirements.txt/environment.yml actualizado
+- README comprehensivo
+
+::: {.callout-note}
+## Balance en Contexto Académico
+No necesitas calidad production-grade, pero sí:
+
+- Código que tu equipo pueda entender y modificar
+- Análisis que sean reproducibles
+- Documentación suficiente para que el profesor evalúe
+- Estructura que facilite colaboración
+:::
+
+### Principio 10: Simplicidad
+
+> "La simplicidad, o el arte de maximizar la cantidad de trabajo no realizado, es esencial."
+
+**Interpretación:**
+
+- La solución más simple que funciona es la mejor
+- Complejidad innecesaria es enemiga de la agilidad
+- YAGNI: "You Aren't Gonna Need It"
+- Hacer menos cosas, mejor
+
+**Aplicación en Data Science:**
+
+- Empezar con modelo simple (regresión logística) antes de deep learning
+- Feature engineering básico antes de automated feature selection
+- Dashboard simple con métricas clave antes de visualization complejo
+- Resolver el 80% del problema con 20% del esfuerzo primero
+
+**Preguntas para mantener simplicidad:**
+
+- ¿Realmente necesitamos esto ahora?
+- ¿Hay una solución más simple?
+- ¿Este feature agrega valor real?
+- ¿Podemos lograr lo mismo con menos código y bmanteniendo la interprtabilidad?
+
+::: {.callout-tip}
+## Occam's Razor en Data Science
+
+- Modelo simple y explicable > Modelo complejo con 0.5% más accuracy
+- Pipeline de 3 pasos > Pipeline de 15 pasos con igual resultado
+- Gráfico claro > Dashboard interactivo complejo sin propósito
+:::
+
+### Principio 11: Equipos Auto-organizados
+
+> "Las mejores arquitecturas, requisitos y diseños emergen de equipos auto-organizados."
+
+**Interpretación:**
+
+- El equipo que hace el trabajo sabe mejor cómo organizarse
+- La micro-gestión mata la creatividad y eficiencia
+- Equipos empoderados toman mejores decisiones técnicas
+- La responsabilidad compartida genera mejor trabajo
+
+**Aplicación en Data Science:**
+
+- El equipo decide la arquitectura técnica
+- División de trabajo según fortalezas, no imposición
+- Decisiones de herramientas por el equipo
+- Solución de problemas colaborativa
+
+**En tu equipo:**
+
+- Distribuir roles según habilidades e intereses
+- Reuniones de equipo para tomar decisiones importantes
+- Rotación de responsabilidades si tiene sentido
+- Resolución de conflictos dentro del equipo primero
+
+::: {.callout-note}
+## Auto-organizado ≠ Sin estructura
+Auto-organizado significa:
+
+- El equipo decide cómo trabajar juntos
+- Se establece un proceso interno
+- Hay accountability mutuo
+
+No significa:
+
+- Cada quien hace lo que quiere sin coordinación
+- No hay roles ni responsabilidades
+- No hay fechas ni compromisos
+:::
+
+### Principio 12: Reflexión y Ajuste
+
+> "A intervalos regulares el equipo reflexiona sobre cómo ser más efectivo para a continuación ajustar y perfeccionar su comportamiento en consecuencia."
+
+**Interpretación:**
+
+- La mejora continua es fundamental
+- Reflexionar sobre el proceso, no solo el producto
+- El equipo evoluciona su forma de trabajar
+- Las retrospectivas generan aprendizaje
+
+**Aplicación en Data Science:**
+
+- Retrospectivas después de cada hito (no es necesario que hagan esto para el proyecto de este curso, pero sí les puede servir)
+- Discutir qué funcionó y qué no
+- Ajustar proceso para siguiente iteración
+- Documentar lecciones aprendidas
+
+**Preguntas para retrospectivas:**
+
+- ¿Qué hicimos bien?
+- ¿Qué debemos mejorar?
+- ¿Qué obstáculos encontramos?
+- ¿Qué haremos diferente la próxima vez?
+- ¿Qué aprendimos?
+
+**Frecuencia recomendada:**
+
+- Mini-retro cada 1-2 semanas (15-30 min)
+- Retro completa después de cada hito (1 hora)
+- Retro final del proyecto (2 horas)
+
+::: {.callout-important}
+## Crear Espacio Seguro
+Las retrospectivas solo funcionan si:
+
+- Hay honestidad sin miedo a repercusiones
+- Se enfoca en el proceso, no en culpar individuos
+- Se toman acciones concretas de mejora
+- Se reconocen tanto éxitos como áreas de mejora
+:::
+
+## Implementando Valores y Principios Ágiles en Data Science
+
+### Adaptaciones Necesarias
+
+Los valores y principios ágiles requieren adaptación para Data Science:
+
+**Exploración vs. Desarrollo**
+
+- El desarrollo de software tiene más certidumbre que DS
+- En DS, "trabajar software" puede significar "entender mejor el problema"
+- La "entrega de valor" puede ser insights, no solo modelos
+
+**Timeboxes Apropiados**
+
+- Sprints de 2 semanas pueden ser muy cortos para DS
+- Algunas tareas (feature engineering complejo, tuning) toman tiempo
+- Podría ser mejor tener iteraciones de 3-4 semanas con checkpoints semanales
+
+**Definición de "Done"**
+
+- En software: código funciona, tests pasan, deployed
+- En DS: además necesitamos validación estadística, evaluación de fairness, documentación de supuestos
+
+### Antipatrones a Evitar
+
+**"Scrum Theater"**
+
+- Hacer daily standups mecánicamente sin valor real
+- Llenar boards de Jira obsesivamente
+- Preocuparse más por el proceso que por el resultado
+
+**Falso Agile**
+
+- Llamarlo "ágil" pero no cambiar cuando es necesario
+- Iteraciones cortas pero sin entregas de valor
+- Colaboración superficial sin comunicación real
+
+**Extremos Dañinos**
+
+- Cero documentación porque "ágil no documenta"
+- Cambiar de dirección cada semana sin razón
+- No planear nada porque "responder al cambio"
+
+### Buenas prácticas para el Curso
+
+**Aplicación de Valores Ágiles:**
+
+1. **Individuos e Interacciones**
+
+   - Reuniones semanales del equipo (30-60 min)
+   - Check-ins con profesor auxiliar cada 1-2 semanas
+   - Comunicación diaria por Slack/Discord
+   - Pair programming para problemas complejos
+
+2. **Software Funcionando**
+
+   - Cada hito debe incluir código ejecutable
+   - Scripts reproducibles desde día 1
+   - Modelo baseline en Hito 3 (aunque simple)
+   - Dashboard o demo funcional en Hito 4
+
+3. **Colaboración con el Cliente**
+
+   - Presentar avances a profesor auxiliar regularmente
+   - Incorporar feedback en siguiente iteración
+   - Comunicación transparente sobre limitaciones
+   - Ajustar scope basándose en hallazgos
+
+4. **Respuesta al Cambio**
+
+   - Estar dispuestos a pivotar si los datos o el contecto lo requieren
+   - Ajustar enfoque si modelo inicial no funciona
+   - Incorporar feedback aunque requiera cambios
+   - Priorizar aprendizaje sobre seguir plan original
+
+**Aplicación de Principios Clave:**
+
+- **Entregas frecuentes**: Demo algo cada 1-2 semanas a tu profesor auxiliar
+- **Trabajo conjunto**: Involucrar al profesor auxiliar en decisiones importantes
+- **Equipo motivado**: Dividir trabajo según intereses y fortalezas
+- **Comunicación cara a cara**: Reuniones por video > solo mensajes
+- **Progreso tangible**: Commits regulares, código funcional
+- **Ritmo sostenible**: Planificar con buffers, evitar crunch time
+- **Excelencia técnica**: Código limpio, bien documentado
+- **Simplicidad**: Empezar simple, agregar complejidad solo si necesario
+- **Auto-organización**: El equipo decide cómo trabajar internamente
+- **Retrospectivas**: Después de cada hito, reflexionar y mejorar
+
+## Conclusiones
+
+### Lecciones Clave
+
+**Waterfall vs. Ágil:**
+
+- Waterfall: Apropiado cuando hay certidumbre y estabilidad
+- Ágil: Necesario cuando hay exploración e incertidumbre
+- Data Science: Casi siempre requiere enfoque ágil
+
+**Manifiesto Ágil:**
+
+- No es una metodología, son valores y principios
+- Enfoca en colaboración humana sobre procesos
+- Especialmente valioso en DS por naturaleza exploratoria
+- Requiere adaptación, no implementación mecánica
+
+**Para el Curso:**
+
+- Usar valores ágiles como guía
+- No obsesionarse con metodologías específicas
+- Priorizar comunicación y colaboración
+- Iterar rápidamente y aprender de cada iteración
+- Mantener simplicidad y enfoque en valor
+
+### Reflexión Final
+
+El Manifiesto Ágil, en esencia, es sobre **sentido común aplicado al trabajo en equipo**:
+
+- Hablar con las personas en lugar de esconderse tras emails
+- Mostrar resultados reales en lugar de solo prometer
+- Trabajar con los stakeholders en lugar de contra ellos
+- Adaptarse a la realidad en lugar de ignorarla
+
+Para científicos de datos, estos principios son especialmente relevantes porque:
+
+- Nuestro trabajo es inherentemente incierto
+- Los datos nos sorprenden constantemente
+- Los stakeholders a menudo no saben lo que realmente necesitan hasta que lo ven
+- La colaboración efectiva es crítica para éxito
+
+No necesitas implementar Scrum o Kanban perfectamente. Necesitas abrazar estos valores y principios en cómo trabajas con tu equipo y stakeholders.
+
+::: {.callout-tip}
+## Próximos Pasos
+En los siguientes capítulos exploraremos:
+
+- **Capítulo 4**: Metodologías específicas (Scrum, Kanban, XP) y cómo adaptarlas
+- **Capítulo 5**: Herramientas de gestión de proyectos
+- **Capítulo 6**: Buenas prácticas de programación para Data Science
+:::
+
+## Recursos Adicionales
+
+### Lecturas Fundamentales
+
+- **Manifiesto Ágil Original**: [agilemanifesto.org](https://agilemanifesto.org/iso/es/manifesto.html)
+- **Principios del Manifiesto**: [agilemanifesto.org/principles](https://agilemanifesto.org/iso/es/principles.html)
+- **Agile for Data Science**: [agilemanifesto.org](https://agilemanifesto.org)
+
+### Libros Recomendados
+
+1. **"Agile Data Science 2.0"** - Russell Jurney
+
+   - Aplicación práctica de principios ágiles en DS
+   
+2. **"The Phoenix Project"** - Gene Kim et al.
+
+   - Novela que ilustra principios ágiles en práctica
+
+3. **"Scrum: The Art of Doing Twice the Work in Half the Time"** - Jeff Sutherland
+
+   - Introducción accesible a Scrum
+
+### Para Profundizar
+
+- **Project Management Methodologies**: [projectmanager.com/blog/project-management-methodology](https://www.projectmanager.com/blog/project-management-methodology)
+- **Agile Methodologies**: [xpand-it.com/blog/top-5-agile-methodologies](https://www.xpand-it.com/blog/top-5-agile-methodologies/)
+
+## Referencias
+
+- Beck, K., et al. (2001). Manifesto for Agile Software Development. https://agilemanifesto.org
+- Schwaber, K., & Sutherland, J. (2020). The Scrum Guide
+- Anderson, D. J. (2010). Kanban: Successful Evolutionary Change for Your Technology Business
+- Jurney, R. (2017). Agile Data Science 2.0: Building Full-Stack Data Analytics Applications with Spark

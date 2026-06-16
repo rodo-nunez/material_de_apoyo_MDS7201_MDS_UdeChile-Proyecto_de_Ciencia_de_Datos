@@ -1,0 +1,2149 @@
+# Introducción a Linux y Bash
+
+## Introducción
+
+Linux es el sistema operativo dominante en servidores, cloud computing y desarrollo de Data Science. Aunque puedes hacer DS en Windows o Mac, conocer Linux es fundamental para trabajar con servidores, clusters de computación, y desplegar modelos en producción.
+
+En este capítulo aprenderás los fundamentos de Linux y Bash que todo científico de datos debe conocer.
+
+::: {.callout-important}
+## Por Qué Aprender Linux
+
+- **Servidores**: 96%+ de servidores web usan Linux
+- **Cloud**: AWS, GCP, Azure corren Linux
+- **HPC**: Clusters de computación usan Linux
+- **Containers**: Docker está basado en Linux
+- **Producción**: Modelos se despliegan en Linux
+:::
+
+## ¿Qué es Unix?
+
+### Historia Breve
+
+**Unix:**
+
+- Desarrollado en Bell Labs (AT&T) en los años 70
+- Por Ken Thompson, Dennis Ritchie y otros
+- Escrito en C (también inventado para Unix)
+- Diseño modular y filosofía simple
+
+**Filosofía Unix:**
+1. **Hacer una cosa y hacerla bien**: Programas especializados
+2. **Todo es un archivo**: Dispositivos, procesos, etc.
+3. **Programas cooperan**: Output de uno es input de otro (pipes)
+4. **Texto plano**: Para datos y configuración
+
+**Linux:**
+
+- Creado por Linus Torvalds en 1991
+- Clon libre de Unix (Unix-like)
+- Kernel de código abierto
+- Base de múltiples distribuciones
+
+### Unix vs. Linux
+
+**Unix "real":**
+
+- macOS (basado en BSD Unix)
+- Solaris, AIX, HP-UX (comerciales)
+
+**Linux (Unix-like):**
+
+- No es Unix certificado técnicamente
+- Sigue principios y estándares Unix (POSIX)
+- Mucho más popular que Unix "real"
+
+**Para DS:**
+
+- Ambos comparten comandos básicos
+- Lo que aprendas funciona en ambos
+- Linux es más común en cloud/servidores
+
+## Distribuciones de Linux
+
+Linux es solo el kernel. Una **distribución** (distro) incluye kernel + software + gestor de paquetes.
+
+### Distribuciones Principales
+
+**Ubuntu:**
+
+- Más popular para desktop
+- Fácil para principiantes
+- Enorme comunidad y documentación
+- Base para muchas otras distros
+- **Recomendado para empezar**
+
+**Debian:**
+
+- Base de Ubuntu
+- Muy estable
+- Ciclos de release más largos
+
+**CentOS / Rocky Linux / AlmaLinux:**
+
+- Para servidores enterprise
+- Basados en Red Hat Enterprise Linux (RHEL)
+- Muy estables, soporte largo
+
+**Arch Linux:**
+
+- Rolling release
+- Muy customizable
+- Para usuarios avanzados
+
+**Para Data Science:**
+
+- **Ubuntu**: Best choice para empezar
+- **Ubuntu Server**: Para servidores
+- **CentOS/Rocky**: Común en empresas
+
+## Estructura de Directorios en Linux
+
+Linux tiene una jerarquía de directorios estándar (Filesystem Hierarchy Standard - FHS).
+
+### El Directorio Raíz (/)
+
+**`/` (root)**: Top del filesystem, contiene todo.
+
+No confundir con:
+
+- `/root`: Home del usuario root
+- `~` (tilde): Home del usuario actual
+
+### Directorios Principales
+
+```
+/
+├── bin/         # Binarios esenciales
+├── sbin/        # Binarios de sistema
+├── lib/         # Librerías compartidas
+├── usr/         # Programas de usuario
+│   ├── bin/
+│   ├── local/
+│   └── lib/
+├── etc/         # Configuración del sistema
+├── home/        # Directorios de usuarios
+├── root/        # Home del superusuario
+├── boot/        # Archivos de arranque
+├── dev/         # Dispositivos
+├── mnt/         # Puntos de montaje temporales
+├── media/       # Medios removibles
+├── opt/         # Software opcional
+├── var/         # Datos variables
+├── tmp/         # Archivos temporales
+└── proc/        # Información de procesos
+```
+
+### /bin - Binarios Esenciales
+
+**Contenido:**
+
+- Comandos básicos del sistema
+- Necesarios para boot y modo single-user
+- Disponibles para todos los usuarios
+
+**Ejemplos:**
+```bash
+/bin/bash    # Shell Bash
+/bin/ls      # Listar archivos
+/bin/cp      # Copiar
+/bin/mv      # Mover
+/bin/rm      # Eliminar
+/bin/cat     # Mostrar contenido
+/bin/grep    # Buscar patrones
+```
+
+### /sbin - Binarios de Sistema
+
+**Contenido:**
+
+- Comandos de administración del sistema
+- Típicamente requieren root
+- Para mantenimiento y configuración
+
+**Ejemplos:**
+```bash
+/sbin/ifconfig   # Configurar red
+/sbin/fdisk      # Particionar discos
+/sbin/reboot     # Reiniciar
+/sbin/shutdown   # Apagar
+```
+
+### /lib - Librerías
+
+**Contenido:**
+
+- Librerías compartidas (.so files)
+- Necesarias para binarios en /bin y /sbin
+- Equivalente a DLLs en Windows
+
+```bash
+/lib/x86_64-linux-gnu/    # Librerías del sistema
+/lib/modules/             # Módulos del kernel
+```
+
+### /usr - User Programs
+
+**Segundo nivel de la jerarquía**, contiene la mayoría de programas de usuario.
+
+**/usr/bin:**
+
+- Comandos de usuario no esenciales
+- La mayoría de programas instalados
+
+```bash
+/usr/bin/python3
+/usr/bin/git
+/usr/bin/vim
+/usr/bin/gcc
+```
+
+**/usr/local/bin:**
+
+- Programas compilados/instalados localmente
+- No gestionados por el package manager
+- Para software custom
+
+```bash
+/usr/local/bin/miniconda3
+/usr/local/bin/node
+```
+
+**/usr/lib:**
+
+- Librerías para programas en /usr/bin
+
+### PATH - Variable de Entorno Crítica
+
+**¿Qué es PATH?**
+
+Variable que contiene directorios donde el shell busca ejecutables.
+
+```bash
+echo $PATH
+# /usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
+```
+
+**Importancia:**
+
+Cuando ejecutas un comando, el shell busca en PATH:
+
+```bash
+# Escribes:
+python
+
+# Shell busca en orden:
+/usr/local/bin/python  # ¿Existe? No
+/usr/bin/python        # ¿Existe? Sí → ejecuta este
+```
+
+**Agregar al PATH:**
+
+```bash
+# Temporal (solo sesión actual)
+export PATH="/mi/nueva/ruta:$PATH"
+
+# Permanente (agregar a ~/.bashrc o ~/.zshrc)
+echo 'export PATH="/mi/nueva/ruta:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+**Orden importa:**
+
+```bash
+# Python de /usr/local/bin tiene prioridad
+export PATH="/usr/local/bin:$PATH"
+
+# Python de /usr/bin tiene prioridad
+export PATH="$PATH:/usr/local/bin"
+```
+
+### Variables de Entorno
+
+**Qué son:**
+
+Variables disponibles para todos los procesos en el shell.
+
+**Variables comunes:**
+
+```bash
+# Ver todas
+printenv
+
+# Ver específica
+echo $HOME      # /home/usuario
+echo $USER      # usuario
+echo $SHELL     # /bin/bash
+echo $PATH      # Directorios de búsqueda
+echo $LANG      # en_US.UTF-8
+echo $PWD       # Directorio actual
+```
+
+**Definir variable:**
+
+```bash
+# Solo en sesión actual
+export MI_VARIABLE="valor"
+
+# Permanente (agregar a ~/.bashrc)
+echo 'export MI_VARIABLE="valor"' >> ~/.bashrc
+```
+
+**Uso en programación:**
+
+```python
+import os
+
+# Leer variable de entorno
+api_key = os.getenv('API_KEY')
+db_password = os.getenv('DB_PASSWORD')
+```
+
+### /etc - Configuración
+
+**Contenido:**
+
+- Archivos de configuración del sistema
+- Configuración de programas
+- Scripts de inicio
+
+**Archivos importantes:**
+
+```bash
+/etc/passwd         # Información de usuarios
+/etc/group          # Grupos de usuarios
+/etc/hosts          # Nombres de host
+/etc/fstab          # Filesystems a montar
+/etc/crontab        # Tareas programadas
+/etc/ssh/sshd_config  # Configuración SSH
+```
+
+### /home - Directorios de Usuarios
+
+**Estructura:**
+
+```
+/home/
+├── usuario1/
+│   ├── Documents/
+│   ├── Downloads/
+│   ├── .bashrc
+│   ├── .ssh/
+│   └── proyectos/
+├── usuario2/
+└── usuario3/
+```
+
+**Tu home:**
+```bash
+# Ir a tu home
+cd ~
+cd $HOME
+cd
+
+# Todos equivalentes
+```
+
+### /root - Home del Superusuario
+
+Home del usuario `root` (administrador).
+
+```bash
+# Como usuario normal
+cd /root
+# Permission denied
+
+# Como root
+sudo su
+cd /root
+# Funciona
+```
+
+### /boot - Archivos de Arranque
+
+**Contenido:**
+
+- Kernel de Linux
+- Initrd (initial ramdisk)
+- Bootloader (GRUB)
+
+```bash
+/boot/vmlinuz-5.15.0    # Kernel
+/boot/initrd.img        # Initial ramdisk
+```
+
+**No tocar** a menos que sepas qué haces.
+
+### /dev - Dispositivos
+
+**Todo es un archivo en Unix**, incluyendo dispositivos.
+
+```bash
+/dev/sda        # Primer disco duro
+/dev/sda1       # Primera partición
+/dev/null       # "Agujero negro" (descarta todo)
+/dev/zero       # Genera zeros infinitos
+/dev/random     # Genera números aleatorios
+/dev/tty        # Terminal actual
+```
+
+**Uso común:**
+
+```bash
+# Descartar output
+comando > /dev/null
+
+# Generar archivo de zeros
+dd if=/dev/zero of=archivo.bin bs=1M count=100
+```
+
+### /mnt y /media - Montaje
+
+**/mnt:**
+
+- Puntos de montaje temporales manuales
+- Para filesystems externos
+
+**/media:**
+
+- Montaje automático de medios removibles
+- USB, CDs, etc.
+
+```bash
+# Montar USB
+sudo mount /dev/sdb1 /mnt/usb
+
+# Desmontar
+sudo umount /mnt/usb
+```
+
+### /opt - Software Opcional
+
+**Contenido:**
+
+- Software de terceros
+- Aplicaciones que no usan package manager estándar
+
+```bash
+/opt/google/chrome/
+/opt/miniconda3/
+```
+
+### /var - Datos Variables
+
+**Contenido:**
+
+- Logs del sistema
+- Caches
+- Datos de aplicaciones
+
+```bash
+/var/log/          # Logs del sistema
+/var/log/syslog    # Log general
+/var/log/auth.log  # Log de autenticación
+/var/www/          # Archivos web (Apache/Nginx)
+/var/cache/        # Caches
+```
+
+### /tmp - Temporales
+
+**Contenido:**
+
+- Archivos temporales
+- Se borra al reiniciar (en muchas distros)
+- Todos pueden escribir
+
+```bash
+# Crear archivo temporal
+mktemp
+# /tmp/tmp.X10qR2fG3n
+```
+
+### /proc - Información de Procesos
+
+**Filesystem virtual** con información del kernel y procesos.
+
+```bash
+/proc/cpuinfo     # Info del CPU
+/proc/meminfo     # Info de memoria
+/proc/[PID]/      # Info del proceso PID
+
+# Ver info del CPU
+cat /proc/cpuinfo
+
+# Ver memoria
+cat /proc/meminfo
+```
+
+## El Directorio Home del Usuario
+
+### Archivos Importantes en Home
+
+Tu directorio home (`~`) contiene configuraciones y datos personales.
+
+**Archivos y carpetas importantes:**
+
+```
+~/
+├── .ssh/              # Claves SSH
+├── .bashrc            # Configuración de Bash
+├── .bash_profile      # Login shell config
+├── .bash_history      # Historial de comandos
+├── .vimrc             # Configuración de Vim
+├── .gitconfig         # Configuración de Git
+├── .aws/              # Credenciales AWS
+├── .config/           # Configs de aplicaciones
+├── .local/            # Datos locales de apps
+└── .vscode-server/    # VS Code Remote
+```
+
+::: {.callout-note}
+## Archivos Ocultos
+Archivos que empiezan con `.` están ocultos.
+
+Ver con: `ls -a`
+:::
+
+### ~/.ssh - Claves SSH
+
+**Contenido:**
+
+- Claves públicas y privadas
+- Configuración de SSH
+- Known hosts
+
+```bash
+~/.ssh/
+├── id_rsa           # Clave privada (proteger!)
+├── id_rsa.pub       # Clave pública
+├── authorized_keys  # Claves autorizadas para login
+├── known_hosts      # Hosts conocidos
+└── config           # Configuración SSH
+```
+
+**Generar claves:**
+
+```bash
+# Generar par de claves
+ssh-keygen -t ed25519 -C "tu@email.com"
+
+# Se crea:
+# ~/.ssh/id_ed25519      (privada - nunca compartir)
+# ~/.ssh/id_ed25519.pub  (pública - compartir)
+```
+
+**Configuración SSH (~/.ssh/config):**
+
+```bash
+# Servidor AWS
+Host aws-server
+    HostName ec2-xx-xx-xx-xx.compute.amazonaws.com
+    User ubuntu
+    IdentityFile ~/.ssh/aws-key.pem
+
+# Ahora puedes conectar con:
+ssh aws-server
+```
+
+### ~/.bashrc - Configuración de Bash
+
+**Qué es:**
+
+Script que se ejecuta cada vez que abres un terminal (non-login shell).
+
+**Contenido típico:**
+
+```bash
+# ~/.bashrc
+
+# Aliases
+alias ll='ls -lah'
+alias gs='git status'
+alias gp='git push'
+
+# Funciones
+function mkcd() {
+    mkdir -p "$1" && cd "$1"
+}
+
+# Variables de entorno
+export EDITOR=vim
+export VISUAL=vim
+
+# PATH modifications
+export PATH="$HOME/.local/bin:$PATH"
+export PATH="/opt/miniconda3/bin:$PATH"
+
+# Prompt customization
+PS1='\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+
+# History
+HISTSIZE=10000
+HISTFILESIZE=20000
+
+# Python virtual env
+export WORKON_HOME=$HOME/.virtualenvs
+```
+
+**Recargar configuración:**
+
+```bash
+source ~/.bashrc
+# o
+. ~/.bashrc
+```
+
+### Aliases
+
+**Qué son:**
+
+Atajos para comandos largos o frecuentes.
+
+**Definir aliases:**
+
+```bash
+# En ~/.bashrc
+
+# Navegación
+alias ..='cd ..'
+alias ...='cd ../..'
+alias home='cd ~'
+
+# Listing
+alias ll='ls -lah'
+alias la='ls -A'
+alias l='ls -CF'
+
+# Git
+alias gs='git status'
+alias ga='git add'
+alias gc='git commit'
+alias gp='git push'
+alias gl='git log --oneline --graph --all'
+
+# Seguridad
+alias rm='rm -i'    # Pedir confirmación
+alias cp='cp -i'
+alias mv='mv -i'
+
+# Python
+alias py='python3'
+alias pip='pip3'
+alias activate='source venv/bin/activate'
+
+# Otros útiles
+alias h='history'
+alias c='clear'
+alias grep='grep --color=auto'
+alias df='df -h'    # Human readable
+alias du='du -h'
+alias free='free -m'  # Memoria en MB
+```
+
+**Usar aliases:**
+
+```bash
+# En lugar de:
+ls -lah
+
+# Usa:
+ll
+```
+
+### Funciones en Bash
+
+**Más poderosas que aliases**, pueden tomar argumentos.
+
+**Ejemplos:**
+
+```bash
+# En ~/.bashrc
+
+# Crear directorio y entrar
+function mkcd() {
+    mkdir -p "$1" && cd "$1"
+}
+
+# Extraer archivos comprimidos
+function extract() {
+    if [ -f $1 ]; then
+        case $1 in
+            *.tar.bz2)   tar xjf $1     ;;
+            *.tar.gz)    tar xzf $1     ;;
+            *.bz2)       bunzip2 $1     ;;
+            *.gz)        gunzip $1      ;;
+            *.zip)       unzip $1       ;;
+            *)           echo "'$1' cannot be extracted" ;;
+        esac
+    else
+        echo "'$1' is not a valid file"
+    fi
+}
+
+# Buscar en historial
+function hgrep() {
+    history | grep "$1"
+}
+
+# Backup rápido de archivo
+function backup() {
+    cp "$1"{,.bak}
+}
+
+# Git commit con mensaje
+function gcm() {
+    git commit -m "$1"
+}
+
+# Activar ambiente virtual
+function va() {
+    if [ -d "venv" ]; then
+        source venv/bin/activate
+    elif [ -d ".venv" ]; then
+        source .venv/bin/activate
+    else
+        echo "No virtualenv found"
+    fi
+}
+```
+
+**Uso:**
+
+```bash
+# Crear directorio y entrar
+mkcd mi-proyecto
+
+# Extraer archivo
+extract datos.tar.gz
+
+# Buscar en historial
+hgrep "git commit"
+
+# Backup
+backup script.py  # Crea script.py.bak
+
+# Git commit
+gcm "Add new feature"
+
+# Activar virtualenv
+va
+```
+
+### ~/.vscode-server
+
+Usado por VS Code Remote para desarrollo remoto.
+
+**No necesitas tocarlo**, VS Code lo gestiona automáticamente.
+
+### ~/.aws - Credenciales AWS
+
+**Contenido:**
+
+```bash
+~/.aws/
+├── credentials  # Access keys
+└── config       # Configuración
+```
+
+**~/.aws/credentials:**
+
+```ini
+[default]
+aws_access_key_id = YOUR_ACCESS_KEY
+aws_secret_access_key = YOUR_SECRET_KEY
+
+[production]
+aws_access_key_id = PROD_ACCESS_KEY
+aws_secret_access_key = PROD_SECRET_KEY
+```
+
+**~/.aws/config:**
+
+```ini
+[default]
+region = us-east-1
+output = json
+
+[profile production]
+region = us-west-2
+output = json
+```
+
+## Comandos Básicos
+
+### Navegación
+
+**cd - Change Directory**
+
+```bash
+# Ir a home
+cd
+cd ~
+cd $HOME
+
+# Ir a directorio específico
+cd /usr/local/bin
+cd ~/proyectos
+
+# Directorio anterior
+cd -
+
+# Un nivel arriba
+cd ..
+
+# Dos niveles arriba
+cd ../..
+
+# Raíz
+cd /
+```
+
+**pwd - Print Working Directory**
+
+```bash
+pwd
+# /home/usuario/proyectos/mi-proyecto
+```
+
+### Listar Archivos
+
+**ls - List**
+
+```bash
+# Básico
+ls
+
+# Long format
+ls -l
+
+# Incluir ocultos
+ls -a
+
+# Todo junto + human readable
+ls -lah
+
+# Ordenar por tiempo (newest first)
+ls -lt
+
+# Ordenar por tamaño
+ls -lS
+
+# Recursivo
+ls -R
+
+# Solo directorios
+ls -d */
+```
+
+**Interpretar output de ls -l:**
+
+```bash
+ls -l archivo.py
+# -rw-r--r-- 1 usuario grupo 1234 Dec 05 10:30 archivo.py
+# │││││││││  │ │       │     │    │           │
+# │││││││││  │ │       │     │    │           nombre
+# │││││││││  │ │       │     │    fecha modificación
+# │││││││││  │ │       │     tamaño (bytes)
+# │││││││││  │ │       grupo
+# │││││││││  │ usuario
+# │││││││││  links
+# ││││││││└─ otros: ejecutar
+# │││││││└── otros: escribir
+# ││││││└─── otros: leer
+# │││││└──── grupo: ejecutar
+# ││││└───── grupo: escribir
+# │││└────── grupo: leer
+# ││└─────── usuario: ejecutar
+# │└──────── usuario: escribir
+# └───────── usuario: leer
+#
+# Tipo: - (archivo), d (directorio), l (link)
+```
+
+### Crear y Eliminar
+
+**mkdir - Make Directory**
+
+```bash
+# Crear directorio
+mkdir mi-directorio
+
+# Crear directorios anidados
+mkdir -p proyecto/data/raw
+
+# Múltiples directorios
+mkdir dir1 dir2 dir3
+```
+
+**touch - Crear Archivo Vacío**
+
+```bash
+touch archivo.txt
+
+# Múltiples archivos
+touch file1.py file2.py file3.py
+```
+
+**rm - Remove**
+
+```bash
+# Eliminar archivo
+rm archivo.txt
+
+# Eliminar directorio vacío
+rmdir directorio/
+
+# Eliminar directorio con contenido
+rm -r directorio/
+
+# Forzar (sin confirmar)
+rm -f archivo.txt
+
+# Eliminar directorio (forzar + recursivo)
+rm -rf directorio/
+
+# Pedir confirmación
+rm -i archivo.txt
+```
+
+::: {.callout-warning}
+## Cuidado con rm -rf
+`rm -rf /` eliminaría TODO el sistema.
+
+Siempre double-check antes de ejecutar `rm -rf`.
+
+Considerar usar alias: `alias rm='rm -i'`
+:::
+
+### Copiar y Mover
+
+**cp - Copy**
+
+```bash
+# Copiar archivo
+cp origen.txt destino.txt
+
+# Copiar a directorio
+cp archivo.txt /ruta/destino/
+
+# Copiar directorio
+cp -r directorio/ /ruta/destino/
+
+# Preservar permisos y timestamps
+cp -p archivo.txt copia.txt
+
+# Interactivo (pedir confirmación si existe)
+cp -i origen.txt destino.txt
+
+# Verbose (mostrar qué se copia)
+cp -v archivo.txt copia.txt
+```
+
+**mv - Move (también renombrar)**
+
+```bash
+# Mover archivo
+mv archivo.txt /ruta/destino/
+
+# Renombrar
+mv nombre_viejo.txt nombre_nuevo.txt
+
+# Mover directorio
+mv directorio/ /ruta/destino/
+
+# Interactivo
+mv -i archivo.txt destino.txt
+
+# Verbose
+mv -v archivo.txt nuevo_nombre.txt
+```
+
+### Editores de Texto
+
+**nano - Editor Simple**
+
+```bash
+# Abrir archivo
+nano archivo.txt
+
+# Comandos (mostrados abajo):
+# Ctrl+O: Guardar
+# Ctrl+X: Salir
+# Ctrl+K: Cortar línea
+# Ctrl+U: Pegar
+# Ctrl+W: Buscar
+```
+
+**Recomendado para principiantes** - más intuitivo.
+
+**vim - Editor Potente**
+
+```bash
+# Abrir archivo
+vim archivo.txt
+
+# Modos:
+# - Normal: Navegar y comandos
+# - Insert: Editar texto (presiona 'i')
+# - Visual: Seleccionar texto (presiona 'v')
+
+# Comandos básicos:
+# i: Entrar a modo Insert
+# Esc: Volver a modo Normal
+# :w: Guardar
+# :q: Salir
+# :wq: Guardar y salir
+# :q!: Salir sin guardar
+# dd: Eliminar línea
+# yy: Copiar línea
+# p: Pegar
+# /palabra: Buscar
+# n: Siguiente resultado
+```
+
+![exit vim meme](https://i.kym-cdn.com/photos/images/newsfeed/000/089/026/sandwich.png)
+
+::: {.callout-tip}
+## Aprender Vim
+Vim tiene curva de aprendizaje pero es extremadamente potente.
+
+Practicar con: `vimtutor`
+:::
+
+### Permisos y Propiedad
+
+**chmod - Change Mode (permisos)**
+
+**Permisos en Linux:**
+
+```
+rwx rwx rwx
+│││ │││ │││
+│││ │││ │└┴─ otros (other)
+│││ │└┴───── grupo (group)  
+│└┴─────────
+
+ usuario (user)
+│
+r = read (4)
+w = write (2)
+x = execute (1)
+```
+
+**Notación octal:**
+
+```bash
+# 755 = rwxr-xr-x
+chmod 755 script.sh
+
+# 644 = rw-r--r--
+chmod 644 archivo.txt
+
+# 777 = rwxrwxrwx (todos los permisos - evitar)
+chmod 777 archivo.txt
+
+# 600 = rw------- (solo usuario puede leer/escribir)
+chmod 600 ~/.ssh/id_rsa
+```
+
+**Notación simbólica:**
+
+```bash
+# Agregar ejecutar para usuario
+chmod u+x script.sh
+
+# Quitar escribir para grupo
+chmod g-w archivo.txt
+
+# Agregar leer para todos
+chmod a+r archivo.txt
+
+# Hacer ejecutable para todos
+chmod +x script.sh
+```
+
+**chown - Change Owner**
+
+```bash
+# Cambiar usuario
+sudo chown nuevo_usuario archivo.txt
+
+# Cambiar usuario y grupo
+sudo chown usuario:grupo archivo.txt
+
+# Recursivo
+sudo chown -R usuario:grupo directorio/
+```
+
+### Administración
+
+**passwd - Cambiar Contraseña**
+
+```bash
+# Tu contraseña
+passwd
+
+# Contraseña de otro usuario (como root)
+sudo passwd usuario
+```
+
+**sudo - Superuser Do**
+
+```bash
+# Ejecutar comando como root
+sudo apt-get update
+
+# Ejecutar comando como otro usuario
+sudo -u postgres psql
+
+# Editar archivo del sistema
+sudo vim /etc/hosts
+
+# Ver últimos comandos sudo
+sudo -l
+```
+
+**sudo su - Switch User**
+
+```bash
+# Convertirse en root
+sudo su
+
+# Ahora eres root
+whoami
+# root
+
+# Salir
+exit
+
+# Convertirse en otro usuario
+sudo su - usuario
+```
+
+::: {.callout-warning}
+## Cuidado con sudo
+`sudo` te da poder total sobre el sistema.
+
+Un error puede romper tu sistema.
+
+Siempre piensa antes de ejecutar con `sudo`.
+:::
+
+### Gestión de Paquetes
+
+**apt-get / apt - Ubuntu/Debian**
+
+**Actualizar lista de paquetes:**
+
+```bash
+# Descargar lista de paquetes disponibles
+sudo apt-get update
+
+# O con apt (más moderno)
+sudo apt update
+```
+
+**¿Qué son los repositorios?**
+
+- Servidores con paquetes de software
+- Ubuntu/Debian mantienen repos oficiales
+- Se pueden agregar repos de terceros (PPAs)
+
+**/etc/apt/sources.list** contiene lista de repos.
+
+**Instalar paquetes:**
+
+```bash
+# Instalar
+sudo apt-get install python3-pip
+
+# Instalar múltiples
+sudo apt-get install git vim htop
+
+# Reinstalar
+sudo apt-get install --reinstall paquete
+
+# Instalar versión específica
+sudo apt-get install python3.9
+```
+
+**Actualizar sistema:**
+
+```bash
+# Actualizar paquetes instalados
+sudo apt-get upgrade
+
+# Upgrade más agresivo (puede remover paquetes)
+sudo apt-get dist-upgrade
+
+# Update + upgrade
+sudo apt-get update && sudo apt-get upgrade
+```
+
+**Remover paquetes:**
+
+```bash
+# Remover pero mantener configs
+sudo apt-get remove paquete
+
+# Remover todo
+sudo apt-get purge paquete
+
+# Remover dependencias no necesarias
+sudo apt-get autoremove
+```
+
+**Buscar paquetes:**
+
+```bash
+apt-cache search python
+apt-cache search machine learning
+```
+
+### Python y Ambientes Virtuales
+
+**pythonX - Versiones de Python**
+
+```bash
+# Ver versión default
+python --version
+python3 --version
+
+# Ejecutar versión específica
+python3.9 script.py
+python3.10 script.py
+
+# Ver dónde está instalado
+which python3
+# /usr/bin/python3
+
+# Ver todas las versiones
+ls /usr/bin/python*
+```
+
+**pipX - Gestión de Paquetes Python**
+
+```bash
+# Instalar paquete
+pip3 install pandas
+
+# Instalar versión específica
+pip3 install numpy==1.21.0
+
+# Instalar desde requirements.txt
+pip3 install -r requirements.txt
+
+# Listar paquetes instalados
+pip3 list
+
+# Ver info de paquete
+pip3 show pandas
+
+# Actualizar paquete
+pip3 install --upgrade pandas
+
+# Desinstalar
+pip3 uninstall pandas
+```
+
+**Ambientes Virtuales**
+
+**Por qué necesitas ambientes virtuales:**
+
+- Aislar dependencias por proyecto
+- Evitar conflictos entre versiones
+- Reproducibilidad
+- No contaminar Python del sistema
+
+**Crear y usar ambiente virtual:**
+
+```bash
+# Crear ambiente virtual
+python3 -m venv venv
+
+# Activar
+source venv/bin/activate  # Linux/Mac
+venv\Scripts\activate     # Windows
+
+# Ahora pip instala solo en el ambiente
+(venv) $ pip install pandas
+
+# Ver que está activado
+which python
+# /ruta/proyecto/venv/bin/python
+
+# Desactivar
+deactivate
+```
+
+**Workflow típico:**
+
+```bash
+# Setup de proyecto
+mkdir mi-proyecto
+cd mi-proyecto
+python3 -m venv venv
+source venv/bin/activate
+
+# Instalar dependencias
+pip install pandas numpy scikit-learn
+
+# Guardar dependencias
+pip freeze > requirements.txt
+
+# Desactivar al terminar
+deactivate
+
+# Próxima sesión: activar de nuevo
+source venv/bin/activate
+```
+
+**Alternativas:**
+
+```bash
+# conda (Anaconda/Miniconda)
+conda create -n myenv python=3.9
+conda activate myenv
+
+# Poetry (gestor de dependencias moderno)
+poetry new mi-proyecto
+poetry add pandas
+```
+
+### Variables de Ambiente con .env
+
+**¿Por qué .env?**
+
+- Mantener credenciales fuera del código
+- Diferentes configs para dev/prod
+- No commitear secrets a Git
+
+**Crear archivo .env:**
+
+```bash
+# .env
+API_KEY=tu_api_key_secreta
+DB_PASSWORD=contraseña_super_secreta
+DB_HOST=localhost
+DB_PORT=5432
+ENVIRONMENT=development
+```
+
+**Usar en Python:**
+
+```python
+# Opción 1: python-dotenv (recomendado)
+from dotenv import load_dotenv
+import os
+
+# Cargar variables de .env
+load_dotenv()
+
+# Usar variables
+api_key = os.getenv('API_KEY')
+db_password = os.getenv('DB_PASSWORD')
+environment = os.getenv('ENVIRONMENT', 'production')  # default
+
+print(f"Running in {environment} mode")
+```
+
+**Instalar python-dotenv:**
+
+```bash
+pip install python-dotenv
+```
+
+**Opción 2: os.environ directo:**
+
+```python
+import os
+
+# Leer variable de entorno
+api_key = os.environ.get('API_KEY')
+
+# O con error si no existe
+api_key = os.environ['API_KEY']  # Raises KeyError if missing
+```
+
+**Buenas prácticas:**
+
+```bash
+# .gitignore - NO versionar .env
+echo ".env" >> .gitignore
+
+# .env.example - Template para el equipo
+cat > .env.example << EOF
+API_KEY=your_api_key_here
+DB_PASSWORD=your_db_password
+DB_HOST=localhost
+ENVIRONMENT=development
+EOF
+
+# Commitear .env.example, NO .env
+git add .env.example
+git commit -m "Add environment variables template"
+```
+
+**Cargar .env en shell:**
+
+```bash
+# Exportar todas las variables de .env
+set -a
+source .env
+set +a
+
+# Ahora las variables están disponibles
+echo $API_KEY
+```
+
+## Comandos Útiles Adicionales
+
+### Búsqueda
+
+**find - Buscar Archivos**
+
+```bash
+# Buscar por nombre
+find . -name "*.py"
+
+# Buscar directorios
+find . -type d -name "data"
+
+# Buscar archivos mayores a 100MB
+find . -type f -size +100M
+
+# Buscar y ejecutar comando
+find . -name "*.pyc" -delete
+
+# Buscar archivos modificados en últimos 7 días
+find . -mtime -7
+```
+
+**grep - Buscar en Contenido**
+
+```bash
+# Buscar en archivo
+grep "import pandas" script.py
+
+# Buscar en múltiples archivos
+grep "TODO" *.py
+
+# Recursivo en directorio
+grep -r "function" .
+
+# Case insensitive
+grep -i "error" log.txt
+
+# Mostrar número de línea
+grep -n "def" script.py
+
+# Contar ocurrencias
+grep -c "import" script.py
+
+# Invertir match (líneas que NO contienen)
+grep -v "test" archivo.txt
+```
+
+### Procesos
+
+**ps - Process Status**
+
+```bash
+# Ver procesos del usuario
+ps
+
+# Ver todos los procesos
+ps aux
+
+# Buscar proceso específico
+ps aux | grep python
+
+# Ver árbol de procesos
+ps auxf
+```
+
+**top/htop - Monitor de Procesos**
+
+```bash
+# Monitor interactivo básico
+top
+
+# Monitor mejorado (instalar: sudo apt-get install htop)
+htop
+
+# Comandos en top/htop:
+# q: salir
+# k: kill proceso
+# M: ordenar por memoria
+# P: ordenar por CPU
+```
+
+**kill - Terminar Proceso**
+
+```bash
+# Kill por PID
+kill 1234
+
+# Force kill
+kill -9 1234
+
+# Kill por nombre
+killall python
+
+# Kill todos los procesos python
+pkill python
+```
+
+### Red
+
+**ping - Probar Conectividad**
+
+```bash
+# Ping a host
+ping google.com
+
+# Limitar a 5 paquetes
+ping -c 5 google.com
+```
+
+**curl - Transferir Datos**
+
+```bash
+# GET request
+curl https://api.github.com
+
+# Guardar a archivo
+curl -o output.html https://example.com
+
+# POST request
+curl -X POST -d "data=value" https://api.example.com
+
+# Con headers
+curl -H "Authorization: Bearer TOKEN" https://api.example.com
+```
+
+**wget - Descargar Archivos**
+
+```bash
+# Descargar archivo
+wget https://example.com/file.zip
+
+# Descargar con nombre específico
+wget -O myfile.zip https://example.com/file.zip
+
+# Continuar descarga interrumpida
+wget -c https://example.com/large-file.iso
+```
+
+**ssh - Secure Shell**
+
+```bash
+# Conectar a servidor
+ssh usuario@servidor.com
+
+# Con puerto específico
+ssh -p 2222 usuario@servidor.com
+
+# Con clave privada
+ssh -i ~/.ssh/mi-clave.pem usuario@servidor.com
+
+# Ejecutar comando remoto
+ssh usuario@servidor.com 'ls -la'
+
+# Copiar archivos (scp)
+scp archivo.txt usuario@servidor.com:/ruta/destino/
+scp usuario@servidor.com:/ruta/archivo.txt .
+```
+
+### Compresión
+
+**tar - Archive**
+
+```bash
+# Crear tar.gz
+tar -czf archivo.tar.gz directorio/
+
+# Extraer tar.gz
+tar -xzf archivo.tar.gz
+
+# Ver contenido sin extraer
+tar -tzf archivo.tar.gz
+
+# Extraer a directorio específico
+tar -xzf archivo.tar.gz -C /ruta/destino/
+```
+
+**zip/unzip**
+
+```bash
+# Crear zip
+zip -r archivo.zip directorio/
+
+# Extraer zip
+unzip archivo.zip
+
+# Ver contenido
+unzip -l archivo.zip
+
+# Extraer a directorio específico
+unzip archivo.zip -d /ruta/destino/
+```
+
+### Sistema
+
+**df - Disk Free**
+
+```bash
+# Ver espacio en disco
+df -h
+
+# Ver sistema de archivos específico
+df -h /home
+```
+
+**du - Disk Usage**
+
+```bash
+# Tamaño de directorio
+du -sh directorio/
+
+# Top 10 archivos/dirs más grandes
+du -ah . | sort -rh | head -10
+
+# Tamaño por subdirectorio
+du -h --max-depth=1
+```
+
+**free - Memoria**
+
+```bash
+# Ver memoria disponible
+free -h
+
+# Actualizar cada 2 segundos
+free -h -s 2
+```
+
+**uname - Información del Sistema**
+
+```bash
+# Ver todo
+uname -a
+
+# Solo kernel
+uname -r
+
+# Arquitectura
+uname -m
+```
+
+## Pipes y Redirección
+
+### Redirección de Output
+
+```bash
+# Redirigir output a archivo (sobreescribe)
+comando > archivo.txt
+
+# Append (agregar al final)
+comando >> archivo.txt
+
+# Redirigir stderr
+comando 2> errores.txt
+
+# Redirigir stdout y stderr
+comando > output.txt 2>&1
+
+# Descartar output
+comando > /dev/null
+
+# Descartar stderr
+comando 2> /dev/null
+
+# Descartar todo
+comando > /dev/null 2>&1
+```
+
+### Pipes
+
+```bash
+# Pasar output de un comando a otro
+comando1 | comando2
+
+# Ejemplos útiles:
+ls -la | grep "\.py$"
+ps aux | grep python
+cat archivo.txt | wc -l
+history | grep "git"
+
+# Cadena de pipes
+cat log.txt | grep "ERROR" | wc -l
+
+# Sort y unique
+cat nombres.txt | sort | uniq
+```
+
+### Ejemplos Prácticos
+
+```bash
+# Top 10 comandos más usados
+history | awk '{print $2}' | sort | uniq -c | sort -rn | head -10
+
+# Archivos más grandes en directorio
+du -ah . | sort -rh | head -20
+
+# Contar líneas de código Python
+find . -name "*.py" | xargs wc -l | sort -rn
+
+# Buscar procesos que usan mucha memoria
+ps aux | sort -k4 -rn | head -10
+
+# Buscar archivos grandes
+find . -type f -size +100M -exec ls -lh {} \;
+```
+
+## Scripting Básico en Bash
+
+### Crear Script
+
+```bash
+#!/bin/bash
+# mi_script.sh
+
+# Variables
+NOMBRE="Proyecto DS"
+VERSION=1.0
+
+# Imprimir
+echo "Iniciando $NOMBRE v$VERSION"
+
+# Comandos
+mkdir -p data/{raw,processed}
+touch README.md
+
+# Condicional
+if [ -d "venv" ]; then
+    echo "Virtual env existe"
+else
+    echo "Creando virtual env..."
+    python3 -m venv venv
+fi
+
+# Loop
+for file in *.py; do
+    echo "Procesando: $file"
+    python3 "$file"
+done
+
+echo "Completado!"
+```
+
+**Hacer ejecutable y correr:**
+
+```bash
+chmod +x mi_script.sh
+./mi_script.sh
+```
+
+### Argumentos en Scripts
+
+```bash
+#!/bin/bash
+# script_con_args.sh
+
+# $1, $2, etc son los argumentos
+echo "Argumento 1: $1"
+echo "Argumento 2: $2"
+echo "Todos los args: $@"
+echo "Número de args: $#"
+
+# Uso:
+# ./script_con_args.sh valor1 valor2
+```
+
+### Script de Setup para Proyectos DS
+
+```bash
+#!/bin/bash
+# setup_ds_project.sh
+
+PROJECT_NAME=$1
+
+if [ -z "$PROJECT_NAME" ]; then
+    echo "Uso: $0 <nombre_proyecto>"
+    exit 1
+fi
+
+echo "Creando proyecto: $PROJECT_NAME"
+
+# Crear estructura
+mkdir -p $PROJECT_NAME/{data/{raw,processed,external},notebooks,src/{data,features,models},tests,models,reports/figures}
+
+# Crear archivos básicos
+cd $PROJECT_NAME
+
+cat > README.md << EOF
+# $PROJECT_NAME
+
+## Setup
+\`\`\`bash
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+\`\`\`
+EOF
+
+cat > requirements.txt << EOF
+pandas
+numpy
+scikit-learn
+matplotlib
+seaborn
+jupyter
+EOF
+
+cat > .gitignore << EOF
+venv/
+.env
+*.pyc
+__pycache__/
+.ipynb_checkpoints/
+data/raw/*
+data/processed/*
+models/*.pkl
+EOF
+
+# Crear ambiente virtual
+python3 -m venv venv
+
+# Git
+git init
+git add .
+git commit -m "Initial project structure"
+
+echo "Proyecto $PROJECT_NAME creado exitosamente!"
+echo "Activar ambiente: cd $PROJECT_NAME && source venv/bin/activate"
+```
+
+**Usar:**
+
+```bash
+chmod +x setup_ds_project.sh
+./setup_ds_project.sh mi-proyecto-churn
+```
+
+## Cron - Tareas Programadas
+
+**Qué es cron:**
+
+Demonio que ejecuta comandos programados.
+
+**crontab - Editar Tareas**
+
+```bash
+# Ver cron jobs actuales
+crontab -l
+
+# Editar crontab
+crontab -e
+
+# Eliminar todos
+crontab -r
+```
+
+**Formato de crontab:**
+
+```
+┌───────────── minuto (0-59)
+│ ┌─────────── hora (0-23)
+│ │ ┌───────── día del mes (1-31)
+│ │ │ ┌─────── mes (1-12)
+│ │ │ │ ┌───── día de la semana (0-6, 0=domingo)
+│ │ │ │ │
+│ │ │ │ │
+
+* * * * * comando a ejecutar
+```
+
+**Ejemplos:**
+
+```bash
+# Cada día a las 2:30 AM
+30 2 * * * /ruta/script.sh
+
+# Cada hora
+0 * * * * python /ruta/script.py
+
+# Cada 15 minutos
+*/15 * * * * /ruta/check.sh
+
+# Lunes a viernes a las 9 AM
+0 9 * * 1-5 /ruta/report.py
+
+# Primer día de cada mes
+0 0 1 * * /ruta/monthly.sh
+
+# Cada domingo a medianoche
+0 0 * * 0 /ruta/backup.sh
+```
+
+**Ejemplo DS: Reentrenar modelo diariamente**
+
+```bash
+# crontab -e
+
+# Reentrenar modelo cada día a las 3 AM
+0 3 * * * cd /home/usuario/ml-project && /home/usuario/ml-project/venv/bin/python src/train.py >> logs/training.log 2>&1
+
+# Generar reporte semanal (domingos a las 8 AM)
+0 8 * * 0 cd /home/usuario/ml-project && /home/usuario/ml-project/venv/bin/python src/report.py
+
+# Backup datos cada día a medianoche
+0 0 * * * tar -czf /backup/data-$(date +\%Y\%m\%d).tar.gz /home/usuario/ml-project/data/
+```
+
+**Tips:**
+
+- Usar rutas absolutas
+- Redirigir output a logs
+- Capturar stderr: `2>&1`
+- Activar virtualenv en script si es necesario
+
+## Consejos y Trucos
+
+### Atajos de Teclado
+
+```bash
+# Navegación
+Ctrl+A    # Inicio de línea
+Ctrl+E    # Fin de línea
+Ctrl+U    # Borrar hasta inicio
+Ctrl+K    # Borrar hasta fin
+Ctrl+W    # Borrar palabra anterior
+
+# Control
+Ctrl+C    # Interrumpir comando
+Ctrl+Z    # Suspender (background)
+Ctrl+D    # Exit / EOF
+Ctrl+L    # Limpiar pantalla (clear)
+
+# Historial
+Ctrl+R    # Buscar en historial (reverse search)
+!!        # Último comando
+!$        # Último argumento del último comando
+!*        # Todos los args del último comando
+
+# Ejemplos:
+mkdir mi-dir
+cd !$        # cd mi-dir
+
+sudo !!      # Repetir último comando con sudo
+```
+
+### Comandos Útiles
+
+```bash
+# Ver historial
+history
+
+# Ejecutar comando #N del historial
+!N
+
+# Buscar en archivos grandes
+less archivo.txt  # Paginado
+# q: salir, /: buscar, n: siguiente
+
+# Ver primeras/últimas líneas
+head -20 archivo.txt
+tail -20 archivo.txt
+tail -f log.txt     # Follow (útil para logs)
+
+# Contar líneas/palabras
+wc -l archivo.txt   # Líneas
+wc -w archivo.txt   # Palabras
+
+# Ver tipo de archivo
+file archivo
+
+# Ver diferencias
+diff archivo1.txt archivo2.txt
+
+# Calendario
+cal
+
+# Fecha
+date
+date +"%Y-%m-%d %H:%M:%S"
+
+# Uptime
+uptime
+
+# Quién está loggeado
+who
+w
+```
+
+### Configuración del Prompt
+
+**Customizar PS1 en ~/.bashrc:**
+
+```bash
+# Simple
+PS1='\u@\h:\w\$ '
+
+# Con colores
+PS1='\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+
+# Con git branch (requiere git-prompt.sh)
+source /etc/bash_completion.d/git-prompt
+PS1='\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\[\033[01;31m\]$(__git_ps1 " (%s)")\[\033[00m\]\$ '
+
+# Variables:
+# \u - usuario
+# \h - hostname
+# \w - directorio actual (full path)
+# \W - directorio actual (solo nombre)
+# \$ - $ para usuario, # para root
+```
+
+## Recursos Adicionales
+
+### Tutoriales
+
+- [Unix Tutorial](https://www.techtarget.com/searchdatacenter/definition/Unix)
+- [Linux Command Line Basics](https://www.youtube.com/watch?v=42iQKuQodW4)
+- [Bash Scripting Tutorial](https://www.youtube.com/watch?v=Py4Gtp8fj1k)
+
+### Cheat Sheets
+
+```bash
+# Navegación
+cd, pwd, ls, tree
+
+# Archivos
+cp, mv, rm, mkdir, touch, cat, less
+
+# Búsqueda
+find, grep, locate
+
+# Permisos
+chmod, chown
+
+# Procesos
+ps, top, htop, kill
+
+# Red
+ping, curl, wget, ssh
+
+# Compresión
+tar, zip, unzip, gzip
+
+# Sistema
+df, du, free, uname
+
+# Paquetes (Ubuntu)
+apt update, apt install, apt remove
+```
+
+### Prácticas Recomendadas
+
+1. **Usar tab completion**: Tab para autocompletar
+2. **Aliases para comandos frecuentes**: Ahorra tiempo
+3. **Scripts para tareas repetitivas**: Automatizar
+4. **Backups**: `cp importante.py{,.bak}`
+5. **Git para todo**: Versionar incluso scripts
+6. **.gitignore apropiado**: No versionar .env, venv/
+7. **Documentar scripts**: Comments y README
+8. **Ambientes virtuales**: Siempre para Python
+9. **Variables de entorno**: Para credenciales
+10. **Logs**: Redirigir output de cron jobs
+
+### Errores Comunes
+
+**Permisos denegados:**
+```bash
+# Error
+./script.sh
+# Permission denied
+
+# Solución
+chmod +x script.sh
+```
+
+**Comando no encontrado:**
+```bash
+# Error
+mycommand
+# Command not found
+
+# Verificar PATH
+echo $PATH
+
+# Encontrar donde está
+which mycommand
+find / -name mycommand 2>/dev/null
+```
+
+**Archivo no existe:**
+```bash
+# Verificar existe
+ls -la archivo.txt
+
+# Verificar directorio correcto
+pwd
+```
+
+**Python/pip no encontrado:**
+```bash
+# Instalar
+sudo apt-get install python3 python3-pip
+
+# O usar versión específica
+python3.9 script.py
+```
+
+## Conclusiones
+
+### Lecciones Clave
+
+1. **Linux es fundamental** para Data Science profesional
+2. **Terminal > GUI** para muchas tareas
+3. **Scripts automatizan** trabajo repetitivo
+4. **Variables de entorno** protegen credenciales
+5. **Ambientes virtuales** evitan conflictos
+6. **Aliases y funciones** mejoran eficiencia
+7. **Pipes y redirección** son poderosos
+8. **Cron** permite automatización temporal
+
+### Para el Curso
+
+**Aplicar desde ahora:**
+
+- Usar terminal para navegación
+- Scripts para setup de proyectos
+- Ambientes virtuales para cada proyecto
+- .env para credenciales
+- Aliases para comandos frecuentes
+- Git + terminal workflow
+
+### Práctica
+
+La única forma de dominar la terminal es **usarla diariamente**:
+
+1. Forzarte a usar terminal en lugar de GUI
+2. Crear aliases útiles
+3. Escribir scripts para tareas repetitivas
+4. Practicar comandos básicos
+5. Aprender 1-2 comandos nuevos por semana
+
+## Referencias
+
+- [Unix Documentation](https://www.techtarget.com/searchdatacenter/definition/Unix)
+- [Bash Guide](https://www.gnu.org/software/bash/manual/)
+- [Linux Command Line](https://www.linuxcommand.org/)
+- [Bash Functions Tutorial](https://www.tutorialspoint.com/unix/unix-shell-functions.htm)
+- [Python Command Line Arguments](https://www.tutorialspoint.com/python/python_command_line_arguments.htm)
+- [Crontab Examples](https://tecadmin.net/crontab-in-linux-with-20-examples-of-cron-schedule/)
+- [Python Dotenv Guide](https://betterdatascience.com/python-dotenv/)
+
+¡Éxito con Linux y Bash! Recuerda: la práctica diaria es clave.

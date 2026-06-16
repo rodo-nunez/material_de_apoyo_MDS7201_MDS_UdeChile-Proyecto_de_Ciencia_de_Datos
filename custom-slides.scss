@@ -1,0 +1,67 @@
+/*-- scss:defaults --*/
+
+// Variables para tema oscuro en slides
+$backgroundColor: #1a1a1a;
+$mainColor: #e0e0e0;
+$headingColor: #ffffff;
+$linkColor: #4a9eff;
+$selectionBackgroundColor: #4a9eff;
+
+/*-- scss:rules --*/
+
+.reveal {
+  font-size: 32px;
+}
+
+.reveal h1 {
+  font-size: 2.5em;
+  color: $headingColor;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.reveal h2 {
+  font-size: 1.8em;
+  color: #4a9eff;
+}
+
+.reveal h3 {
+  font-size: 1.3em;
+  color: #66b3ff;
+}
+
+.reveal code {
+  background-color: #2d2d2d;
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  color: #f8f8f2;
+}
+
+.reveal pre code {
+  background-color: #2d2d2d;
+  padding: 1em;
+  border-radius: 5px;
+  max-height: 500px;
+}
+
+// Estilo para listas
+.reveal ul, .reveal ol {
+  margin-left: 1em;
+}
+
+.reveal li {
+  margin: 0.5em 0;
+}
+
+// Callouts en slides
+.reveal .callout {
+  border-left: 5px solid $linkColor;
+  padding: 0.5em 1em;
+  margin: 1em 0;
+  background-color: rgba(74, 158, 255, 0.1);
+}
+
+// Footer personalizado
+.reveal .footer {
+  font-size: 0.6em;
+  color: #999;
+}

@@ -1,0 +1,1356 @@
+# Metodologías Ágiles Específicas
+
+## Introducción
+
+En el capítulo anterior exploramos los valores y principios del Manifiesto Ágil. Ahora veremos las **implementaciones concretas** de estos principios: las metodologías ágiles específicas.
+
+Cada una de estas metodologías toma los valores ágiles y los traduce en prácticas, roles y artefactos específicos. No existe una metodología "mejor" - cada una tiene fortalezas en diferentes contextos.
+
+::: {.callout-note}
+## Recordatorio Importante
+
+- **Manifiesto Ágil** = Valores y principios (QUÉ y POR QUÉ)
+- **Metodologías Ágiles** = Prácticas específicas (CÓMO)
+
+Puedes seguir el espíritu ágil sin implementar ninguna metodología específica, o puedes tomar elementos de varias metodologías para crear tu propio enfoque híbrido.
+:::
+
+## Scrum
+
+### Origen e Historia
+
+Scrum fue formalizado por Ken Schwaber y Jeff Sutherland en 1995, aunque sus raíces vienen de investigación sobre equipos de alto rendimiento en los años 80. El nombre viene del rugby, donde el "scrum" es una formación donde el equipo trabaja junto para mover la pelota.
+
+Scrum es la metodología ágil más popular y ampliamente adoptada, especialmente en desarrollo de software. Sin embargo, su aplicación en Data Science requiere adaptaciones significativas.
+
+### Conceptos Fundamentales de Scrum
+
+**Los Tres Pilares:**
+
+1. **Transparencia**: Todos los aspectos del proceso deben ser visibles para quienes son responsables del resultado
+2. **Inspección**: Los artefactos y progreso deben inspeccionarse frecuentemente
+3. **Adaptación**: Si la inspección muestra que algo se desvía, el proceso debe ajustarse
+
+**Los Cinco Valores:**
+
+1. **Compromiso**: El equipo se compromete a lograr sus objetivos
+2. **Coraje**: Los miembros tienen el coraje de hacer lo correcto y trabajar en problemas difíciles
+3. **Foco**: El equipo se enfoca en el trabajo del Sprint
+4. **Apertura**: El equipo y stakeholders están abiertos sobre el trabajo y desafíos
+5. **Respeto**: Los miembros se respetan mutuamente como personas capaces e independientes
+
+### Roles en Scrum
+
+Scrum define tres roles claros:
+
+**1. Product Owner (Dueño del Producto)**
+
+**Responsabilidades:**
+
+- Define la visión del producto
+- Gestiona y prioriza el Product Backlog
+- Asegura que el equipo entiende los ítems del backlog
+- Acepta o rechaza el trabajo completado
+- Representa a los stakeholders
+
+**En Data Science:**
+
+- Típicamente el business owner o cliente
+- Define qué problemas de negocio son prioritarios
+- Valida que los modelos/análisis generan valor
+- En el curso: tu tutor o contraparte empresarial
+
+**2. Scrum Master (Facilitador)**
+
+**Responsabilidades:**
+
+- Facilita las ceremonias Scrum
+- Elimina impedimentos para el equipo
+- Protege al equipo de interrupciones externas
+- Coaching en prácticas ágiles
+- No es un "jefe" - es un facilitador
+
+**En Data Science:**
+
+- Puede ser un miembro rotativo del equipo
+- Asegura que las reuniones sean productivas
+- Identifica bloqueos (acceso a datos, recursos compute, etc.)
+- En el curso: puede rotar entre miembros del equipo
+
+**3. Development Team (Equipo de Desarrollo)**
+
+**Responsabilidades:**
+
+- Auto-organizado y multifuncional
+- Entrega incrementos de producto "Done"
+- Típicamente 3-9 personas
+- Sin sub-equipos o jerarquías internas
+
+**En Data Science:**
+
+- Data scientists, data engineers, ML engineers
+- Responsables colectivos del trabajo
+- En el curso: tu grupo de proyecto
+
+### Artefactos de Scrum
+
+**1. Product Backlog (Lista de Producto)**
+
+**Qué es:**
+
+- Lista ordenada de todo lo que podría ser necesario en el producto
+- Es dinámico - evoluciona constantemente
+- Priorizado por valor de negocio
+- Ítems más arriba son más detallados
+
+**En Data Science:**
+
+- Features a explorar
+- Modelos a desarrollar
+- Análisis a realizar
+- Mejoras técnicas (refactoring, tests)
+- Documentación necesaria
+
+**Ejemplo para proyecto de churn:**
+```
+1. [Alta] Análisis exploratorio de variables clave de churn
+2. [Alta] Modelo baseline (regresión logística)
+3. [Media] Feature engineering de variables temporales
+4. [Media] Modelo avanzado (XGBoost/Random Forest)
+5. [Media] Análisis de feature importance
+6. [Baja] Dashboard para visualizar predicciones
+7. [Baja] Documentación técnica completa
+```
+
+**2. Sprint Backlog (Lista del Sprint)**
+
+**Qué es:**
+
+- Subconjunto del Product Backlog seleccionado para el Sprint actual
+- Plan para entregar el incremento y lograr el Sprint Goal
+- El equipo puede modificarlo durante el Sprint
+
+**En Data Science:**
+
+- Tareas específicas para las próximas 2-4 semanas
+- Debe ser realizable en el timeframe
+- Incluye tanto trabajo técnico como comunicación
+
+**Ejemplo Sprint 1:**
+```
+Sprint Goal: Entender los datos y establecer baseline
+
+Tareas:
+
+- [ ] Explorar calidad de datos (2 días)
+- [ ] Análisis de distribuciones y correlaciones (3 días)
+- [ ] Definir variable target (1 día)
+- [ ] Implementar train/test split (0.5 días)
+- [ ] Entrenar regresión logística baseline (1 día)
+- [ ] Calcular métricas de evaluación (1 día)
+- [ ] Documentar hallazgos en script (1 día)
+- [ ] Preparar demo para stakeholders (0.5 días)
+```
+
+**3. Increment (Incremento)**
+
+**Qué es:**
+
+- La suma de todos los ítems completados del Sprint
+- Debe estar en condición "usable" y cumplir "Definition of Done"
+- Es acumulativo - incluye incrementos de Sprints anteriores
+
+**En Data Science:**
+
+- Modelo funcional
+- Análisis completo y reproducible
+- Dashboard deployed
+- Documentación actualizada
+
+**Definition of Done en DS:**
+
+- Código en Git con commit descriptivo
+- Script ejecutable de inicio a fin
+- Resultados validados
+- Documentación de decisiones
+- Presentado al stakeholder
+
+### Eventos de Scrum (Ceremonias)
+
+**1. Sprint**
+
+**Descripción:**
+
+- Contenedor para todos los demás eventos
+- Duración fija de 2-4 semanas (recomendado: 2-3 semanas)
+- Un nuevo Sprint comienza inmediatamente después del anterior
+- El Sprint Goal no debe cambiar durante el Sprint
+
+**En Data Science:**
+
+- 3-4 semanas es más realista que 2
+- Algunas tareas (feature engineering complejo, tuning) necesitan tiempo
+- Mantener foco en entregar algo funcional al final
+
+**2. Sprint Planning (Planificación del Sprint)**
+
+**Duración:** Máximo 8 horas para Sprint de 1 mes (proporcionalmente menos para Sprints más cortos)
+
+**Preguntas clave:**
+1. **¿Qué puede entregarse al final del Sprint?**
+
+   - Revisar Product Backlog
+   - Seleccionar ítems viables
+   - Definir Sprint Goal
+
+2. **¿Cómo se logrará el trabajo?**
+
+   - Descomponer ítems en tareas
+   - Estimar esfuerzo
+   - Identificar dependencias
+
+**En Data Science:**
+
+- Ser realistas sobre complejidad
+- Considerar tiempo para exploración
+- Incluir buffer para descubrimientos inesperados
+- No sobrecargar el Sprint
+
+**Ejemplo de Sprint Goal para DS:**
+
+- "Entender la distribución de las variables clave y establecer un baseline predictivo"
+- "Mejorar accuracy del modelo en 10% mediante feature engineering"
+- "Crear visualizaciones interpretables de resultados del modelo"
+
+**3. Daily Scrum (Daily Standup)**
+
+**Duración:** 15 minutos máximo, mismo lugar y hora cada día
+
+**Formato tradicional - Tres preguntas:**
+1. ¿Qué hice ayer?
+2. ¿Qué haré hoy?
+3. ¿Hay algún impedimento?
+
+**En Data Science:**
+
+- Útil para coordinación del equipo
+- Puede ser 2-3 veces por semana en lugar de diario
+- Evitar caer en "report to manager" - es para el equipo
+- Identificar bloqueos tempranamente
+
+**Adaptación para equipos DS pequeños:**
+```
+Lunes y Jueves - Daily de 15 min:
+
+- Progreso desde último encuentro
+- Plan para los próximos días
+- Bloqueos o necesidades
+- Rápida coordinación
+
+Si hay bloqueo urgente: reunión ad-hoc
+```
+
+**4. Sprint Review (Revisión del Sprint)**
+
+**Duración:** Máximo 4 horas para Sprint de 1 mes
+
+**Propósito:**
+
+- Inspeccionar el Incremento
+- Adaptar el Product Backlog si es necesario
+- Presentación informal, no una "demostración formal"
+- Sesión de trabajo colaborativa
+
+**Participantes:**
+
+- Equipo Scrum completo
+- Stakeholders clave
+- Cualquiera interesado
+
+**Agenda típica:**
+1. Product Owner explica qué ítems están "Done" y cuáles no
+2. Development Team demuestra el trabajo y responde preguntas
+3. Product Owner discute estado del Product Backlog
+4. Todo el grupo colabora sobre qué hacer siguiente
+5. Revisar mercado o uso potencial del producto
+6. Revisar timeline, presupuesto, y capacidades potenciales
+
+**En Data Science:**
+
+- **Demo del modelo/análisis**: Mostrar resultados reales
+- **Explicar decisiones técnicas**: Por qué este enfoque
+- **Discutir limitaciones**: Qué no funciona y por qué
+- **Validar con stakeholders**: ¿Va en la dirección correcta?
+- **Ajustar prioridades**: Basándose en hallazgos
+
+**Ejemplo de Sprint Review DS:**
+```
+1. Mostrar análisis exploratorio en script
+2. Demo del modelo baseline con métricas
+3. Visualizar feature importance
+4. Discutir sorpresas en los datos
+5. Proponer siguientes pasos
+6. Obtener feedback de stakeholder
+```
+
+**5. Sprint Retrospective (Retrospectiva)**
+
+**Duración:** Máximo 3 horas para Sprint de 1 mes
+
+**Propósito:**
+
+- Inspeccionar cómo fue el último Sprint
+- Identificar qué salió bien y qué puede mejorar
+- Crear plan para implementar mejoras
+
+**Ocurre después del Sprint Review y antes del próximo Sprint Planning**
+
+**Formato típico:**
+1. ¿Qué salió bien?
+2. ¿Qué no salió tan bien?
+3. ¿Qué debemos empezar/detener/continuar?
+4. Acciones concretas para el próximo Sprint
+
+**En Data Science:**
+
+- Espacio seguro para honestidad
+- Enfocarse en el proceso, no en las personas
+- Identificar mejoras técnicas y de proceso
+- Celebrar éxitos
+
+**Temas comunes en retros DS:**
+
+- Calidad de los datos
+- Acceso a recursos (compute, almacenamiento)
+- Claridad de requisitos
+- Comunicación con stakeholders
+- Balance exploración vs. entrega
+- Gestión de experimentos
+- Documentación
+
+**Formato simple para el curso:**
+```
+Mad, Sad, Glad:
+
+- Mad: ¿Qué nos frustró?
+- Sad: ¿Qué fue decepcionante?
+- Glad: ¿Qué celebramos?
+
+Luego: 1-3 acciones concretas para mejorar
+```
+
+### Scrum en Data Science: Adaptaciones Necesarias
+
+**Desafíos de Scrum "puro" en DS:**
+
+1. **User Stories no se ajustan bien**
+
+   - "Como data scientist, quiero explorar correlaciones..." no tiene sentido
+   - Mejor: Definir objetivos de análisis o métricas de negocio
+
+2. **Estimación es muy incierta**
+
+   - No sabemos cuánto tomará hasta que empezamos
+   - Story points pueden ser engañosos
+   - Mejor: T-shirt sizing (S/M/L) o simplemente priorización
+
+3. **"Done" es ambiguo**
+
+   - ¿Cuándo un modelo está "done"?
+   - ¿Cuándo la exploración está "completa"?
+   - Necesitas Definition of Done adaptado
+
+4. **Sprints cortos son difíciles**
+
+   - Feature engineering complejo toma tiempo
+   - Tuning de hiperparámetros requiere muchos experimentos
+   - 2 semanas puede ser muy corto
+
+5. **Trabajo exploratorio vs. planificado**
+
+   - DS requiere exploración que no se puede planificar completamente
+   - Necesitas flexibilidad dentro del Sprint
+
+**Adaptaciones recomendadas:**
+
+**1. Sprints más largos:**
+
+- 3-4 semanas en lugar de 2
+- Permite tiempo para exploración genuina
+- Checkpoints a mitad de Sprint
+
+**2. Sprint Goals orientados a valor:**
+En lugar de: "Implementar Random Forest"
+Mejor: "Determinar si podemos predecir churn con 75%+ accuracy"
+
+**3. Reservar "tiempo de exploración":**
+
+- 20-30% del Sprint para exploración no planificada
+- Descubrimientos se incorporan en siguiente Sprint
+
+**4. Definition of Done adaptado:**
+```
+Un ítem está "Done" cuando:
+□ Código está en Git
+□ Análisis es reproducible
+□ Resultados están documentados
+□ Ha sido peer-reviewed por el equipo
+□ Stakeholder ha visto los resultados
+□ Se han documentado las limitaciones
+```
+
+**5. Flexibilidad en Daily Standups:**
+
+- 2-3 veces por semana en lugar de diario
+- Enfoque en bloqueos y coordinación
+- Ad-hoc cuando hay temas urgentes
+
+### Cuándo Usar Scrum en DS
+
+**Scrum funciona bien cuando:**
+
+- Tienes producto/proyecto con roadmap claro
+- Necesitas entregas predecibles a stakeholders
+- El equipo necesita estructura y disciplina
+- Hay múltiples stakeholders que coordinar
+- El proyecto durará varios meses
+
+**Scrum NO funciona bien cuando:**
+
+- Proyecto puramente exploratorio/investigación
+- Equipo muy pequeño (1-2 personas)
+- Requisitos extremadamente inciertos
+- Necesitas máxima flexibilidad
+
+**Para el curso:**
+
+- Usar elementos de Scrum (Planning, Reviews, Retros)
+- Los hitos son como Sprints de 3-4 semanas
+- No necesitan implementar Scrum completo
+- Tomar lo que sirve, adaptar lo demás
+
+## Kanban
+
+### Origen e Historia
+
+Kanban fue desarrollado por Taiichi Ohno en Toyota en los años 1940s como parte del Sistema de Producción Toyota (TPS). El nombre significa "señal visual" o "tarjeta" en japonés.
+
+David J. Anderson adaptó Kanban para trabajo de conocimiento (knowledge work) en los 2000s, creando lo que hoy conocemos como "Kanban Method" para desarrollo de software y otros campos.
+
+A diferencia de Scrum, Kanban es más un sistema de gestión de flujo que una metodología prescriptiva.
+
+### Principios Fundamentales de Kanban
+
+**Los Cuatro Principios Fundacionales:**
+
+1. **Comenzar con lo que haces ahora**
+
+   - No requiere cambios disruptivos
+   - Se aplica sobre procesos existentes
+   - Evolución gradual, no revolución
+
+2. **Acordar buscar mejora incremental y evolutiva**
+
+   - Cambios pequeños y continuos
+   - Menos resistencia que cambios grandes
+   - Basado en evidencia y experimentación
+
+3. **Respetar procesos, roles y responsabilidades actuales**
+
+   - No elimina roles existentes
+   - Trabaja con la organización actual
+   - Identifica problemas para evolucionar
+
+4. **Fomentar liderazgo en todos los niveles**
+
+   - Cualquiera puede proponer mejoras
+   - Liderazgo distribuido
+   - Mejora continua es responsabilidad de todos
+
+**Las Seis Prácticas Esenciales:**
+
+1. **Visualizar el flujo de trabajo**
+2. **Limitar el Work in Progress (WIP)**
+3. **Gestionar el flujo**
+4. **Hacer las políticas explícitas**
+5. **Implementar feedback loops**
+6. **Mejorar colaborativamente usando modelos y método científico**
+
+### Conceptos Clave de Kanban
+
+**1. Tablero Kanban (Kanban Board)**
+
+El tablero es la herramienta central de Kanban. Visualiza el trabajo y su estado.
+
+**Estructura básica:**
+```
+┌──────────┬──────────┬──────────┬──────────┐
+│ Backlog  │   Doing  │  Review  │   Done   │
+│          │  (WIP:3) │  (WIP:2) │          │
+├──────────┼──────────┼──────────┼──────────┤
+│ Tarea 4  │ Tarea 2  │ Tarea 1  │ Tarea X  │
+│ Tarea 5  │ Tarea 3  │          │ Tarea Y  │
+│ Tarea 6  │ Tarea 7  │          │ Tarea Z  │
+│ ...      │          │          │          │
+└──────────┴──────────┴──────────┴──────────┘
+```
+
+**Columnas típicas en DS:**
+```
+┌─────────┬──────────┬────────────┬─────────┬──────────┬──────┐
+│Backlog  │Analyzing │ Modeling   │ Review  │ Deployed │ Done │
+│         │ (WIP:2)  │  (WIP:2)   │ (WIP:1) │          │      │
+└─────────┴──────────┴────────────┴─────────┴──────────┴──────┘
+```
+
+**2. Work in Progress (WIP) Limits**
+
+WIP limits son restricciones en cuántas tareas pueden estar en cada columna simultáneamente.
+
+**Por qué son importantes:**
+
+- Previene multitasking excesivo
+- Identifica cuellos de botella
+- Fuerza a completar trabajo antes de empezar nuevo
+- Mejora tiempo de ciclo (cycle time)
+
+**Ejemplo de WIP limits:**
+
+- Backlog: Sin límite
+- En Análisis: 2 tareas
+- En Modelamiento: 2 tareas  
+- En Review: 1 tarea
+- Done: Sin límite
+
+**Qué hacer cuando se alcanza el límite:**
+
+- Ayudar a completar tareas en progreso
+- Revisar por qué hay cuello de botella
+- No empezar nuevo trabajo hasta que haya capacidad
+
+**3. Flujo (Flow)**
+
+El objetivo principal de Kanban es optimizar el flujo de trabajo.
+
+**Métricas clave:**
+
+- **Lead Time**: Tiempo desde que tarea entra al sistema hasta que se completa
+- **Cycle Time**: Tiempo desde que se empieza a trabajar en tarea hasta que se completa
+- **Throughput**: Número de tareas completadas por unidad de tiempo
+- **Work in Progress**: Número de tareas activas en el sistema
+
+**Ley de Little:**
+```
+Lead Time promedio = WIP promedio / Throughput promedio
+```
+
+Para reducir Lead Time: Reducir WIP o Aumentar Throughput
+
+**4. Políticas Explícitas**
+
+Las reglas de cómo funciona el sistema deben ser claras y visibles.
+
+**Ejemplos de políticas:**
+
+- "Una tarea solo se mueve a 'Modeling' cuando los datos están limpios y validados"
+- "El WIP máximo en 'Analysis' es 2"
+- "Todas las tareas en 'Review' deben ser revisadas por al menos un compañero"
+- "Priority tareas se marcan con etiqueta roja"
+
+**5. Clases de Servicio**
+
+Diferentes tipos de trabajo requieren diferentes tratamientos.
+
+**Ejemplos en DS:**
+
+- **Urgente**: Bug crítico en modelo de producción (WIP limit: 1, prioridad máxima)
+- **Fecha fija**: Análisis para presentación a directorio (deadline conocido)
+- **Estándar**: Feature nuevo o mejora de modelo (flujo normal)
+- **Exploratorio**: Investigación sin deadline específico (baja prioridad)
+
+### Implementación de Kanban en Data Science
+
+**Configuración de Tablero para DS:**
+
+**Opción 1 - Simple:**
+```
+┌─────────┬──────────┬─────────┬──────┐
+│ To Do   │  Doing   │ Review  │ Done │
+│         │ (WIP: 3) │ (WIP:1) │      │
+└─────────┴──────────┴─────────┴──────┘
+```
+
+**Opción 2 - Detallada:**
+```
+┌────────┬──────────┬──────────┬──────────┬─────────┬─────────┬──────┐
+│Backlog │ Analysis │ Feature  │Modeling  │ Eval    │ Review  │ Done │
+│        │ (WIP:2)  │Eng(WIP:2)│ (WIP:2)  │ (WIP:1) │ (WIP:1) │      │
+└────────┴──────────┴──────────┴──────────┴─────────┴─────────┴──────┘
+```
+
+**Opción 3 - Con swimlanes (carriles):**
+```
+┌──────────┬─────────┬──────────┬─────────┬──────┐
+│          │ To Do   │  Doing   │ Review  │ Done │
+├──────────┼─────────┼──────────┼─────────┼──────┤
+│Urgente   │         │          │         │      │
+├──────────┼─────────┼──────────┼─────────┼──────┤
+│Hito 2    │         │          │         │      │
+├──────────┼─────────┼──────────┼─────────┼──────┤
+│Hito 3    │         │          │         │      │
+├──────────┼─────────┼──────────┼─────────┼──────┤
+│Backlog   │         │          │         │      │
+└──────────┴─────────┴──────────┴─────────┴──────┘
+```
+
+**Resumen de políticas sugeridas para DS:**
+
+```
+Definition of Ready (para empezar tarea):
+□ Objetivos claros
+□ Datos disponibles o plan para obtenerlos
+□ Asignada a alguien
+□ Dependencias identificadas
+
+Definition of Done:
+□ Código en Git
+□ Análisis reproducible
+□ Resultados documentados
+□ Peer reviewed
+□ Stakeholder informado
+
+WIP Limits:
+
+- Analysis: 2
+- Modeling: 2
+- Review: 1
+
+Pull Policy:
+
+- Priorizar completar trabajo existente sobre empezar nuevo
+- Si WIP lleno, ayudar a otros
+- Siempre pull de izquierda (tareas más antiguas primero)
+```
+
+### Kanban vs. Scrum
+
+| Aspecto | Scrum | Kanban |
+|---------|-------|--------|
+| **Roles** | 3 roles definidos | Sin roles prescritos |
+| **Iteraciones** | Sprints de tiempo fijo | Flujo continuo |
+| **Cambios** | No durante Sprint | Cualquier momento |
+| **Métricas** | Velocity | Lead time, cycle time |
+| **Tablero** | Se resetea cada Sprint | Persistente |
+| **WIP Limits** | Implícito (capacidad Sprint) | Explícito por columna |
+| **Compromisos** | Sprint backlog | Sin compromisos de entrega |
+| **Ceremonias** | 5 eventos obligatorios | Opcional, según necesidad |
+| **Prescriptivo** | Muy prescriptivo | Muy flexible |
+
+**Cuándo usar cada uno:**
+
+**Scrum si:**
+
+- Necesitas estructura y disciplina
+- Stakeholders quieren entregas predecibles
+- Equipo nuevo o inexperto
+- Proyecto largo con múltiples fases
+
+**Kanban si:**
+
+- Trabajo es variable e impredecible
+- Equipo maduro y auto-dirigido
+- Necesitas máxima flexibilidad
+- Trabajo es mantenimiento/operaciones continuas
+
+**Para el curso:**
+
+- Kanban puede ser más natural para equipos pequeños
+- Especialmente si hay mucha exploración
+- Tablero simple en Trello/Notion/GitHub Projects
+- Enfoque en completar trabajo, no en ceremonias
+
+### Herramientas para Kanban
+
+**Físico:**
+
+- Whiteboard con post-its
+- Simple y tangible
+- Bueno para equipo colocalizado
+
+**Digital:**
+
+- **Trello**: Simple, visual, gratis
+- **Notion**: Flexible, múltiples vistas
+- **GitHub Projects**: Integrado con código
+- **Jira**: Potente pero complejo
+- **Asana**: Balance entre simplicidad y features
+
+## Extreme Programming (XP)
+
+### Origen e Historia
+
+Extreme Programming fue creado por Kent Beck a fines de los 1990s. El nombre viene de "llevar las buenas prácticas de ingeniería de software a sus extremos".
+
+XP se enfoca fuertemente en excelencia técnica y prácticas de ingeniería. Es especialmente relevante para Data Science porque muchas de sus prácticas abordan calidad del código.
+
+### Valores de XP
+
+**Los Cinco Valores Fundamentales:**
+
+1. **Comunicación**: Cara a cara, código auto-explicativo
+2. **Simplicidad**: Hacer lo más simple que funcione
+3. **Feedback**: Constante y rápido
+4. **Coraje**: Para hacer cambios, refactorizar, admitir errores
+5. **Respeto**: Entre miembros del equipo
+
+### Prácticas de XP
+
+XP define 12 prácticas principales, agrupadas en cuatro categorías:
+
+**Prácticas de Codificación:**
+
+**1. Pair Programming (Programación en Parejas)**
+
+Dos personas trabajan en el mismo código simultáneamente:
+
+- **Driver**: Escribe el código
+- **Navigator**: Revisa, piensa estratégicamente, sugiere
+
+**Beneficios en DS:**
+
+- Mejor calidad de código
+- Transferencia de conocimiento
+- Menos bugs
+- Dos perspectivas en problemas complejos
+
+**Cuándo usar en DS:**
+
+- Análisis exploratorio complejo
+- Implementación de modelos nuevos
+- Debugging de pipeline de datos
+- Code review en tiempo real
+
+**Adaptación para el curso:**
+
+- No todo el tiempo, pero en momentos clave
+- Screen sharing remoto funciona
+- Alternar roles cada 30-60 minutos
+
+**2. Collective Code Ownership (Propiedad Colectiva del Código)**
+
+Todo el equipo es responsable de todo el código.
+
+**Significa:**
+
+- Cualquiera puede modificar cualquier parte
+- No hay "dueños" de componentes
+- Todos deben entender el sistema completo
+
+**En DS:**
+
+- Todos pueden mejorar el pipeline de datos
+- Cualquiera puede refactorizar scripts
+- Documentación es responsabilidad compartida
+
+**3. Coding Standards (Estándares de Código)**
+
+El equipo acuerda convenciones de código consistentes.
+
+**Ejemplo de código en Python para DS:**
+```python
+# PEP 8 como base
+# Nombres descriptivos
+def calculate_customer_churn_probability(features):
+    """
+    Calcula probabilidad de churn dado features del cliente.
+    
+    Args:
+        features: DataFrame con características del cliente
+        
+    Returns:
+        Array con probabilidades de churn
+    """
+    pass
+
+# Usar type hints
+def train_model(X: pd.DataFrame, y: pd.Series) -> RandomForestClassifier:
+    pass
+
+# Constantes en MAYÚSCULAS
+MAX_ITERATIONS = 1000
+RANDOM_SEED = 42
+```
+
+**Herramientas:**
+
+- **black**: Auto-formateador
+- **pylint/flake8**: Linters
+- **mypy**: Type checking
+
+**4. Simple Design (Diseño Simple)**
+
+El diseño debe ser lo más simple posible para cumplir requisitos actuales.
+
+**Principios:**
+
+- **YAGNI**: "You Aren't Gonna Need It"
+- No agregar funcionalidad especulativa
+- Refactorizar cuando sea necesario, no antes
+
+**En DS:**
+
+- Empezar con modelo simple (regresión lineal/logística)
+- Pipeline sencillo antes que complejo
+- Agregar complejidad solo cuando hay evidencia de que ayuda
+
+**5. Refactoring (Refactorización)**
+
+Mejorar estructura del código sin cambiar su comportamiento.
+
+**En DS:**
+
+- Convertir código de script monolítico a módulos
+- Extraer funciones repetidas
+- Simplificar pipelines complejos
+- Mejorar nombres de variables
+
+**Ejemplo:**
+```python
+# Antes: Código repetitivo en script
+df1 = pd.read_csv('data1.csv')
+df1 = df1.dropna()
+df1['date'] = pd.to_datetime(df1['date'])
+df1 = df1[df1['value'] > 0]
+
+df2 = pd.read_csv('data2.csv')
+df2 = df2.dropna()
+df2['date'] = pd.to_datetime(df2['date'])
+df2 = df2[df2['value'] > 0]
+
+# Después: Función reutilizable
+def load_and_clean_data(filepath):
+    """Carga y limpia dataset estándar."""
+    df = pd.read_csv(filepath)
+    df = df.dropna()
+    df['date'] = pd.to_datetime(df['date'])
+    df = df[df['value'] > 0]
+    return df
+
+df1 = load_and_clean_data('data1.csv')
+df2 = load_and_clean_data('data2.csv')
+```
+
+**Prácticas de Desarrollo:**
+
+**6. Test-Driven Development (TDD)**
+
+Escribir tests antes de escribir código de producción. 
+
+Para el curso puede sobrecomplejizar el desarrollo. Para proyectos serios es muy importante tener tests automatizados, independiente de si se usó TDD o no.
+
+**Ciclo Red-Green-Refactor:**
+1. Red: Escribir test que falla
+2. Green: Escribir código mínimo que pase el test
+3. Refactor: Mejorar el código manteniendo tests pasando
+
+**En DS:**
+
+- Tests para funciones de preprocesamiento
+- Tests para feature engineering
+- Tests de validación de datos
+- Tests de formato de output del modelo
+
+**Ejemplo:**
+```python
+# Test primero
+def test_remove_outliers():
+    data = pd.DataFrame({'value': [1, 2, 3, 100, 4, 5]})
+    result = remove_outliers(data, 'value', method='iqr')
+    assert len(result) == 5
+    assert 100 not in result['value'].values
+
+# Luego implementar
+def remove_outliers(df, column, method='iqr'):
+    # Implementación
+    pass
+```
+
+**7. Continuous Integration (CI)**
+
+Integrar código frecuentemente (múltiples veces al día).
+
+**En DS:**
+
+- Push a Git diariamente
+- Tests automáticos en cada push
+- Pipeline CI/CD para modelos
+- Validación automática de calidad de código
+
+**Setup básico:**
+```yaml
+# .github/workflows/tests.yml
+name: Tests
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run tests
+        run: pytest tests/
+
+      - name: Run linting
+        run: flake8 src/
+```
+
+**Prácticas de Planificación:**
+
+**8. The Planning Game**
+
+Planificación colaborativa entre negocio y desarrollo.
+
+**En DS:**
+
+- Stakeholders definen valor de negocio
+- DS team estima esfuerzo técnico
+- Negociación de scope y prioridades
+- Ajustes basados en descubrimientos
+
+**9. Small Releases**
+
+Entregas pequeñas y frecuentes.
+
+**En DS:**
+
+- Modelo v0.1, v0.2, v0.3...
+- Análisis incremental
+- Dashboard por partes
+- Feedback temprano y frecuente
+
+**10. Customer Tests**
+
+Tests de aceptación definidos por el cliente.
+
+**En DS:**
+
+- Métricas de negocio específicas
+- Casos de uso validados por stakeholder
+- Criterios de éxito claros
+- Validación en datos reales
+
+**Prácticas de Equipo:**
+
+**11. Sustainable Pace**
+
+Evitar overtime - trabajo sostenible.
+
+**En DS:**
+
+- 40 horas/semana máximo
+- No crunch time constante
+- Descanso y recuperación
+- Productividad a largo plazo
+
+**12. Metaphor**
+
+Metáfora compartida del sistema.
+
+**En DS:**
+
+- "Pipeline de datos como línea de ensamblaje"
+- "Modelo como sistema de predicción del clima"
+- Ayuda a comunicar arquitectura
+- Lenguaje común para el equipo
+
+### XP en Data Science
+
+**Prácticas más valiosas para DS:**
+
+1. **Pair Programming**: Especialmente para código complejo
+2. **Refactoring**: Convertir scripts a código productivo
+3. **Simple Design**: Empezar simple, agregar complejidad justificada
+4. **Testing**: Crítico para calidad y reproducibilidad
+5. **Continuous Integration**: Automatizar validaciones
+
+**Menos aplicables:**
+
+- TDD puro (difícil en exploración)
+- Planning Game formal (para equipos pequeños)
+- Customer Tests (se adapta a métricas de negocio)
+
+## Lean Development
+
+### Origen
+
+Lean Software Development fue propuesto por Mary y Tom Poppendieck en 2003, adaptando los principios de Lean Manufacturing de Toyota al desarrollo de software.
+
+### Los 7 Principios de Lean
+
+En algunas fuentes encontrarán una simplificación con 5 o 3 principios. Estos son los originales.
+
+**1. Eliminar Desperdicio (Eliminate Waste)**
+
+**Tipos de desperdicio en DS:**
+
+- **Trabajo parcialmente hecho**: Análisis que nunca se completan
+- **Features extras**: Complejidad innecesaria en modelos
+- **Reaprendizaje**: No documentar decisiones
+- **Handoffs**: Demasiadas transferencias entre personas
+- **Delays**: Esperar por datos, aprobaciones, recursos
+- **Task switching**: Multitasking excesivo
+- **Defectos**: Bugs, datos incorrectos, modelos mal validados
+
+**Cómo eliminar:**
+
+- Enfocarse en valor real para stakeholder
+- Automatizar tareas repetitivas
+- Documentar para no repetir trabajo
+- Reducir WIP (Work in Progress)
+- Simplificar procesos
+
+**2. Amplificar el Aprendizaje (Amplify Learning)**
+
+**En DS:**
+
+- Experimentar rápido y fallar rápido
+- Documentar experimentos y resultados
+- Compartir conocimiento en el equipo
+- Spike solutions para explorar incertidumbre
+- Retrospectivas para aprender de errores
+
+**Prácticas:**
+
+- Scripts compartidos
+- Reuniones de sharing de hallazgos
+- Experiment tracking (MLflow, W&B)
+- Post-mortems de experimentos fallidos
+
+**3. Decidir lo Más Tarde Posible (Decide as Late as Possible)**
+
+Retrasar decisiones hasta tener más información.
+
+**En DS:**
+
+- No elegir arquitectura de modelo prematuramente
+- Explorar los datos antes de decidir features
+- Probar múltiples enfoques antes de comprometerse
+- Mantener opciones abiertas
+
+**Balance:** Tarde pero no demasiado tarde
+
+- Algunas decisiones (formato de datos, infraestructura básica) se necesitan temprano
+- Decisiones reversibles pueden posponerse
+
+**4. Entregar lo Más Rápido Posible (Deliver as Fast as Possible)**
+
+Velocidad de entrega genera aprendizaje.
+
+**En DS:**
+
+- Prototipos rápidos sobre perfección
+- Modelo baseline en días, no semanas
+- Feedback loops cortos con stakeholders
+- Automatizar donde sea posible
+
+**Ejemplo:**
+
+- Semana 1: EDA básico y primeros insights
+- Semana 2: Modelo baseline simple
+- Semana 3: Iterar basándose en feedback
+- Vs. Semanas 1-3: Planear un modelo mejorado
+
+**5. Empoderar al Equipo (Empower the Team)**
+
+Equipos auto-organizados toman mejores decisiones.
+
+**En DS:**
+
+- El equipo decide herramientas y enfoques técnicos
+- Autonomía para experimentar
+- Confianza sin microgestión
+- Responsabilidad compartida
+
+**6. Construir Integridad (Build Integrity In)**
+
+Calidad desde el inicio, no al final.
+
+**En DS:**
+
+- Validación de datos desde el inicio
+- Tests automatizados
+- Code reviews
+- Documentación concurrente
+- Validación rigurosa de modelos
+
+**Integrity conceptual:** El sistema tiene sentido como un todo
+**Integrity percibida:** Cumple necesidades del usuario
+
+**7. Ver el Todo (See the Whole)**
+
+Optimizar el sistema completo, no las partes.
+
+**En DS:**
+
+- No solo accuracy del modelo, también tiempo de inference, interpretabilidad, mantenibilidad
+- Considerar todo el pipeline: datos → modelo → deployment → monitoreo
+- Impacto de negocio, no solo métricas técnicas
+- Colaboración entre equipos (DS, Engineering, Business)
+
+### Lean en Data Science
+
+**Aplicación práctica:**
+
+- **Value Stream Mapping**: Mapear flujo desde problema hasta solución
+- **Just-in-Time**: Datos y features cuando se necesitan
+- **Kaizen**: Mejora continua pequeña
+- **Muda, Mura, Muri**: Eliminar desperdicio, variabilidad, sobrecarga
+
+**Herramientas Lean para DS:**
+
+- Kanban boards
+- WIP limits
+- Cycle time tracking
+- Retrospectivas
+- A3 problem solving
+
+## Crystal
+
+### Origen e Historia
+
+Crystal fue desarrollado por Alistair Cockburn en los 1990s. A diferencia de otras metodologías, Crystal es una **familia de metodologías** que se adaptan según:
+
+- Tamaño del equipo
+- Criticidad del proyecto
+- Prioridades del proyecto
+
+### La Familia Crystal
+
+Crystal se nombra por colores según rigor necesario:
+
+- **Crystal Clear**: 1-6 personas, baja criticidad
+- **Crystal Yellow**: 7-20 personas
+- **Crystal Orange**: 21-40 personas
+- **Crystal Red**: 41-80 personas, alta criticidad
+- **Crystal Maroon**: 80+ personas, crítico para vida
+
+Más oscuro el color = más riguroso el proceso
+
+Para proyectos del curso: **Crystal Clear**
+
+### Principios de Crystal
+
+**Las Tres Prioridades:**
+
+1. **Safety** (Seguridad)
+
+   - Del equipo y del proyecto
+   - Ambiente donde es seguro fallar y aprender
+   - No culpar, sino mejorar
+
+2. **Efficiency** (Eficiencia)
+
+   - Maximizar valor generado
+   - Minimizar desperdicio
+   - Flujo de trabajo optimizado
+
+3. **Habitability** (Habitabilidad)
+
+   - El proceso debe ser cómodo para el equipo
+   - Si el proceso es incómodo, no se seguirá
+   - Adaptar a la personalidad del equipo
+
+**Las Siete Propiedades de Crystal Clear:**
+
+1. **Frequent Delivery**: Entregas cada 1-3 meses
+2. **Reflective Improvement**: Retrospectivas regulares
+3. **Osmotic Communication**: El equipo absorbe información naturalmente
+4. **Personal Safety**: Seguro expresar opiniones
+5. **Focus**: El equipo sabe en qué enfocarse
+6. **Easy Access to Expert Users**: Acceso a stakeholders
+7. **Technical Environment**: Herramientas apropiadas
+
+### Crystal en Data Science
+
+Crystal Clear es particularmente apropiado para proyectos de DS porque:
+
+**1. Reconoce variabilidad**
+
+- No hay un proceso único para todos
+- Se adapta a las necesidades del equipo y proyecto
+
+**2. Énfasis en comunicación**
+
+- Osmotic communication es ideal para equipos pequeños de DS
+- Pair programming y desk checks naturales
+
+**3. Minimalista**
+
+- Solo prescribe lo mínimo necesario
+- El equipo agrega lo que necesita
+
+**4. Enfoque en las personas**
+
+- Proceso debe servir al equipo
+- No al revés
+
+**Para el curso:**
+
+- Teams de 3-4 personas = Crystal Clear perfecto
+- Enfocarse en comunicación y entregas
+- Adaptar proceso según lo que funcione
+- No forzar prácticas que no agregan valor
+
+### Prácticas Recomendadas en Crystal Clear
+
+**Obligatorias:**
+
+- Entregas frecuentes (los hitos)
+- Retrospectivas after each milestone
+- Comunicación directa y frecuente
+
+**Opcionales pero recomendadas:**
+
+- Daily stand-ups o check-ins semanales
+- Pair programming para problemas complejos
+- Automated tests para código crítico
+- Iteraciones de 2-4 semanas
+
+**Adaptativas:**
+
+- Lo que funcione para tu equipo
+- Experimentar y ajustar
+- No hay "una forma correcta"
+
+## Comparación de Metodologías
+
+| Aspecto | Scrum | Kanban | XP | Lean | Crystal |
+|---------|-------|--------|-----|------|---------|
+| **Estructura** | Alta | Baja | Media | Baja | Variable |
+| **Roles** | Prescriptivo | Flexible | Flexible | Flexible | Minimal |
+| **Iteraciones** | Sprints fijos | Flujo continuo | Iteraciones | Flujo | Flexible |
+| **Enfoque** | Gestión | Flujo | Ingeniería | Eficiencia | Personas |
+| **Mejor para** | Proyectos estructurados | Trabajo variable | Calidad código | Optimización | Equipos pequeños |
+| **Curva aprendizaje** | Media | Baja | Alta | Media | Baja |
+| **Overhead** | Alto | Bajo | Medio | Bajo | Muy bajo |
+| **Para DS** | Con adaptaciones | Natural | Prácticas técnicas | Principios | Muy apropiado |
+
+## Enfoque Híbrido para el Curso
+
+No necesitan adherirse religiosamente a una metodología. Recomendamos un enfoque híbrido:
+
+**De Scrum:**
+
+- Planning al inicio de cada hito
+- Reviews al final de cada hito (las presentaciones)
+- Retrospectivas para mejorar
+- Definition of Done claro
+
+**De Kanban:**
+
+- Tablero visual de tareas
+- WIP limits para enfocarse
+- Flujo continuo dentro de hitos
+- Métricas de cycle time
+
+**De XP:**
+
+- Pair programming cuando necesario
+- Code reviews
+- Refactoring continuo
+- Tests para código crítico
+- Integración continua
+
+**De Lean:**
+
+- Eliminar desperdicio
+- Decidir con información
+- Entregar rápido para aprender
+- Mejora continua
+
+**De Crystal:**
+
+- Adaptar a lo que funciona para el equipo
+- Priorizar comunicación
+- Ambiente seguro para experimentar
+- Minimalismo en proceso
+
+## Conclusiones
+
+### Lecciones Clave
+
+**No hay metodología perfecta:**
+
+- Cada una tiene fortalezas y debilidades
+- El contexto determina qué usar
+- Híbridos suelen funcionar mejor
+
+**Principios > Prácticas:**
+
+- Entender el "por qué" detrás de cada práctica
+- Adaptar las prácticas a tu contexto
+- Mantener valores ágiles core
+
+**Para Data Science:**
+
+- DS requiere más flexibilidad que software tradicional
+- Exploración genuina no se puede planificar completamente
+- Balance entre estructura y libertad
+- Comunicación y colaboración son críticas
+
+**Para el curso:**
+
+- Empezar simple
+- Agregar estructura según necesidad
+- Focus en entregar valor en cada hito
+- Aprender y ajustar continuamente
+
+::: {.callout-tip}
+## Recomendación Final
+Empieza con Kanban simple + elementos de Scrum (Planning, Reviews, Retros). Agrega prácticas de XP (pair programming, refactoring, tests) según necesidad. Mantén el espíritu de Lean (eliminar desperdicio) y Crystal (adaptabilidad).
+
+Lo más importante: comunicación constante y entregas de valor incrementales.
+:::
+
+## Recursos Adicionales
+
+### Scrum
+
+- [Scrum Guide](https://scrumguides.org/)
+- [Scrum.org](https://www.scrum.org/)
+
+### Kanban
+
+- Anderson, D. J. (2010). "Kanban: Successful Evolutionary Change"
+- [Kanban University](https://kanban.university/)
+
+### XP
+
+- Beck, K. (2004). "Extreme Programming Explained"
+- [Extreme Programming](http://www.extremeprogramming.org/)
+
+### Lean
+
+- Poppendieck, M. & T. (2003). "Lean Software Development"
+- [Lean Software Development](https://www.lean.org/)
+- [Scrum manager](https://www.scrummanager.com/bok/index.php/Lean_Software_Development)
+
+### Crystal
+
+- Cockburn, A. (2004). "Crystal Clear: A Human-Powered Methodology"
+- [Alistair Cockburn's website](https://alistaircockburn.com/)
+
+### Aplicación en DS
+
+- [Agile Data Science](https://www.oreilly.com/library/view/agile-data-science/9781449326890/)
+- [Data Science Workflows](https://www.datascience-pm.com/data-science-workflow/)
+
+## Próximo Capítulo
+
+En el siguiente capítulo exploraremos las **herramientas de gestión de proyectos** que facilitan la implementación de estas metodologías, desde simples tableros Kanban hasta sistemas complejos de gestión.

@@ -1,0 +1,520 @@
+---
+title: "Análisis Exploratorio de Datos"
+subtitle: "MDS7201 - Master of Data Science"
+author: "Universidad de Chile"
+format:
+  revealjs:
+    theme: [default, ../../custom-slides.scss]
+    slide-number: true
+    chalkboard: true
+    preview-links: auto
+    code-fold: false
+    code-tools: true
+    transition: slide
+    background-transition: fade
+  beamer:
+    theme: Madrid
+    colortheme: default
+    fonttheme: professionalfonts
+    aspectratio: 169
+    navigation: horizontal
+    section-titles: true
+    toc: true
+---
+
+# ¿Qué es el EDA? {background-color="#1a1a1a"}
+
+## Análisis Exploratorio de Datos
+
+::: {.incremental}
+- Etapa **fundamental** antes de modelar
+- Entender estructura, calidad y relaciones en los datos
+- No es un paso preliminar — determina si el análisis posterior tendrá sentido
+- Este capítulo se enfoca en **datos tabulares**
+:::
+
+::: {.callout-note}
+Imágenes, series de tiempo y texto tienen técnicas propias
+:::
+
+# Definición del Problema {background-color="#2a2a2a"}
+
+## Antes de Tocar los Datos
+
+::: {.incremental}
+- ¿Qué problema se quiere resolver?
+- ¿Cómo se medirá el éxito?
+- ¿Qué representa cada observación?
+- ¿Cuál es el mecanismo de recolección?
+- ¿Qué conocimiento de dominio es relevante?
+:::
+
+## Marco SMART
+
+![](smart.png){fig-align="center" width="70%"}
+
+**Specific · Measurable · Achievable · Relevant · Time-bound**
+
+## Marco FAST
+
+![](FAST.jpg){fig-align="center" width="70%"}
+
+**Frequently discussed · Ambitious · Specific · Transparent**
+
+## Preguntas del EDA
+
+::: {.columns}
+::: {.column width="50%"}
+**Análisis Preliminar**
+
+::: {.incremental}
+- ¿Cuántos datos hay?
+- ¿Hay valores faltantes?
+- ¿Qué estadísticas básicas hay?
+- ¿Qué preprocesamiento requiere?
+:::
+:::
+
+::: {.column width="50%"}
+**Análisis Detallado**
+
+::: {.incremental}
+- ¿Son independientes las variables?
+- ¿Reducción de dimensionalidad?
+- ¿Hay clusters naturales?
+- ¿Hay desbalance de clases?
+:::
+:::
+:::
+
+# Componentes de un Buen EDA {background-color="#1a1a1a"}
+
+## Checklist Completo
+
+::: {.incremental}
+1. **Comprensión del dataset** — fuente, estructura, tipos
+2. **Datos faltantes** — cuántos, dónde, por qué
+3. **Duplicados** — ¿genuinos o errores?
+4. **Estadísticas descriptivas** — media, mediana, varianza
+5. **Distribuciones** — histogramas, boxplots, KDE
+6. **Outliers** — ¿errores o valores extremos válidos?
+7. **Correlaciones** — lineal y no lineal
+8. **Reducción de dimensionalidad** — visualización y modelamiento
+9. **Análisis por clase** — si hay etiquetas
+10. **Síntesis y decisiones** — documentar todo
+:::
+
+# EDA Automático {background-color="#2a2a2a"}
+
+## ydata-profiling
+
+```python
+from ydata_profiling import ProfileReport
+
+# Análisis mínimo (rápido, todas las columnas)
+profile = ProfileReport(df, minimal=True)
+profile.to_file("output.html")
+
+# Análisis completo (primeras 15 columnas)
+profile = ProfileReport(df.iloc[:, :15])
+profile.to_file("output_selection.html")
+```
+
+::: {.callout-warning}
+Tratar el EDA automático como **punto de partida**, no como conclusión. No reemplaza el análisis manual.
+:::
+
+# Datos Faltantes {background-color="#1a1a1a"}
+
+## Tipos de Missingness
+
+::: {.incremental}
+- **MCAR** — Missing Completely At Random
+  - Missingness independiente de todos los datos
+  - Seguro eliminar o imputar sin sesgo
+
+- **MAR** — Missing At Random
+  - Missingness depende de variables observadas
+  - Imputación válida si se condiciona correctamente
+
+- **MNAR** — Missing Not At Random
+  - Missingness depende del valor no observado
+  - Imputación estándar produce sesgo ⚠️
+:::
+
+## MCAR
+
+$$P(R \mid Y_{obs}, Y_{mis}) = P(R)$$
+
+::: {.incremental}
+- Supuesto más fuerte, raramente se cumple
+- Diagnóstico: si puedes predecir missingness desde variables observadas → falsificaste MCAR
+- Las filas completas son submuestra aleatoria del total
+:::
+
+## MAR
+
+$$P(R \mid Y_{obs}, Y_{mis}) = P(R \mid Y_{obs})$$
+
+::: {.callout-warning}
+"At Random" es engañoso — no significa aleatoriedad, sino que el missingness es **explicable** por lo que observamos
+:::
+
+::: {.incremental}
+- Supuesto **no testeable** con los datos solos
+- Requiere incluir las variables que determinan el missingness en el modelo de imputación
+:::
+
+## MNAR
+
+$$P(R \mid Y_{obs}, Y_{mis}) \neq P(R \mid Y_{obs})$$
+
+::: {.incremental}
+- Caso realista para muchos instrumentos físicos
+- El sesgo **no desaparece** con más datos
+- Requiere: modelo de mecanismo de missingness, análisis de sensibilidad
+:::
+
+## Diagnóstico con KS Test
+
+```python
+from scipy import stats
+
+# ¿El periodo es MNAR?
+df.loc[df.Period_band_1.isna()].mean_mag_1.plot.hist(
+    cumulative=True, density=True, label="Sin periodo"
+)
+df.loc[df.Period_band_1.notna()].mean_mag_1.plot.hist(
+    cumulative=True, density=True, label="Con periodo"
+)
+stats.ks_2samp(
+    df.loc[df.Period_band_1.isna()].mean_mag_1.dropna(),
+    df.loc[df.Period_band_1.notna()].mean_mag_1.dropna()
+)
+```
+
+## Estrategias de Imputación
+
+| Estrategia | Cuándo usarla |
+|------------|---------------|
+| Valor arbitrario (-99) | Señal explícita de faltante para el modelo |
+| Media / Mediana | Datos MCAR/MAR simples |
+| Valor más frecuente | Variables categóricas |
+| Muestreo empírico | Preservar la distribución |
+| IterativeImputer | Aprovechar correlaciones entre variables |
+| KNNImputer | Vecinos cercanos en espacio de features |
+
+::: {.callout-important}
+Imputar **después** de transformaciones. En contexto supervisado, ajustar **solo en training set**.
+:::
+
+# Normalidad y Transformaciones {background-color="#2a2a2a"}
+
+## ¿Por Qué Buscar Normalidad?
+
+::: {.incremental}
+- Muchos métodos asumen distribución Gaussiana
+- Mejora el comportamiento de correlaciones e imputaciones
+- Reduce el efecto de outliers extremos
+- La escala `asinh` es útil para ver distribuciones muy sesgadas
+:::
+
+## Test de Shapiro-Wilk
+
+```python
+from scipy import stats
+
+# Para una variable
+stats.shapiro(df.Skew_1.dropna().sample(500))
+
+# Para todas las columnas (log10 del p-value)
+SW = dft.sample(500).apply(
+    lambda col: np.log10(stats.shapiro(col.dropna()).pvalue),
+    axis=0
+)
+SW.sort_values().plot.barh(figsize=(10, 30))
+```
+
+::: {.callout-note}
+Usar muestra de ~500 filas. Con muestras grandes, cualquier desviación pequeña da p-value ≈ 0.
+:::
+
+## Comparación de Escaladores
+
+::: {.columns}
+::: {.column width="50%"}
+**StandardScaler**
+
+- Centra en 0, escala a varianza 1
+- Sensible a outliers
+
+**RobustScaler**
+
+- Usa mediana y IQR
+- Más robusto a outliers — pero empeora la normalidad
+:::
+
+::: {.column width="50%"}
+**QuantileTransformer**
+
+- Mapea a distribución uniforme o normal
+- Muy robusto, pierde relaciones monótonas
+
+**PowerTransformer ⭐**
+
+- Box-Cox (datos positivos)
+- Yeo-Johnson (datos de cualquier signo)
+- Mejor para normalidad
+:::
+:::
+
+## PowerTransformer
+
+![](boxcox.png){fig-align="center" width="45%"}
+
+![](yeo-johnson.png){fig-align="center" width="45%"}
+
+## PowerTransformer en Código
+
+```python
+from sklearn.preprocessing import PowerTransformer
+
+power = PowerTransformer(method='yeo-johnson', standardize=False)
+power.fit(dft)
+dftp = pd.DataFrame(
+    data=power.transform(dft),
+    columns=list(dft),
+    index=dft.index
+)
+```
+
+::: {.incremental}
+- `yeo-johnson`: soporta datos positivos y negativos
+- `box-cox`: solo datos estrictamente positivos
+- El PowerTransform supera a StandardScaler y RobustScaler para normalidad
+:::
+
+# Correlaciones {background-color="#1a1a1a"}
+
+## Matriz de Correlación
+
+```python
+cm = dftp.corr()  # Pearson
+plt.imshow(cm)
+```
+
+::: {.incremental}
+- Transformar los datos **antes** de calcular correlaciones
+- Correlación de Pearson asume normalidad — usar Spearman para variables ordinales o no normales
+- Correlaciones altas (|r| > 0.9) pueden destabilizar modelos lineales
+:::
+
+## Ordenar por Clustering Jerárquico
+
+```python
+import scipy.cluster.hierarchy as sch
+
+distance_matrix = 1 - cm.abs()
+linkage_matrix = sch.linkage(
+    sch.distance.squareform(distance_matrix), method='complete'
+)
+dendrogram = sch.dendrogram(linkage_matrix, no_plot=True)
+index = dendrogram['leaves']
+sorted_cm = cm.iloc[index, :].iloc[:, index]
+```
+
+Revela **grupos de features** que miden fenómenos similares
+
+## Información Mutua
+
+::: {.columns}
+::: {.column width="50%"}
+**Correlación de Pearson**
+
+- Solo relaciones lineales
+- Simétrica por definición
+- Rápida de calcular
+:::
+
+::: {.column width="50%"}
+**Información Mutua**
+
+- Captura relaciones **no lineales**
+- Más costosa computacionalmente
+- Disponible en `sklearn.feature_selection`
+:::
+:::
+
+$$I(X;Y) = \int \int p(x,y) \log \frac{p(x,y)}{p(x)p(y)} \, dx \, dy$$
+
+# Reducción de Dimensionalidad {background-color="#2a2a2a"}
+
+## Cuatro Métodos Principales
+
+::: {.incremental}
+- **PCA** — Lineal, rápido, interpetable, preserva varianza global
+- **t-SNE** — No lineal, bueno para clusters locales, no preserva distancias globales
+- **UMAP** — No lineal, más rápido que t-SNE, mejor preservación de estructura global
+- **PaCMAP** — No lineal, balanceo explícito entre estructura local y global
+:::
+
+::: {.callout-important}
+## Visualización ≠ Modelamiento
+Reducción para **visualización** prioriza preservar estructura. Reducción para **modelamiento** prioriza performance predictivo. Son objetivos distintos.
+:::
+
+## PCA
+
+```python
+from sklearn.decomposition import PCA
+
+pca = PCA(n_components=2)
+pca.fit(dftp)
+df_pca = pca.transform(dftp)
+
+fig, ax = plt.subplots(figsize=(10, 10))
+cax = ax.scatter(df_pca[:, 0], df_pca[:, 1], c=np.array(y), marker='.')
+ax.set_xlabel("PCA 1")
+ax.set_ylabel("PCA 2")
+plt.colorbar(cax, orientation='horizontal')
+```
+
+## t-SNE
+
+```python
+from sklearn.manifold import TSNE
+
+tsne_model = TSNE(n_components=2, init='pca', perplexity=25)
+df_tsne = tsne_model.fit_transform(dftp[:10000])
+```
+
+::: {.callout-warning}
+Explorar múltiples valores de `perplexity`. El hiperparámetro afecta fuertemente el resultado.
+:::
+
+## UMAP
+
+```python
+import umap
+
+reducer = umap.UMAP()
+df_umap = reducer.fit_transform(dftp)
+```
+
+::: {.incremental}
+- Más rápido que t-SNE para datasets grandes
+- Hiperparámetros clave: `n_neighbors`, `min_dist`
+- Preserva mejor la estructura global que t-SNE
+:::
+
+## PaCMAP
+
+```python
+import pacmap
+
+embedding = pacmap.PaCMAP(
+    n_components=2, n_neighbors=None,
+    MN_ratio=0.5, FP_ratio=4.0
+)
+df_pacmap = embedding.fit_transform(dftp, init="pca")
+```
+
+# Análisis por Clase {background-color="#1a1a1a"}
+
+## Desbalance de Clases
+
+```python
+labels.value_counts().sort_values().plot.barh(log=True)
+```
+
+::: {.incremental}
+- ¿Cuán severo es el desbalance (ratio mayoría/minoría)?
+- ¿El missingness está correlacionado con la clase?
+- ¿La definición de clase es estable y no ambigua?
+:::
+
+## KS Test para Relevancia de Features
+
+::: {.incremental}
+- Para cada feature, comparar su distribución por clase
+- KS test o similar para rankear por poder discriminativo
+- **Corregir por comparaciones múltiples**: Bonferroni, Benjamini-Hochberg
+- Con muchas features, el umbral naïve de p-value produce muchos falsos positivos
+:::
+
+## Importancia con Random Forest
+
+```python
+from imblearn.ensemble import BalancedRandomForestClassifier
+
+forest = BalancedRandomForestClassifier(n_estimators=500)
+forest.fit(dftp, labels)
+
+importances = forest.feature_importances_
+imps = pd.DataFrame({"importances": importances}, index=list(dftp))
+imps.sort_values(by="importances").plot.barh(figsize=(10, 30))
+```
+
+::: {.callout-warning}
+Las importancias basadas en impureza están **sesgadas** hacia features de alta cardinalidad y correlacionadas. Preferir **permutation importances** en esos casos.
+:::
+
+# Síntesis {background-color="#2a2a2a"}
+
+## Resumen del EDA Completo
+
+::: {.incremental}
+1. ✅ **EDA Automático** — `ydata-profiling` como baseline
+2. ✅ **Estadísticas Básicas** — describe(), boxplots
+3. ✅ **Datos Faltantes** — MCAR/MAR/MNAR, estrategia de imputación
+4. ✅ **Normalidad** — Shapiro-Wilk, PowerTransform
+5. ✅ **Correlaciones** — Pearson, clustering jerárquico, MI
+6. ✅ **Reducción de Dimensionalidad** — PCA, t-SNE, UMAP, PaCMAP
+7. ✅ **Análisis por Clase** — desbalance, KS test, feature importance
+:::
+
+## Comentarios Finales
+
+::: {.callout-important}
+## Orden de Operaciones
+1. Transformar los datos (PowerTransform u otro)
+2. Imputar datos faltantes (sobre datos transformados)
+3. En supervisado: aprender **solo sobre training set**
+:::
+
+::: {.callout-note}
+¡Hay mucho más que se puede hacer! Este capítulo cubre los fundamentos para datos tabulares.
+:::
+
+# Recursos {background-color="#1a1a1a"}
+
+## Herramientas
+
+::: {.columns}
+::: {.column width="50%"}
+**EDA Automático**
+
+- `ydata-profiling`
+- `sweetviz`
+- `dataprep`
+:::
+
+::: {.column width="50%"}
+**Reducción de Dimensionalidad**
+
+- `sklearn.decomposition` (PCA)
+- `sklearn.manifold` (t-SNE)
+- `umap-learn`
+- `pacmap`
+:::
+:::
+
+## Referencias
+
+- Pedregosa et al. (2011). Scikit-learn: Machine Learning in Python. *JMLR*
+- McInnes, Healy & Melville (2018). UMAP: Uniform Manifold Approximation and Projection
+- Van der Maaten & Hinton (2008). Visualizing data using t-SNE. *JMLR*
+- Wang et al. (2021). Understanding How Dimension Reduction Tools Work: PaCMAP
+- Rubin, D.B. (1976). Inference and Missing Data. *Biometrika*
+
+# ¿Preguntas? {background-color="#2a2a2a"}

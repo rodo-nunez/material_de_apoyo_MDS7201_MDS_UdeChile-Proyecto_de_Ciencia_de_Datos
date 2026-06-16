@@ -1,0 +1,362 @@
+---
+title: "Introducción a Cloud Computing"
+subtitle: "MDS7201 - Master of Data Science"
+author: "Universidad de Chile"
+format:
+  revealjs:
+    theme: [default, ../custom-slides.scss]
+    slide-number: true
+    chalkboard: true
+    preview-links: auto
+    code-fold: false
+    code-tools: true
+    transition: slide
+    background-transition: fade
+  beamer:
+    theme: Madrid
+    colortheme: default
+    fonttheme: professionalfonts
+    aspectratio: 169
+    navigation: horizontal
+    section-titles: true
+    toc: true
+---
+
+# ¿Por Qué Cloud? {background-color="#1a1a1a"}
+
+## El Problema de Escala
+
+::: {.incremental}
+- **Datos reales** pesan terabytes — la laptop no alcanza
+- **Modelos grandes** necesitan GPU por horas o días
+- **Producción** requiere disponibilidad continua y confiable
+- **Equipos** necesitan compartir datos, código y resultados
+:::
+
+::: {.callout-tip}
+Pagar solo por lo que se usa, cuando se necesita.
+:::
+
+## Los Tres Grandes
+
+::: {.columns}
+::: {.column width="33%"}
+**AWS**
+
+~32% del mercado
+
+El más popular en Data Science
+:::
+::: {.column width="33%"}
+**Azure**
+
+~23% del mercado
+
+Fuerte en entornos corporativos Microsoft
+:::
+::: {.column width="33%"}
+**GCP**
+
+~11% del mercado
+
+El mejor para ML/AI nativo
+:::
+:::
+
+::: {.callout-note}
+[Comparación AWS, Azure y GCP](https://cloud.google.com/docs/get-started/aws-azure-gcp-service-comparison?hl=es-419)
+:::
+
+## Los Tres Grandes — Pros y Cons
+
+| | AWS | Azure | GCP |
+|--|-----|-------|-----|
+| **Madurez** | ★★★ | ★★★ | ★★ |
+| **Servicios ML** | ★★★ | ★★ | ★★★ |
+| **Documentación** | ★★★ | ★★ | ★★★ |
+| **Integración corp.** | ★★ | ★★★ | ★★ |
+| **Big Data nativo** | ★★ | ★★ | ★★★ |
+
+# Servicios AWS para Data Science {background-color="#2a2a2a"}
+
+## El Mapa de Servicios
+
+::: {.incremental}
+- **Cómputo**: EC2, Lambda
+- **Almacenamiento**: S3, EBS
+- **Datos y Analytics**: Athena, Redshift, Glue
+- **ML**: SageMaker
+- **Contenedores**: ECR, ECS
+- **Orquestación**: MWAA
+- **Red**: VPC
+- **Otros**: Mechanical Turk, QuickSight, Billing
+:::
+
+::: {.callout-note}
+[E33 — Servicios útiles de AWS para un Data Scientist](https://www.youtube.com/watch?v=xeDjQgOdGb4)
+:::
+
+# Cómputo {background-color="#1a1a1a"}
+
+## EC2 — Máquinas Virtuales
+
+::: {.incremental}
+- Instancias con las specs que necesites (CPU, RAM, GPU)
+- Pago por hora de uso
+- **Instancias GPU** (p3, p4, g4): entrenar modelos
+- **Instancias RAM** (r): datasets grandes en memoria
+- **Instancias Spot**: hasta 90% descuento, pueden interrumpirse
+:::
+
+```bash
+# Conectarse a una instancia EC2
+ssh -i mi-clave.pem ec2-user@ec2-X-X-X-X.compute.amazonaws.com
+```
+
+## Lambda — Serverless
+
+::: {.incremental}
+- Código que se ejecuta en respuesta a **eventos**
+- Sin servidores que administrar
+- Pago por **milisegundo** de ejecución
+- Límite: 15 min de ejecución, 10 GB RAM
+:::
+
+**Casos de uso para Data Science:**
+
+::: {.incremental}
+- Trigger cuando llega un archivo a S3
+- APIs simples para predicciones
+- Preprocesamiento en tiempo real
+:::
+
+# Almacenamiento {background-color="#2a2a2a"}
+
+## S3 — Object Storage
+
+El lugar estándar para guardar **todo** en AWS:
+
+::: {.incremental}
+- Datasets crudos y procesados
+- Modelos entrenados (pesos, configuraciones)
+- Input/output de pipelines ETL
+- Logs y resultados de experimentos
+:::
+
+```python
+import boto3, pandas as pd
+
+s3 = boto3.client('s3')
+
+# Subir archivo
+s3.upload_file('local.csv', 'mi-bucket', 'datos/local.csv')
+
+# Leer directamente con pandas
+df = pd.read_csv('s3://mi-bucket/datos/local.csv')
+```
+
+## EBS vs S3
+
+::: {.columns}
+::: {.column width="50%"}
+**EBS**
+
+Disco duro de tu instancia EC2
+
+- Acceso rápido (bajo latencia)
+- Solo accesible desde una instancia
+- Persiste aunque apagues la instancia
+:::
+::: {.column width="50%"}
+**S3**
+
+Servidor de archivos en red
+
+- Acceso via API
+- Accesible desde cualquier servicio
+- Altamente disponible y durable
+:::
+:::
+
+# Datos y Analytics {background-color="#1a1a1a"}
+
+## Athena — SQL sobre S3
+
+::: {.incremental}
+- Queries SQL directamente sobre datos en **S3**
+- Sin servidores — pagas por datos escaneados
+- Usa Apache Presto internamente
+- Funciona mejor con datos en formato **Parquet**
+:::
+
+```sql
+SELECT fecha, COUNT(*) as cantidad, AVG(valor) as promedio
+FROM mi_base_de_datos.mi_tabla
+WHERE fecha >= '2024-01-01'
+GROUP BY fecha
+ORDER BY fecha;
+```
+
+## Redshift vs Athena
+
+::: {.columns}
+::: {.column width="50%"}
+**Athena**
+
+- Sin costo fijo
+- Consulta datos en S3 directamente
+- Ideal para queries ocasionales
+- Setup inmediato
+:::
+::: {.column width="50%"}
+**Redshift**
+
+- Costo fijo por clúster
+- Datos cargados en almacenamiento propio
+- Mejor performance para queries frecuentes
+- Ideal para dashboards de producción
+:::
+:::
+
+## Glue — ETL Serverless
+
+::: {.incremental}
+- **Glue Crawler**: escanea fuentes y crea el esquema automáticamente
+- **Glue Data Catalog**: metastore centralizado de todos tus datos
+- **Glue Jobs**: scripts de ETL en PySpark sin administrar clúster
+:::
+
+**Para Data Science:**
+
+::: {.incremental}
+- Pipelines de ingesta desde múltiples fuentes
+- Transformaciones a escala con PySpark
+- Actualización automática de datasets
+:::
+
+# Machine Learning {background-color="#2a2a2a"}
+
+## SageMaker — Plataforma ML Completa
+
+::: {.incremental}
+- **Studio**: notebooks en la nube (como JupyterLab)
+- **Training**: entrenamiento distribuido de modelos
+- **Endpoints**: despliegue como APIs REST
+- **Pipelines**: orquestación de workflows ML
+- **Feature Store**: features reutilizables entre proyectos
+:::
+
+::: {.callout-tip}
+SageMaker integra todo el ciclo de vida de ML — exploración, entrenamiento, despliegue y monitoreo.
+:::
+
+# Contenedores y Orquestación {background-color="#1a1a1a"}
+
+## ECR y ECS
+
+::: {.columns}
+::: {.column width="50%"}
+**ECR**
+Elastic Container Registry
+
+Registro privado de imágenes Docker
+
+- Almacenar imágenes con tus dependencias
+- Versionamiento de entornos
+- Integrado con ECS y SageMaker
+:::
+::: {.column width="50%"}
+**ECS**
+Elastic Container Service
+
+Orquestación de contenedores
+
+- Correr contenedores sin administrar clúster
+- Servir modelos containerizados
+- Pipelines de datos en contenedores
+:::
+:::
+
+## MWAA — Airflow Administrado
+
+Apache Airflow administrado por AWS:
+
+::: {.incremental}
+- Orquestar pipelines complejos con **DAGs**
+- Programar entrenamiento periódico de modelos
+- Coordinar múltiples pasos con dependencias
+- Sin administrar la infraestructura de Airflow
+:::
+
+## VPC — Red Virtual Privada
+
+::: {.incremental}
+- **Subnet pública**: recursos accesibles desde internet (APIs)
+- **Subnet privada**: recursos solo internos (bases de datos, modelos)
+- **Security Group**: firewall a nivel de recurso
+:::
+
+::: {.callout-note}
+Como data scientist raramente configuras VPCs desde cero, pero entender subnets públicas vs privadas explica por qué algunos recursos son accesibles y otros no.
+:::
+
+# Otros Servicios Relevantes {background-color="#2a2a2a"}
+
+## Mechanical Turk
+
+::: {.incremental}
+- Microtareas distribuidas a trabajadores humanos
+- **Anotación de datos**: etiquetar imágenes, texto, audio
+- **Validación**: verificar calidad de datos automatizados
+- **Ground truth**: crear conjuntos de referencia para evaluación
+:::
+
+## QuickSight
+
+::: {.incremental}
+- Servicio de **Business Intelligence** de AWS
+- Dashboards interactivos conectados a S3, Athena, Redshift
+- Monitoreo de modelos en producción
+- Reportes automáticos para stakeholders
+:::
+
+## Billing — Control de Costos
+
+::: {.callout-warning}
+## Configura alertas desde el primer día
+Es fácil olvidar una instancia corriendo o un endpoint activo y recibir una factura inesperada.
+:::
+
+::: {.incremental}
+- **Cost Explorer**: visualizar gasto histórico
+- **AWS Budgets**: alertas al superar un umbral
+- **Cost Allocation Tags**: atribuir costos a proyectos
+:::
+
+# Resumen {background-color="#1a1a1a"}
+
+## Mapa de Servicios AWS
+
+| Servicio | Para qué |
+|---------|---------|
+| EC2 | VMs y GPU para entrenamiento |
+| S3 | Almacenamiento de datos y modelos |
+| Lambda | Automatización serverless |
+| Athena | SQL sobre S3 |
+| Redshift | Data warehouse analítico |
+| Glue | ETL y catálogo de datos |
+| SageMaker | Ciclo completo de ML |
+| ECR / ECS | Contenedores Docker |
+| MWAA | Orquestación de pipelines |
+| Mechanical Turk | Anotación de datos |
+| QuickSight | Dashboards para stakeholders |
+| Billing | Control de costos |
+
+## Recursos
+
+- [E33 — AWS para Data Scientists](https://www.youtube.com/watch?v=xeDjQgOdGb4)
+- [AWS en 100 Segundos](https://www.youtube.com/watch?v=JIbIYCM48to)
+- [Comparación AWS, Azure, GCP](https://cloud.google.com/docs/get-started/aws-azure-gcp-service-comparison?hl=es-419)
+- [Top AWS Services — GeeksForGeeks](https://www.geeksforgeeks.org/top-aws-services/)
+
+# ¿Preguntas? {background-color="#2a2a2a"}

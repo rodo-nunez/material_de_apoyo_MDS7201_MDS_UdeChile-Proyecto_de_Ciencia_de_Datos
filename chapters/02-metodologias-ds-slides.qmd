@@ -1,0 +1,629 @@
+---
+title: "Metodologías de Trabajo en Ciencia de Datos"
+subtitle: "MDS7201 - Master of Data Science"
+author: "Universidad de Chile"
+format:
+  revealjs:
+    theme: [default, ../custom-slides.scss]
+    slide-number: true
+    chalkboard: true
+    preview-links: auto
+    code-fold: false
+    code-tools: true
+    transition: slide
+    background-transition: fade
+  beamer:
+    theme: Madrid
+    colortheme: default
+    fonttheme: professionalfonts
+    aspectratio: 169
+    navigation: horizontal
+    section-titles: true
+    toc: true
+---
+
+# Importancia de las Metodologías {background-color="#1a1a1a"}
+
+## ¿Por Qué Necesitamos Metodologías?
+
+::: {.incremental}
+- **Reducción de Riesgos**: Identificar problemas tempranamente
+- **Mejora de Productividad**: Evitar trabajo redundante
+- **Mejores Insights**: Proceso estructurado de análisis
+- **Reproducibilidad**: Resultados verificables
+:::
+
+## Beneficios Clave
+
+**Reducción de Riesgos**
+
+::: {.incremental}
+- Identificación temprana de problemas
+- Puntos de control en cada etapa
+- Gestión realista de expectativas
+- Evitar desperdicio de recursos
+:::
+
+## Beneficios Clave
+
+**Mejora de Productividad**
+
+::: {.incremental}
+- Foco en objetivos claros
+- Evitar trabajo redundante
+- Colaboración efectiva
+- Reutilización de componentes
+:::
+
+## Beneficios Clave
+
+**Generación de Mejores Insights**
+
+::: {.incremental}
+- Exploración exhaustiva
+- Validación rigurosa
+- Documentación adecuada
+- Comunicación efectiva
+:::
+
+# Diferencias con Software Tradicional {background-color="#2a2a2a"}
+
+## Características Únicas de Data Science
+
+::: {.columns}
+::: {.column width="50%"}
+**Naturaleza Exploratoria**
+
+- Requisitos menos definidos
+- Experimentación constante
+- Resultados no predecibles
+- Éxito puede redefinirse
+:::
+
+::: {.column width="50%"}
+**Dependencia de Datos**
+
+- Calidad variable de datos
+- Sesgos no evidentes
+- Disponibilidad cambiante
+- Validación constante
+:::
+:::
+
+## Proceso Iterativo
+
+![](https://upload.wikimedia.org/wikipedia/commons/b/b9/CRISP-DM_Process_Diagram.png){fig-align="center" width="40%"}
+
+::: {.incremental}
+- Volver a etapas anteriores es normal
+- Refinamiento continuo de modelos
+- Métricas de éxito evolucionan
+- Aprendizaje acumulativo
+:::
+
+# Riesgos Comunes {background-color="#1a1a1a"}
+
+## Riesgos Técnicos
+
+::: {.incremental}
+- **Calidad de datos**: Datos incompletos o sesgados
+- **Escalabilidad**: Funciona en dev, falla en producción
+- **Complejidad subestimada**: Infraestructura más compleja
+- **Obsolescencia**: Modelos que pierden efectividad
+:::
+
+## Riesgos de Negocio
+
+::: {.incremental}
+- **Objetivos mal definidos**: Problema poco claro
+- **Expectativas irrealistas**: Resultados imposibles
+- **Falta de adopción**: Solución no se usa
+- **ROI insuficiente**: Inversión no justificada
+:::
+
+## Riesgos de Equipo
+
+::: {.incremental}
+- **Gaps de habilidades**: Falta conocimiento crítico
+- **Comunicación deficiente**: Malentendidos frecuentes
+- **Rotación**: Pérdida de conocimiento
+- **Sobrecarga**: Equipo pequeño, muchas tareas
+:::
+
+# Áreas Clave de Enfoque {background-color="#2a2a2a"}
+
+## Comprensión del Problema
+
+::: {.incremental}
+- Entender contexto y objetivos
+- Identificar stakeholders
+- Definir métricas medibles
+- Establecer valor esperado
+:::
+
+## Calidad de Datos
+
+::: {.incremental}
+- Evaluar calidad tempranamente
+- Identificar fuentes adicionales
+- Procesos de validación
+- Planificar para problemas
+:::
+
+## Iteración Continua
+
+::: {.incremental}
+- Ciclos cortos de desarrollo
+- Feedback temprano y frecuente
+- Validación constante
+- Disposición a pivotar
+:::
+
+## Comunicación
+
+::: {.incremental}
+- Comunicación constante con stakeholders
+- Documentación clara
+- Traducir técnico a negocio
+- Alinear expectativas
+:::
+
+# Evolución de Metodologías {background-color="#1a1a1a"}
+
+## Línea de Tiempo
+
+::: {.incremental}
+- **1990s**: KDD - Knowledge Discovery in Databases
+- **1999**: CRISP-DM - Standard Process
+- **2012**: SEMMA - SAS approach
+- **2017**: Domino Data Science Lifecycle
+- **2020s**: TDSP - Team Data Science Process
+- **2021**: CRISP-ML(Q) - ML with Quality
+- **Presente**: MLOps - Operations focus
+:::
+
+# KDD (1990s) {background-color="#2a2a2a"}
+
+## Knowledge Discovery in Databases
+
+**Etapas Secuenciales:**
+
+::: {.incremental}
+1. **Selection**: Identificar datos relevantes
+2. **Pre-processing**: Limpiar y manejar faltantes
+3. **Transformation**: Reducir, normalizar, crear variables
+4. **Data Mining**: Aplicar algoritmos
+5. **Interpretation/Evaluation**: Validar e interpretar
+:::
+
+## KDD - Fortalezas y Limitaciones
+
+::: {.columns}
+::: {.column width="50%"}
+**Fortalezas**
+
+- Proceso sistemático
+- Énfasis en preprocesamiento
+- Reconoce proceso completo
+:::
+
+::: {.column width="50%"}
+**Limitaciones**
+
+- Muy lineal
+- Poco contexto de negocio
+- Foco excesivo en técnica
+:::
+:::
+
+# CRISP-DM (1999) {background-color="#1a1a1a"}
+
+## Cross-Industry Standard Process
+
+![](https://upload.wikimedia.org/wikipedia/commons/b/b9/CRISP-DM_Process_Diagram.png){fig-align="center" width="50%"}
+
+**Estándar de facto en la industria**
+
+## Las 6 Fases de CRISP-DM
+
+**1. Business Understanding**
+
+- ¿Qué necesita el negocio?
+- Definir objetivos empresariales
+- Plan preliminar
+
+## Las 6 Fases de CRISP-DM
+
+**2. Data Understanding**
+
+- ¿Qué datos tenemos/necesitamos?
+- Recolectar datos iniciales
+- Verificar calidad
+
+## Las 6 Fases de CRISP-DM
+
+**3. Data Preparation**
+
+- ¿Cómo organizamos datos?
+- Seleccionar datos relevantes
+- Limpiar y transformar
+
+## Las 6 Fases de CRISP-DM
+
+**4. Modeling**
+
+- ¿Qué técnicas aplicar?
+- Seleccionar algoritmos
+- Construir modelos
+- Ajustar parámetros
+
+## Las 6 Fases de CRISP-DM
+
+**5. Evaluation**
+
+- ¿Qué modelo es mejor?
+- Evaluar vs. criterios de éxito
+- Revisar proceso
+- Determinar próximos pasos
+
+## Las 6 Fases de CRISP-DM
+
+**6. Deployment**
+
+- ¿Cómo acceden stakeholders?
+- Planificar implementación
+- Informe final
+- Documentar lecciones
+
+## CRISP-DM - Fortalezas
+
+::: {.incremental}
+- ✅ Proceso iterativo y flexible
+- ✅ Énfasis en comprensión de negocio
+- ✅ Aplicable a múltiples industrias
+- ✅ Ampliamente documentado
+- ✅ Conocido en la industria
+:::
+
+## CRISP-DM - Limitaciones
+
+::: {.incremental}
+- ⚠️ No aborda ML moderno ni Big Data
+- ⚠️ Limitado en aspectos de producción
+- ⚠️ Sin monitoreo post-despliegue
+- ⚠️ Puede ser muy general
+:::
+
+::: {.callout-note}
+Sigue siendo relevante porque captura la naturaleza iterativa fundamental
+:::
+
+# TDSP (Contemporáneo) {background-color="#2a2a2a"}
+
+## Team Data Science Process
+
+**Microsoft - Actualizado constantemente**
+
+Moderniza CRISP-DM con prácticas ágiles y equipos multidisciplinarios
+
+## Etapas de TDSP
+
+::: {.incremental}
+1. **Business Understanding**: Objetivos y plan
+2. **Data Acquisition**: Ingerir y explorar datos
+3. **Modeling**: Feature engineering y entrenamiento
+4. **Deployment**: Implementar en producción
+5. **Customer Acceptance**: Validar y transferir
+:::
+
+## Características Distintivas
+
+**Coexistencia de Fases**
+
+- Múltiples actividades simultáneas
+- Mayor flexibilidad
+
+**Roles Definidos**
+
+::: {.incremental}
+- Project Lead
+- Team Lead
+- Data Scientist
+- Data Engineer
+- Application Architect
+:::
+
+## TDSP - Fortalezas y Limitaciones
+
+::: {.columns}
+::: {.column width="50%"}
+**Fortalezas**
+
+- Roles explícitos
+- Plantillas y templates
+- Gestión completa
+- Prácticas modernas
+:::
+
+::: {.column width="50%"}
+**Limitaciones**
+
+- Sesgo hacia Azure
+- Complejo para equipos pequeños
+- Requiere madurez organizacional
+:::
+:::
+
+# CRISP-ML(Q) (2021) {background-color="#1a1a1a"}
+
+## CRISP for Machine Learning
+
+**Evolución moderna con énfasis en Quality Assurance**
+
+Específicamente diseñado para ML moderno
+
+## Etapas de CRISP-ML(Q)
+
+::: {.incremental}
+1. **Business and Data Understanding**
+2. **Data Engineering**
+3. **ML Model Engineering**
+4. **Quality Assurance** ⭐
+5. **Deployment**
+6. **Monitoring and Maintenance** ⭐
+:::
+
+## ML Canvas
+
+![](https://www.ownml.co/machine-learning-canvas){fig-align="center" width="70%"}
+
+**Herramienta visual para planificación**
+
+[ownml.co/machine-learning-canvas](https://www.ownml.co/machine-learning-canvas)
+
+## Énfasis en Quality Assurance
+
+::: {.incremental}
+- QA es una fase completa
+- Testing de fairness y bias
+- Validación de robustez
+- Aspectos éticos y legales
+- Más allá de métricas tradicionales
+:::
+
+## Enfoque en Producción
+
+::: {.incremental}
+- Deployment no es el final
+- Monitoreo continuo esencial
+- Mantenimiento a largo plazo
+- Estrategias de reentrenamiento
+:::
+
+## CRISP-ML(Q) - Evaluación
+
+::: {.columns}
+::: {.column width="50%"}
+**Fortalezas**
+
+- Diseñado para ML moderno
+- Énfasis en calidad
+- Ciclo de vida completo
+- Aspectos éticos
+:::
+
+::: {.column width="50%"}
+**Limitaciones**
+
+- Relativamente nuevo
+- Puede ser excesivo
+- Requiere infraestructura
+:::
+:::
+
+# MLOps {background-color="#2a2a2a"}
+
+## Machine Learning Operations
+
+**Siguiente evolución: Operacionalización continua**
+
+Merece un curso completo, aquí los principios
+
+## Principios de MLOps
+
+::: {.columns}
+::: {.column width="50%"}
+**Fundamentales**
+
+- Automation
+- Continuous X
+- Versioning
+- Experiments Tracking
+:::
+
+::: {.column width="50%"}
+**Avanzados**
+
+- Testing
+- Monitoring
+- Reproducibility
+- Modular Architecture
+:::
+:::
+
+## Continuous X
+
+::: {.incremental}
+- **CI**: Continuous Integration
+- **CD**: Continuous Delivery
+- **CT**: Continuous Training ⭐
+- **CM**: Continuous Monitoring ⭐
+:::
+
+::: {.callout-note}
+CT y CM son únicos de ML
+:::
+
+## Versioning en MLOps
+
+::: {.incremental}
+- 📝 Código fuente
+- 📊 Datos de entrenamiento
+- 🤖 Modelos entrenados
+- ⚙️ Configuraciones
+- 🔍 Trazabilidad completa
+:::
+
+## Testing en ML
+
+::: {.incremental}
+- Unit tests para código
+- Integration tests para pipelines
+- Validation tests para modelos
+- Data quality tests
+- Model fairness tests
+:::
+
+## Niveles de Madurez MLOps
+
+::: {.incremental}
+- **Nivel 0**: Todo manual, notebooks
+- **Nivel 1**: Pipeline ML automatizado
+- **Nivel 2**: CI/CD completo
+- **Nivel 3**: Full MLOps con CT
+:::
+
+::: {.callout-important}
+Implementación gradual - no todo de una vez
+:::
+
+# Comparación de Metodologías {background-color="#1a1a1a"}
+
+## Tabla Comparativa
+
+| Aspecto | CRISP-DM | TDSP | CRISP-ML(Q) | MLOps |
+|---------|----------|------|-------------|-------|
+| **Año** | 1999 | 2020s | 2021 | 2010s+ |
+| **Complejidad** | Media | Alta | Alta | Muy alta |
+| **Producción** | Bajo | Medio | Alto | Muy alto |
+| **QA** | Bajo | Medio | Muy alto | Alto |
+
+## ¿Cuál Elegir?
+
+::: {.callout-tip}
+## Depende de:
+- Madurez del equipo
+- Complejidad del proyecto
+- Recursos disponibles
+- Requisitos de producción
+- Contexto regulatorio
+:::
+
+# Recomendaciones para el Curso {background-color="#2a2a2a"}
+
+## Enfoque Híbrido
+
+**Base: CRISP-DM Adaptado**
+
+::: {.incremental}
+- Flexible para exploración
+- Documentación extensa
+- No requiere infraestructura compleja
+- Ampliamente conocido
+:::
+
+## Incorporar de CRISP-ML(Q)
+
+::: {.incremental}
+- 📋 ML Canvas para planificación
+- ✅ Quality assurance de modelos
+- 🤔 Aspectos éticos
+- 📝 Documentación rigurosa
+:::
+
+## Principios de MLOps
+
+::: {.incremental}
+- Git para versionamiento
+- Experiments tracking (MLflow, W&B)
+- Testing básico
+- Documentación reproducible
+- Pensar en deployment
+:::
+
+## Adaptaciones para Proyectos Académicos
+
+::: {.incremental}
+- ⏰ Timebox claro por hito
+- 📦 Entregas incrementales
+- 💬 Feedback continuo
+- 📚 Documentación exhaustiva
+- 🧪 Está bien experimentar
+:::
+
+# Recursos {background-color="#1a1a1a"}
+
+## Lecturas Recomendadas
+
+- [Data Science Methodologies Overview](https://www.datascience-pm.com/)
+- [CRISP-DM Guide](https://www.datascience-pm.com/crisp-dm-2/)
+- [Microsoft TDSP Docs](https://learn.microsoft.com/en-us/azure/architecture/data-science-process/)
+- [CRISP-ML(Q) Paper](https://arxiv.org/pdf/2003.05155)
+- [MLOps Principles](https://ml-ops.org/)
+
+## Herramientas
+
+::: {.columns}
+::: {.column width="50%"}
+**Planning**
+
+- ML Canvas
+- Project templates
+:::
+
+::: {.column width="50%"}
+**Tracking**
+
+- MLflow
+- Weights & Biases
+- Neptune.ai
+:::
+:::
+
+## Videos Recomendados
+
+- Introducción a CRISP-DM
+- MLOps fundamentals
+- Data Science project management
+- Agile for Data Science
+
+# Próximos Pasos {background-color="#2a2a2a"}
+
+## Siguiente Capítulo
+
+**Metodologías de Trabajo Genéricas**
+
+::: {.incremental}
+- Waterfall vs Agile
+- Manifiesto Ágil
+- Scrum, Kanban, XP
+- Adaptación a Data Science
+:::
+
+## Para Esta Semana
+
+::: {.incremental}
+1. 📖 Leer sobre CRISP-DM
+2. 🎨 Explorar ML Canvas
+3. 🤔 Pensar en tu proyecto
+4. 📋 Comenzar planificación
+:::
+
+# ¿Preguntas? {background-color="#1a1a1a"}
+
+## Referencias
+
+- Chapman, P., et al. (1999). CRISP-DM 1.0
+- Martínez-Plumed, F., et al. (2021). CRISP-DM Twenty Years Later
+- Studer, S., et al. (2021). CRISP-ML(Q)
+- Microsoft (2024). TDSP Documentation

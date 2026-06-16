@@ -1,0 +1,42 @@
+# Configuración compartida para todas las presentaciones
+format:
+  revealjs:
+    theme: [dark, custom-slides.scss]
+    slide-number: true
+    show-slide-number: all
+    hash-type: number
+    preview-links: auto
+    chalkboard: true
+    multiplex: false
+    scrollable: true
+    navigation-mode: linear
+    controls: true
+    progress: true
+    history: true
+    center: true
+    transition: slide
+    background-transition: fade
+    code-fold: false
+    code-line-numbers: false
+    code-copy: true
+    highlight-style: monokai
+    fig-align: center
+    footer: "MDS7201 - Proyecto de Ciencia de Datos | Universidad de Chile"
+  beamer:
+    theme: Madrid
+    colortheme: default
+    fonttheme: structurebold
+    toc: true
+    slide-level: 2
+    section-titles: true
+    keep-tex: true
+    include-in-header:
+      text: |
+        \usepackage[spanish]{babel}
+        \setbeamercolor{background canvas}{bg=black!85}
+        \setbeamercolor{normal text}{fg=white}
+        \setbeamercolor{structure}{fg=blue!50}
+
+language:
+  title-block-author-single: "Autor"
+  title-block-published: "Fecha"

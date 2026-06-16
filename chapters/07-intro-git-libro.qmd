@@ -1,0 +1,1904 @@
+# Introducción a Git
+
+## Introducción
+
+Git es probablemente la herramienta más importante que aprenderás en tu carrera como científico de datos. No es exageración decir que **no saber Git te hace perder muchos puntos** tanto en contextos académicos como profesionales.
+
+En este capítulo aprenderás qué es Git, por qué es fundamental, y cómo usarlo efectivamente en tus proyectos de Data Science.
+
+::: {.callout-important}
+## Git es Obligatorio
+Desde este momento en adelante, **TODOS** tus proyectos deben usar Git. No es opcional. Fallar, no entender, repasar y repetir hasta que lo interiorices completamente.
+:::
+
+## ¿Qué es Git?
+
+### Control de Versiones
+
+**Control de versiones** es un sistema que registra cambios en archivos a lo largo del tiempo, permitiéndote:
+
+- Ver qué cambió, cuándo y quién lo cambió
+- Volver a versiones anteriores
+- Trabajar en paralelo con otros sin conflictos
+- Experimentar sin miedo a romper cosas
+
+**El problema sin control de versiones:**
+
+```
+proyecto_final.py
+proyecto_final_v2.py
+proyecto_final_v2_modificado.py
+proyecto_final_v2_modificado_REAL.py
+proyecto_final_v2_modificado_REAL_ESTE_SI.py
+proyecto_final_v2_modificado_REAL_ESTE_SI_ahora_si_final.py
+```
+
+¿Te suena familiar? Esto es un caos.
+
+**Con control de versiones:**
+
+```
+proyecto.py  (con historial completo de cambios)
+```
+
+Un solo archivo, pero puedes ver todo su historial, volver a cualquier versión anterior, y saber exactamente qué cambió.
+
+### Sistemas de Control de Versiones
+
+**Principales sistemas:**
+
+**1. SVN (Subversion)**
+
+- Sistema centralizado (un servidor central)
+- Popular en los 2000s
+- Requiere conexión al servidor para la mayoría de operaciones
+- Menos flexible que Git
+
+**2. Mercurial**
+
+- Sistema distribuido como Git
+- Sintaxis más simple que Git
+- Menos popular en la industria
+- Usado por algunos proyectos grandes (ej: Facebook históricamente)
+
+**3. Git**
+
+- Sistema distribuido (cada desarrollador tiene copia completa)
+- Creado por Linus Torvalds en 2005 para Linux kernel
+- **El estándar de facto actual**
+- Usado por >90% de proyectos open source
+- Extremadamente potente y flexible
+
+**Por qué Git ganó:**
+
+- Velocidad
+- Soporte para desarrollo no-lineal (branches)
+- Completamente distribuido
+- Capacidad de manejar proyectos grandes eficientemente
+- GitHub, GitLab, Bitbucket lo hicieron accesible
+
+::: {.callout-note}
+## Para este curso
+Usaremos **Git** exclusivamente. Es lo que encontrarás en >95% de trabajos en tech.
+:::
+
+## ¿Para Qué Sirve Git?
+
+### 1. Colaborar Fácilmente con Código
+
+Git permite que múltiples personas trabajen en el mismo proyecto simultáneamente sin pisarse los pies.
+
+**Sin Git:**
+
+- "Envíame tu versión por email"
+- "No puedo trabajar hasta que termines"
+- Conflictos al combinar cambios manualmente
+- Pérdida de trabajo
+
+**Con Git:**
+
+- Cada persona trabaja en su copia
+- Cambios se integran automáticamente
+- Conflictos se detectan y resuelven claramente
+- Historial completo de quién hizo qué
+
+**Ejemplo en tu proyecto del curso:**
+
+```bash
+# Ana trabaja en feature engineering
+git checkout -b feature/engineering
+# Hace cambios, commits
+
+# Pedro trabaja en modelamiento
+git checkout -b feature/modeling
+# Hace cambios, commits
+
+# Ambos pueden trabajar simultáneamente
+# Luego integran sus cambios sin conflictos
+```
+
+### 2. Respaldar y Volver a Estados Anteriores
+
+**Reproducibilidad en Data Science:**
+
+La reproducibilidad es crítica en DS. Git te permite:
+
+- **Volver a versión funcional**: "El código funcionaba ayer, ¿qué rompí?"
+- **Reproducir resultados**: "Este modelo dio 85% accuracy, ¿con qué código exactamente?"
+- **Auditar cambios**: "¿Por qué cambiamos esta transformación de datos?"
+- **Recuperar trabajo eliminado**: "Borré ese análisis, pero lo necesito de nuevo"
+
+**Caso real en proyecto:**
+
+```bash
+# Semana 3: Modelo funciona bien
+git commit -m "Baseline model: 82% accuracy"
+git tag v1.0-baseline
+
+# Semana 4: Experimentas con mejoras
+# ... algo sale mal, accuracy baja a 65%
+
+# Puedes volver al baseline funcional
+git checkout v1.0-baseline
+
+# O ver exactamente qué cambiaste
+git diff v1.0-baseline
+```
+
+### 3. Experimentar sin Miedo
+
+Con Git, puedes experimentar libremente porque siempre puedes volver atrás:
+
+```bash
+# Crear branch para experimento arriesgado
+git checkout -b experiment/deep-learning
+
+# Experimentar libremente
+# Si funciona: merge al main
+# Si no funciona: simplemente eliminar el branch
+
+git checkout main
+git branch -D experiment/deep-learning  # Descartar experimento
+```
+
+### 4. Documentar Decisiones
+
+Los commits bien escritos documentan **por qué** se hicieron cambios:
+
+```bash
+# ❌ Mal commit message
+git commit -m "fix"
+
+# ✅ Buen commit message
+git commit -m "Change imputation from mean to median
+
+Mean imputation was skewed by outliers in income variable.
+Median is more robust and improved model accuracy from 78% to 82%.
+See analysis in notebooks/03_imputation_comparison.ipynb"
+```
+
+## Por Qué es Fundamental para Data Science
+
+### Razones Técnicas
+
+**1. Reproducibilidad Científica**
+
+Data Science es ciencia. La ciencia requiere reproducibilidad.
+
+```bash
+# Alguien cuestiona tus resultados
+# Con Git, puedes mostrar:
+git log --all --grep="churn model"
+git show abc123  # Commit exacto con el código que produjo resultados
+```
+
+**2. Versionamiento de Experimentos**
+
+```bash
+# Experimento 1: Random Forest
+git commit -m "Experiment 1: Random Forest, accuracy=82%"
+
+# Experimento 2: XGBoost
+git commit -m "Experiment 2: XGBoost, accuracy=85%"
+
+# Experimento 3: Neural Network
+git commit -m "Experiment 3: NN, accuracy=84% but slower"
+
+# Fácil comparar y volver al mejor
+```
+
+**3. Colaboración en Notebooks**
+
+Aunque notebooks son difíciles de versionar, Git ayuda:
+
+```bash
+# Usar nbdime para diffs de notebooks
+pip install nbdime
+nbdime config-git --enable --global
+
+# O limpiar notebooks antes de commit
+jupyter nbconvert --clear-output --inplace notebook.ipynb
+git add notebook.ipynb
+```
+
+### Razones Profesionales
+
+**1. Empleabilidad**
+
+**Si no sabes Git, pierdes muchos puntos en entrevistas.**
+
+- 99% de empresas tech usan Git
+- Se espera que cualquier DS sepa Git
+- En entrevistas técnicas, te pedirán compartir código via Git
+
+**2. Trabajar en Equipo**
+
+En la industria, trabajarás con:
+
+- Otros Data Scientists
+- Data Engineers
+- ML Engineers
+- Software Engineers
+
+Todos usan Git. Tú también debes saberlo.
+
+**3. Open Source y Portfolio**
+
+Tu GitHub es tu portafolio:
+
+```
+github.com/tu-usuario/
+├── churn-prediction/          # Proyecto del curso
+├── nlp-sentiment-analysis/    # Proyecto personal
+└── contributions/             # Contribuciones a proyectos open source
+```
+
+Reclutadores revisan tu GitHub. Proyectos bien documentados con Git impresionan.
+
+### En Este Curso
+
+::: {.callout-warning}
+## Evaluación
+Parte de la evaluación del curso incluye:
+
+- Uso adecuado de Git
+- Commits frecuentes y descriptivos
+- Branches para features
+- README completo
+- Historial claro del proyecto
+
+**No usar Git adecuadamente = perder puntos**
+:::
+
+## Servicios de Repositorios Remotos
+
+Git es el software que corre en tu computadora. Los servicios remotos hospedan tus repositorios en la nube.
+
+### GitHub
+
+**El más popular (>100 millones de usuarios)**
+
+**Ventajas:**
+
+- Gratuito para repositorios públicos y privados
+- GitHub Actions (CI/CD gratis)
+- GitHub Pages (hosting gratis)
+- Comunidad más grande
+- Integración con muchas herramientas
+- GitHub Copilot
+
+**Ideal para:**
+
+- Proyectos open source
+- Portafolio personal
+- Colaboración pública
+- Este curso ✅
+
+**Planes:**
+
+- Free: Repos ilimitados, públicos y privados
+- Pro: $4/mes (features avanzadas)
+- Team: $4/usuario/mes
+- Enterprise: Custom
+
+**URL:** [github.com](https://github.com)
+
+### GitLab
+
+**Segunda opción más popular**
+
+**Ventajas:**
+
+- CI/CD integrado muy potente
+- Puede ser self-hosted (on-premise)
+- Gratuito con features generosas
+- DevOps tools integrados
+
+**Ideal para:**
+
+- Empresas que quieren control total
+- Proyectos que necesitan CI/CD robusto
+- Equipos que valoran privacidad
+
+**URL:** [gitlab.com](https://gitlab.com)
+
+### Bitbucket
+
+**De Atlassian (mismo creador de Jira)**
+
+**Ventajas:**
+
+- Integración perfecta con Jira
+- Bueno para equipos enterprise
+- CI/CD con Bitbucket Pipelines
+
+**Ideal para:**
+
+- Empresas que usan suite Atlassian
+- Equipos pequeños (gratis hasta 5 usuarios)
+
+**URL:** [bitbucket.org](https://bitbucket.org)
+
+### On-Premise
+
+**Git en servidores propios de la empresa**
+
+**Opciones:**
+
+- GitLab self-hosted
+- Gitea
+- Gogs
+
+**Ventajas:**
+
+- Control total de datos
+- Cumplir regulaciones estrictas
+- Sin límites de almacenamiento
+
+**Desventajas:**
+
+- Mantener infraestructura
+- Costo de servidores
+- Menos features que servicios cloud
+
+::: {.callout-tip}
+## Para el Curso
+Usaremos **GitHub** por su popularidad, facilidad de uso, y porque es estándar de la industria.
+:::
+
+## Lógica Básica de Funcionamiento
+
+### ¿Qué es un Repositorio?
+
+Un **repositorio** (o "repo") es un proyecto versionado con Git.
+
+**Contiene:**
+
+- Todos los archivos del proyecto
+- Todo el historial de cambios
+- Información sobre branches, tags, etc.
+
+**Tipos:**
+
+**1. Repositorio Local**
+
+- En tu computadora
+- Puedes trabajar offline
+- Tu copia completa del proyecto
+
+**2. Repositorio Remoto**
+
+- En GitHub/GitLab/Bitbucket
+- Compartido con el equipo
+- Backup en la nube
+
+**Estructura de un repo:**
+```
+mi-proyecto/
+├── .git/                    # Carpeta oculta con toda la magia de Git
+├── src/
+├── data/
+├── README.md
+└── .gitignore
+```
+
+### ¿Qué es un Commit?
+
+Un **commit** es una bolsa de cambios respecto al mismo tópico, que describes en un mensaje de commit. Si uno "se para en un commit", uno ve la acumulación de commits hasta ese punto, lo que es una "fotografía" del estado de tu proyecto en un momento específico.
+
+**Anatomía de un commit:**
+
+```
+commit abc123def456...  (hash único del commit)
+Author: Tu Nombre <tu@email.com>
+Date:   Mon Dec 4 10:30:00 2023
+
+    Add baseline logistic regression model
+    
+
+    - Implemented data preprocessing pipeline
+    - Trained logistic regression with default params
+    - Achieved 78% accuracy on test set
+    
+    Next steps: tune hyperparameters
+```
+
+**Contiene:**
+
+- **Cambios**: Qué archivos cambiaron y cómo
+- **Metadata**: Autor, fecha, mensaje
+- **Parent**: Link al commit anterior (historial)
+- **Hash**: ID único (abc123...)
+
+**Commits forman una cadena:**
+
+```
+C1 ← C2 ← C3 ← C4 ← C5 (HEAD)
+```
+
+Cada commit apunta al anterior, formando el historial.
+
+### ¿Qué es una Rama (Branch)?
+
+Una **rama** es una línea independiente de desarrollo.
+
+**Concepto:**
+
+```
+        C3 ← C4 ← C5 (feature/new-model)
+       /
+C1 ← C2 ← C6 ← C7 (main)
+```
+
+- `main`: Rama principal, código estable
+- `feature/new-model`: Rama para desarrollar feature nuevo
+
+**Por qué usar branches:**
+
+1. **Desarrollo paralelo**: Múltiples features simultáneamente
+2. **Experimentación segura**: No afecta código estable
+3. **Code review**: Cambios se revisan antes de integrar
+4. **Organización**: Cada feature/fix en su rama
+
+**Workflow típico:**
+
+```bash
+# main está estable
+git checkout main
+
+# Crear rama para nueva feature
+git checkout -b feature/feature-engineering
+
+# Trabajar en la feature
+# ... hacer cambios ...
+git add src/features.py
+git commit -m "Add temporal features"
+
+# Cuando está listo, integrar a main
+git checkout main
+git merge feature/feature-engineering
+```
+
+### ¿Qué es un Tag?
+
+Un **tag** es una etiqueta para marcar puntos importantes en el historial.
+
+**Usos comunes:**
+
+- Versiones de releases: `v1.0`, `v2.0`
+- Hitos del proyecto: `baseline-model`, `final-submission`
+- Resultados reportados: `paper-v1`, `presentation-results`
+
+**Ejemplo:**
+
+```bash
+# Marcar versión baseline
+git tag v1.0-baseline -m "Baseline model: 82% accuracy"
+
+# Marcar submission final
+git tag final-submission -m "Final project submission for MDS7201"
+
+# Listar tags
+git tag
+# v1.0-baseline
+# v1.5-improved
+# final-submission
+
+# Volver a un tag específico
+git checkout v1.0-baseline
+```
+
+**Diferencia con branches:**
+
+- **Branch**: Puntero móvil (avanza con nuevos commits)
+- **Tag**: Puntero fijo (siempre apunta al mismo commit)
+
+### ¿Qué es un Remoto?
+
+Un **remoto** es un repositorio en otro lugar (típicamente en GitHub/GitLab).
+
+**Concepto:**
+
+```
+Tu computadora (local)          GitHub (remoto)
+├── main                        ├── main
+├── feature/branch1            ├── feature/branch1
+└── .git/                       └── .git/
+```
+
+**Puedes tener múltiples remotos:**
+
+```bash
+# Remoto principal (origin)
+origin: https://github.com/tu-usuario/proyecto.git
+
+# Fork de otro proyecto
+upstream: https://github.com/original-autor/proyecto.git
+
+# Remoto personal de backup
+backup: https://gitlab.com/tu-usuario/proyecto.git
+```
+
+### ¿Qué es Origin?
+
+**`origin`** es el nombre convencional del remoto principal.
+
+Cuando clonas un repo, automáticamente se crea un remoto llamado `origin`:
+
+```bash
+git clone https://github.com/usuario/proyecto.git
+# Automáticamente crea remoto 'origin' apuntando a esa URL
+
+git remote -v
+# origin  https://github.com/usuario/proyecto.git (fetch)
+# origin  https://github.com/usuario/proyecto.git (push)
+```
+
+**No es mágico**, solo es convención. Podrías llamarlo diferente:
+
+```bash
+git remote rename origin github
+git remote add gitlab https://gitlab.com/usuario/proyecto.git
+```
+
+Pero `origin` es el estándar que todos usan.
+
+## Comandos Básicos
+
+### git init
+
+**Propósito**: Inicializar un nuevo repositorio Git.
+
+```bash
+# Crear carpeta para proyecto
+mkdir mi-proyecto
+cd mi-proyecto
+
+# Inicializar Git
+git init
+
+# Esto crea carpeta oculta .git/
+ls -la
+# drwxr-xr-x  .git/
+```
+
+**Cuándo usar**:
+
+- Empezar un proyecto nuevo desde cero
+- Convertir proyecto existente en repo Git
+
+**Resultado**:
+
+- Crea carpeta `.git/` con toda la infraestructura de Git
+- El directorio actual se convierte en un repositorio Git
+
+::: {.callout-note}
+## Alternativa: git clone
+Si el proyecto ya existe en GitHub, usar `git clone` en lugar de `git init`.
+:::
+
+### git status
+
+**Propósito**: Ver el estado actual del repositorio.
+
+```bash
+git status
+```
+
+**Muestra:**
+
+- Archivos modificados
+- Archivos en staging (listos para commit)
+- Archivos sin trackear
+- Branch actual
+
+**Ejemplo de output:**
+
+```bash
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+        modified:   src/model.py
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+        modified:   README.md
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        data/new_dataset.csv
+```
+
+**Cuándo usar**:
+
+- Constantemente, es tu comando más usado
+- Antes de hacer commit
+- Para ver qué cambió
+
+::: {.callout-tip}
+## Tip
+Usa `git status` MUCHO. Es imposible usar demasiado. Úsalo después de casi cualquier comando para ver qué pasó.
+:::
+
+### git add
+
+**Propósito**: Agregar cambios al "staging area" (preparar para commit).
+
+**Git tiene 3 estados:**
+
+```
+Working Directory  →  Staging Area  →  Repository
+(archivos modificados) (git add)    (git commit)
+```
+
+**Sintaxis:**
+
+```bash
+# Agregar archivo específico
+git add archivo.py
+
+# Agregar múltiples archivos
+git add archivo1.py archivo2.py
+
+# Agregar todos los archivos del directorio
+git add src/
+
+# Agregar TODOS los cambios
+git add .
+# o
+git add -A
+
+# Agregar interactivamente (elegir qué partes)
+git add -p
+```
+
+**Ejemplo de workflow:**
+
+```bash
+# Ver qué cambió
+git status
+# modified: src/model.py
+# modified: README.md
+
+# Agregar solo model.py
+git add src/model.py
+
+# Ver status de nuevo
+git status
+# Changes to be committed:
+#     modified: src/model.py
+# Changes not staged:
+#     modified: README.md
+```
+
+### git commit
+
+**Propósito**: Guardar los cambios del staging area en el historial.
+
+**Sintaxis:**
+
+```bash
+# Commit con mensaje inline
+git commit -m "Add baseline logistic regression model"
+
+# Commit abriendo editor para mensaje largo
+git commit
+
+# Commit agregando todos los cambios tracked
+git commit -am "Update documentation"
+# Equivalente a: git add -u && git commit -m "..."
+```
+
+**Anatomía de un buen commit message:**
+
+```bash
+# ❌ Malos mensajes
+git commit -m "fix"
+git commit -m "changes"
+git commit -m "asdfasdf"
+git commit -m "codigo nuevo"
+
+# ✅ Buenos mensajes
+git commit -m "Fix null pointer in data preprocessing"
+
+git commit -m "Add feature engineering for temporal variables
+
+- Created lag features for last 7, 14, and 30 days
+- Added rolling mean and std
+- Improved model accuracy from 78% to 82%
+
+Closes #15"
+```
+
+**Buenas prácticas:**
+
+1. **Primera línea**: Resumen corto (<50 caracteres)
+2. **Línea en blanco**
+3. **Cuerpo**: Explicación detallada si es necesario
+4. **Usar imperativo**: "Add", "Fix", "Update" (no "Added", "Fixed")
+5. **Explicar QUÉ y POR QUÉ**, no CÓMO (el código muestra cómo)
+
+### git fetch
+
+**Propósito**: Descargar cambios del remoto SIN integrarlos a tu código local.
+
+```bash
+# Fetch de origin
+git fetch origin
+
+# Fetch de todas las ramas
+git fetch --all
+```
+
+**Qué hace:**
+
+- Descarga commits nuevos del remoto
+- Actualiza referencias a branches remotos
+- NO modifica tu código local
+- NO hace merge automático
+
+**Cuándo usar:**
+
+- Ver qué cambios hay en el remoto antes de integrarlos
+- Actualizar información de branches remotos
+- Workflow seguro (fetch + review + merge)
+
+### git merge
+
+**Propósito**: Integrar cambios de una rama a otra.
+
+```bash
+# Estando en main, integrar cambios de feature-branch
+git checkout main
+git merge feature/new-model
+```
+
+**Tipos de merge:**
+
+**1. Fast-forward** (más simple):
+```
+Antes:
+main:    C1 ← C2
+feature:      C2 ← C3 ← C4
+
+Después de merge:
+main:    C1 ← C2 ← C3 ← C4
+feature:      C2 ← C3 ← C4
+```
+
+**2. Three-way merge** (cuando hay cambios en ambas):
+```
+Antes:
+main:    C1 ← C2 ← C5
+feature:      C2 ← C3 ← C4
+
+Después:
+main:    C1 ← C2 ← C5 ← C6 (merge commit)
+              ↘ C3 ← C4 ↗
+```
+
+**Conflictos:**
+
+Si ambas ramas modificaron las mismas líneas:
+
+```bash
+git merge feature/branch
+# Auto-merging src/model.py
+# CONFLICT (content): Merge conflict in src/model.py
+# Automatic merge failed; fix conflicts and then commit
+
+# Git marca conflictos en el archivo:
+<<<<<<< HEAD
+model = LogisticRegression(max_iter=100)
+=======
+model = LogisticRegression(max_iter=500)
+>>>>>>> feature/branch
+
+# Resolver manualmente, elegir una opción o combinar
+model = LogisticRegression(max_iter=500)
+
+# Marcar como resuelto
+git add src/model.py
+git commit -m "Merge feature/branch, use max_iter=500"
+```
+
+### git pull
+
+**Propósito**: `fetch` + `merge` en un solo comando.
+
+```bash
+# Pull de la rama actual desde origin
+git pull
+
+# Equivalente a:
+git fetch origin
+git merge origin/main
+```
+
+**Cuándo usar:**
+
+- Actualizar tu rama local con cambios del remoto
+- Inicio de tu sesión de trabajo
+- Antes de crear nuevo branch
+
+**Flags útiles:**
+
+```bash
+# Pull con rebase en lugar de merge (historial más limpio)
+git pull --rebase
+
+# Pull sin hacer merge automático (más seguro)
+git pull --no-commit
+```
+
+::: {.callout-warning}
+## Cuidado con Pull
+`git pull` puede crear merge commits inesperados. Para más control, usar `fetch` + `merge` por separado.
+:::
+
+### git push
+
+**Propósito**: Enviar tus commits locales al remoto.
+
+```bash
+# Push de rama actual a origin
+git push
+
+# Push especificando remoto y rama
+git push origin main
+
+# Push creando rama en remoto
+git push -u origin feature/new-branch
+# -u establece tracking (siguientes push/pull no necesitan especificar)
+
+# Push forzado (CUIDADO)
+git push --force
+```
+
+**Primera vez que pusheas una rama:**
+
+```bash
+# Crear branch local
+git checkout -b feature/analysis
+
+# Hacer commits
+git commit -m "Add analysis"
+
+# Primera vez push requiere -u
+git push -u origin feature/analysis
+# Pushes futuros: solo 'git push'
+```
+
+**Errores comunes:**
+
+```bash
+git push
+# error: failed to push some refs
+# hint: Updates were rejected because the remote contains work
+
+# Solución: pull primero, luego push
+git pull
+git push
+```
+
+### git config
+
+**Propósito**: Configurar Git (identidad, preferencias, etc.)
+
+**Configuración inicial** (hacer una vez al instalar Git):
+
+```bash
+# Tu nombre (aparecerá en commits)
+git config --global user.name "Tu Nombre"
+
+# Tu email
+git config --global user.email "tu@email.com"
+
+# Editor por default (vim, nano, code, etc.)
+git config --global core.editor "code --wait"
+
+# Ver toda la configuración
+git config --list
+```
+
+**Niveles de configuración:**
+
+```bash
+# --global: Para todos los repos del usuario
+git config --global user.name "Nombre"
+
+# --local: Solo para el repo actual (por defecto)
+git config user.email "proyecto@email.com"
+
+# --system: Para todos los usuarios del sistema (raro)
+```
+
+**Configuraciones útiles:**
+
+```bash
+# Colores en terminal
+git config --global color.ui auto
+
+# Alias para comandos frecuentes
+git config --global alias.st status
+git config --global alias.co checkout
+git config --global alias.br branch
+git config --global alias.ci commit
+
+# Ahora puedes usar:
+git st  # en lugar de git status
+git co main  # en lugar de git checkout main
+
+# Default branch name
+git config --global init.defaultBranch main
+```
+
+### git checkout
+
+**Propósito**: Cambiar entre branches o restaurar archivos.
+
+**Cambiar de branch:**
+
+```bash
+# Cambiar a branch existente
+git checkout main
+git checkout feature/branch
+
+# Crear y cambiar a nuevo branch
+git checkout -b feature/new-feature
+# Equivalente a:
+# git branch feature/new-feature
+# git checkout feature/new-feature
+```
+
+**Restaurar archivos:**
+
+```bash
+# Descartar cambios en archivo (volver a última versión commiteada)
+git checkout -- archivo.py
+
+# Restaurar archivo de commit específico
+git checkout abc123 -- archivo.py
+```
+
+**Ver commit específico:**
+
+```bash
+# Ver código como estaba en commit anterior
+git checkout abc123
+
+# Warning: "detached HEAD state"
+# Estás viendo código viejo, no en un branch
+
+# Volver a branch actual
+git checkout main
+```
+
+::: {.callout-note}
+## Git 2.23+
+Comandos nuevos más claros:
+
+- `git switch`: Para cambiar branches
+- `git restore`: Para restaurar archivos
+
+Pero `checkout` sigue funcionando y es más común verlo.
+:::
+
+### git branch
+
+**Propósito**: Crear, listar y eliminar branches.
+
+**Listar branches:**
+
+```bash
+# Listar branches locales
+git branch
+# * main
+#   feature/analysis
+#   feature/model
+
+# Listar branches remotos
+git branch -r
+# origin/main
+# origin/feature/analysis
+
+# Listar todos (local + remoto)
+git branch -a
+```
+
+**Crear branch:**
+
+```bash
+# Crear branch (pero no cambiar a él)
+git branch feature/new-feature
+
+# Crear desde commit específico
+git branch feature/fix abc123
+```
+
+**Eliminar branch:**
+
+```bash
+# Eliminar branch (si ya fue merged)
+git branch -d feature/old-feature
+
+# Forzar eliminación (aunque no esté merged)
+git branch -D feature/experimental
+
+# Eliminar branch remoto
+git push origin --delete feature/old-feature
+```
+
+**Renombrar branch:**
+
+```bash
+# Renombrar branch actual
+git branch -m nuevo-nombre
+
+# Renombrar otra branch
+git branch -m viejo-nombre nuevo-nombre
+```
+
+### git tag
+
+**Propósito**: Crear, listar y gestionar tags.
+
+**Crear tag:**
+
+```bash
+# Tag ligero (solo un puntero)
+git tag v1.0
+
+# Tag anotado (recomendado, incluye metadata)
+git tag -a v1.0 -m "Release version 1.0"
+
+# Tag de commit específico
+git tag -a v0.9 abc123 -m "Beta release"
+```
+
+**Listar tags:**
+
+```bash
+# Listar todos los tags
+git tag
+
+# Listar tags con patrón
+git tag -l "v1.*"
+# v1.0
+# v1.1
+# v1.2
+```
+
+**Push tags:**
+
+```bash
+# Tags NO se pushean automáticamente
+git push origin v1.0
+
+# Push todos los tags
+git push origin --tags
+```
+
+**Eliminar tag:**
+
+```bash
+# Eliminar tag local
+git tag -d v1.0
+
+# Eliminar tag remoto
+git push origin :refs/tags/v1.0
+# o
+git push origin --delete v1.0
+```
+
+**Ver información de tag:**
+
+```bash
+git show v1.0
+```
+
+## Workflow Típico en el Curso
+
+### Setup Inicial del Proyecto
+
+```bash
+# 1. Crear repo en GitHub (en la web)
+
+# 2. Clonar a tu computadora
+git clone https://github.com/tu-usuario/proyecto-curso.git
+cd proyecto-curso
+
+# 3. Configurar (si no lo hiciste globalmente)
+git config user.name "Tu Nombre"
+git config user.email "tu@email.com"
+
+# 4. Crear estructura del proyecto
+mkdir -p data/{raw,processed} src tests
+touch README.md .gitignore
+
+# 5. Primer commit
+git add .
+git commit -m "Initial project structure"
+git push
+```
+
+### Trabajo Diario
+
+```bash
+# Inicio del día: actualizar
+git pull
+
+# Crear branch para tarea específica
+git checkout -b feature/exploratory-analysis
+
+# Trabajar...
+# ... editar archivos ...
+
+# Ver qué cambió
+git status
+git diff
+
+# Agregar cambios
+git add notebooks/01_eda.ipynb
+git add src/data/preprocessing.py
+
+# Commit
+git commit -m "Add initial exploratory data analysis
+
+- Analyzed distribution of key variables
+- Identified 15% missing values in income column
+- Found correlation between tenure and churn (0.42)
+
+Next: implement preprocessing pipeline"
+
+# Push branch
+git push -u origin feature/exploratory-analysis
+
+# En GitHub: crear Pull Request para code review
+
+# Después de merge: volver a main y limpiar
+git checkout main
+git pull
+git branch -d feature/exploratory-analysis
+```
+
+### Antes de Cada Hito
+
+```bash
+# Asegurar que main está actualizado
+git checkout main
+git pull
+
+# Merge últimos cambios de features
+git merge feature/branch-1
+git merge feature/branch-2
+
+# Tag del hito
+git tag -a hito-1 -m "Hito 1: Presentación del problema y EDA inicial"
+git push origin hito-1
+
+# Push todo
+git push
+```
+
+### Corregir Errores Comunes
+
+**Olvidé agregar archivo al último commit:**
+
+```bash
+# Agregar archivo olvidado
+git add archivo_olvidado.py
+
+# Modificar último commit
+git commit --amend --no-edit
+```
+
+**Mensaje de commit con typo:**
+
+```bash
+git commit --amend -m "Mensaje corregido"
+```
+
+**Quiero deshacer último commit (pero mantener cambios):**
+
+```bash
+git reset --soft HEAD~1
+# Los cambios vuelven a staging area
+```
+
+**Quiero eliminar completamente último commit:**
+
+```bash
+git reset --hard HEAD~1
+# CUIDADO: Cambios se pierden permanentemente
+```
+
+## Archivo .gitignore
+
+### ¿Qué es?
+
+`.gitignore` especifica archivos que Git debe ignorar (no versionar).
+
+**Por qué necesitas .gitignore:**
+
+- Datasets grandes (versionar con DVC, no Git)
+- Archivos temporales
+- Credenciales y secrets
+- Archivos generados automáticamente
+- Archivos específicos del sistema operativo
+
+### .gitignore para Proyectos de Data Science
+
+```gitignore
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+
+# IPython
+profile_default/
+ipython_config.py
+
+# Data
+# NO versionar datos grandes
+data/raw/*
+data/processed/*
+data/interim/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+# Permitir pequeños archivos de ejemplo
+!data/raw/sample.csv
+
+# Models
+# NO versionar modelos entrenados (usar DVC o Git LFS)
+models/*.pkl
+models/*.h5
+models/*.pth
+*.model
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# Credentials
+config/credentials.yaml
+.env
+secrets.json
+*.key
+*.pem
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+temp/
+tmp/
+
+# Large files (track with Git LFS or DVC instead)
+*.csv
+*.parquet
+*.feather
+*.h5
+*.hdf5
+
+# Pero permitir pequeños CSVs de config o ejemplos
+!config/*.csv
+!tests/fixtures/*.csv
+```
+
+### Crear .gitignore
+
+```bash
+# Crear archivo
+touch .gitignore
+
+# Editar con tu editor favorito
+code .gitignore  # VS Code
+nano .gitignore  # Terminal
+
+# Agregar y commit
+git add .gitignore
+git commit -m "Add .gitignore for Python DS project"
+```
+
+### Templates útiles
+
+GitHub tiene templates pre-hechos:
+
+- [github.com/github/gitignore](https://github.com/github/gitignore)
+- `Python.gitignore`
+- `R.gitignore`
+- `JupyterNotebooks.gitignore`
+
+## Buenas Prácticas
+
+### 1. Commits Frecuentes y Pequeños
+
+**❌ Malo:**
+```bash
+# Al final del día, un solo commit gigante
+git add .
+git commit -m "Trabajo del día"
+```
+
+**✅ Bueno:**
+```bash
+# Commits pequeños y enfocados
+git commit -m "Load and validate raw customer data"
+# ... trabajar más ...
+git commit -m "Add function to handle missing values"
+# ... trabajar más ...
+git commit -m "Create age group categorization"
+```
+
+**Por qué:**
+
+- Más fácil entender el historial
+- Más fácil revertir cambios específicos
+- Mejor documentación del proceso
+
+### 2. Mensajes de Commit Descriptivos
+
+**Formato recomendado:**
+
+```
+<tipo>: <resumen corto>
+
+<descripción detallada opcional>
+
+<referencias opcionales>
+```
+
+**Tipos comunes:**
+
+- `feat`: Nueva funcionalidad
+- `fix`: Corrección de bug
+- `docs`: Cambios en documentación
+- `refactor`: Refactorización sin cambiar funcionalidad
+- `test`: Agregar o modificar tests
+- `chore`: Tareas de mantenimiento
+
+**Ejemplos:**
+
+```bash
+git commit -m "feat: add baseline logistic regression model"
+
+git commit -m "fix: correct null handling in preprocessing
+
+Income column had nulls that weren't being caught by
+initial validation. Added explicit null check before
+numeric operations.
+
+Fixes #23"
+
+git commit -m "docs: update README with setup instructions"
+
+git commit -m "refactor: extract feature engineering to separate module"
+```
+
+### 3. Branching Strategy
+
+**Para el curso, estrategia simple:**
+
+```
+main
+├── feature/eda
+├── feature/preprocessing
+├── feature/baseline-model
+├── feature/advanced-model
+└── fix/data-validation
+```
+
+**Naming conventions:**
+
+- `feature/nombre`: Nuevas funcionalidades
+- `fix/nombre`: Correcciones
+- `experiment/nombre`: Experimentos exploratorios
+- `docs/nombre`: Documentación
+
+### 4. Pull Requests y Code Review
+
+**Workflow con PRs:**
+
+```bash
+# 1. Crear feature branch
+git checkout -b feature/new-analysis
+
+# 2. Trabajar y commit
+git commit -m "Add analysis"
+
+# 3. Push branch
+git push -u origin feature/new-analysis
+
+# 4. En GitHub: crear Pull Request
+# - Descripción clara de cambios
+# - Assignees para review
+# - Labels apropiados
+
+# 5. Compañeros revisan código
+# - Dan feedback
+# - Aprueban o piden cambios
+
+# 6. Hacer cambios solicitados
+git commit -m "Address review comments"
+git push
+
+# 7. Merge cuando está aprobado
+# (en GitHub interface)
+
+# 8. Limpiar local
+git checkout main
+git pull
+git branch -d feature/new-analysis
+```
+
+### 5. README Completo
+
+Tu README debe incluir:
+
+```markdown
+# Proyecto: Predicción de Churn de Clientes
+
+## Descripción
+Breve descripción del proyecto y objetivos.
+
+## Equipo
+
+- Ana García (ana@email.com)
+- Pedro López (pedro@email.com)
+- María Silva (maria@email.com)
+
+## Setup
+```bash
+# Clonar repo
+git clone https://github.com/usuario/proyecto.git
+
+# Instalar dependencias
+pip install -r requirements.txt
+
+# Configurar variables de entorno
+cp .env.example .env
+# Editar .env con tus credenciales
+```
+
+## Estructura del Proyecto
+```
+├── data/
+│   ├── raw/          # Datos originales
+│   └── processed/    # Datos preprocesados
+├── notebooks/        # Análisis exploratorio
+├── src/              # Código fuente
+├── tests/            # Tests
+└── models/           # Modelos entrenados
+```
+
+## Uso
+```python
+from src.models.predict import ChurnPredictor
+
+predictor = ChurnPredictor('models/model.pkl')
+prediction = predictor.predict(customer_data)
+```
+
+## Resultados
+
+- Baseline: 78% accuracy
+- Final model: 85% accuracy
+- Ver `notebooks/04_results.qmd` para análisis detallado
+
+## Licencia
+MIT License
+```
+
+### 6. No Versionar Datasets Grandes
+
+**Problema:**
+Git no está diseñado para archivos grandes (>100MB).
+
+**Soluciones:**
+
+**Opción 1: Git LFS (Large File Storage)**
+```bash
+# Instalar Git LFS
+git lfs install
+
+# Track archivos grandes
+git lfs track "*.csv"
+git lfs track "*.parquet"
+
+# Ahora puedes agregar archivos grandes
+git add data/large_dataset.csv
+git commit -m "Add dataset (via LFS)"
+```
+
+**Opción 2: DVC (Data Version Control)** (recomendado para DS)
+```bash
+# Instalar DVC
+pip install dvc
+
+# Inicializar
+dvc init
+
+# Track dataset
+dvc add data/large_dataset.csv
+
+# Esto crea data/large_dataset.csv.dvc
+git add data/large_dataset.csv.dvc
+git commit -m "Add dataset metadata"
+
+# Setup remote storage (S3, GCS, etc.)
+dvc remote add -d storage s3://my-bucket/path
+dvc push
+```
+
+**Opción 3: Link a datos externos**
+```markdown
+# En README.md
+## Datos
+Los datos no están en este repo. Descargar de:
+
+- https://drive.google.com/...
+- O ejecutar: `python scripts/download_data.py`
+```
+
+### 7. .gitkeep para Carpetas Vacías
+
+Git no versiona carpetas vacías. Para mantener estructura:
+
+```bash
+# Crear carpetas con .gitkeep
+mkdir -p data/{raw,processed}
+touch data/raw/.gitkeep
+touch data/processed/.gitkeep
+
+git add data/
+git commit -m "Add data directory structure"
+```
+
+## Troubleshooting Común
+
+### "Cannot push because remote has changes"
+
+```bash
+# Error
+git push
+# error: Updates were rejected
+
+# Solución
+git pull --rebase
+git push
+```
+
+### "Accidentally committed large file"
+
+```bash
+# BFG Repo Cleaner para limpiar historial
+# https://rtyley.github.io/bfg-repo-cleaner/
+
+# Descargar bfg.jar
+java -jar bfg.jar --delete-files large_file.csv proyecto.git
+
+# O usar filter-branch (más complejo)
+git filter-branch --tree-filter 'rm -f large_file.csv' HEAD
+```
+
+### "Merge conflicts"
+
+```bash
+git merge feature-branch
+# CONFLICT in file.py
+
+# Ver qué archivos tienen conflictos
+git status
+
+# Abrir archivo, verás:
+<<<<<<< HEAD
+código de main
+=======
+código de feature-branch
+>>>>>>> feature-branch
+
+# Resolver manualmente, elegir lo que quieres mantener
+
+# Marcar como resuelto
+git add file.py
+git commit -m "Merge feature-branch, resolve conflicts"
+```
+
+### "Detached HEAD state"
+
+```bash
+# Aparece cuando checkouteas un commit específico
+git checkout abc123
+# You are in 'detached HEAD' state
+
+# Volver a una branch
+git checkout main
+
+# O crear branch desde aquí
+git checkout -b recover-work
+```
+
+### "Accidentally committed to wrong branch"
+
+```bash
+# Estabas en main, querías estar en feature
+git checkout main
+# ... hiciste cambios y commit ...
+git log
+# commit abc123 "Oops, should be in feature branch"
+
+# Mover commit a otra branch
+git checkout feature-branch
+git cherry-pick abc123
+
+# Eliminar de main
+git checkout main
+git reset --hard HEAD~1
+```
+
+## Recursos Adicionales
+
+### Tutoriales
+
+- [Pro Git Book](https://git-scm.com/book/en/v2) - Libro oficial gratis
+- [Git and GitHub for Beginners - Crash Course](https://www.youtube.com/watch?v=RGOj5yH7evk) - Video freeCodeCamp
+- [Git for Professionals](https://www.youtube.com/watch?v=Uszj_k0DGsg) - Video avanzado freeCodeCamp
+- [Cómo usar Git: Tutorial básico](https://www.youtube.com/watch?v=h0wSb2n7PkY) - en español
+
+### Cheat Sheets
+
+```bash
+# Comandos esenciales
+git init              # Inicializar repo
+git clone <url>       # Clonar repo remoto
+git status            # Ver estado
+git add <file>        # Agregar a staging
+git commit -m "msg"   # Commit
+git push              # Subir a remoto
+git pull              # Bajar de remoto
+git branch            # Ver branches
+git checkout <branch> # Cambiar branch
+git merge <branch>    # Integrar branch
+
+# Comandos útiles
+git log               # Ver historial
+git diff              # Ver diferencias
+git stash             # Guardar cambios temporalmente
+git stash pop         # Recuperar cambios
+git reset             # Deshacer cambios
+git revert            # Revertir commit
+```
+
+### Herramientas
+
+- [GitHub Desktop](https://desktop.github.com/) - GUI para Git
+- [GitKraken](https://www.gitkraken.com/) - GUI avanzado
+- [nbdime](https://github.com/jupyter/nbdime) - Diff/merge para notebooks
+- [BFG Repo Cleaner](https://rtyley.github.io/bfg-repo-cleaner/) - Limpiar historial
+
+### Configuración VS Code
+
+VS Code tiene integración excelente de Git:
+
+```json
+// settings.json
+{
+  "git.autofetch": true,
+  "git.confirmSync": false,
+  "git.enableSmartCommit": true,
+  "git.postCommitCommand": "push",
+  "gitlens.currentLine.enabled": false
+}
+```
+
+Extensiones recomendadas:
+
+- GitLens
+- Git Graph
+- Git History
+
+## Tarea Práctica
+
+::: {.callout-important}
+## Tarea Obligatoria
+
+**Fecha límite: Próxima clase**
+
+1. Crear cuenta en GitHub (si no tienes)
+2. Subir Proyecto 1 a repositorio público
+3. Subir Proyecto 2 a repositorio público
+4. Ambos repos deben tener:
+
+   - README.md completo
+   - .gitignore apropiado
+   - Estructura de carpetas clara
+   - Commits con mensajes descriptivos
+5. Enviar links de ambos repos al equipo docente
+
+**De ahora en adelante:**
+
+- TODOS tus proyectos deben usar Git
+- Commits frecuentes (mínimo diario cuando trabajas)
+- Push regular a GitHub
+:::
+
+### Checklist del README
+
+Tu README debe responder:
+
+- [ ] ¿Qué hace este proyecto?
+- [ ] ¿Cómo instalar dependencias?
+- [ ] ¿Cómo ejecutar el código?
+- [ ] ¿Cuál es la estructura del proyecto?
+- [ ] ¿Quién hizo el proyecto?
+- [ ] ¿Cuáles fueron los resultados principales?
+
+<!-- ### Criterios de Evaluación
+
+Se evaluará:
+
+- **Estructura** (20%): Organización clara de carpetas
+- **README** (20%): Documentación completa y clara
+- **Commits** (30%): Frecuentes y con mensajes descriptivos
+- **.gitignore** (10%): Apropiado para proyecto DS
+- **Historial** (20%): Muestra progreso del proyecto -->
+
+## Proceso de Aprendizaje
+
+::: {.callout-tip}
+## Es Normal Fallar al Principio
+
+Git tiene una curva de aprendizaje. Es normal:
+
+- Hacer commits accidentales
+- Pushear a branch equivocado
+- Crear merge conflicts
+- Sentirse confundido
+
+**Lo importante:**
+1. **Fallar**: Cometer errores
+2. **No entender**: Es parte del proceso
+3. **Repasar**: Volver a intentar
+4. **Repetir**: Hasta que se vuelva natural
+
+**No te rindas.** En 2-3 semanas de uso diario, Git se sentirá natural.
+:::
+
+### Práctica Recomendada
+
+**Semana 1-2:**
+
+- Comandos básicos: add, commit, push, pull
+- Un repo simple de práctica
+- Commits diarios
+
+**Semana 3-4:**
+
+- Branches para features
+- Pull requests
+- Resolver merge conflicts simples
+
+**Mes 2:**
+
+- Workflow completo del equipo
+- Code reviews
+- Tags para versiones
+
+**Mes 3+:**
+
+- Comandos avanzados (rebase, cherry-pick, etc.)
+- Estrategias de branching complejas
+- Troubleshooting independiente
+
+## Conclusiones
+
+### Lecciones Clave
+
+1. **Git es obligatorio** - No es opcional en DS moderno
+2. **Commits frecuentes** - Pequeños y descriptivos
+3. **Branches para features** - Experimentar sin miedo
+4. **README completo** - Tu carta de presentación
+5. **No versionar datos grandes** - Usar DVC o Git LFS
+6. **Practica diariamente** - La única forma de aprender
+
+### Para el Curso
+
+**Desde ahora:**
+
+- Git en todos los proyectos
+- Repos públicos en GitHub
+- Commits descriptivos frecuentes
+- Branches para features importantes
+- README siempre actualizado
+
+**Evaluación continua:**
+
+- Parte de la nota incluye uso de Git
+- Se revisará historial de commits
+- Calidad del README cuenta
+
+### Próximo Paso
+
+**Acción inmediata:**
+1. Instalar Git si no lo tienes
+2. Crear cuenta GitHub
+3. Configurar Git con tu info
+4. Empezar a versionar tus proyectos
+
+**No esperes a "entender todo"**. La mejor forma de aprender Git es usándolo. Comete errores, busca soluciones, repite.
+
+## Referencias
+
+- [Git Official Documentation](https://git-scm.com/doc)
+- [GitHub Guides](https://guides.github.com/)
+- [Git vs SVN vs Mercurial](https://www.w3schools.blog/git-vs-svn-vs-mercurial)
+- [BFG Repo Cleaner](https://rtyley.github.io/bfg-repo-cleaner/)
+- [Pro Git Book](https://git-scm.com/book/en/v2)
+
+¡Éxito con Git! Recuerda: fallar es parte del proceso de aprendizaje.

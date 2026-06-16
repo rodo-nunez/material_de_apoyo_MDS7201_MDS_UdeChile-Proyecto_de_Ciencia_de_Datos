@@ -1,0 +1,486 @@
+# Modularización y Estructura de Proyectos
+
+Un proyecto de ciencia de datos que empieza como un notebook de exploración tiende a crecer rápidamente en complejidad. Si no se estructura desde el principio con criterios claros, el código se vuelve difícil de mantener, de reutilizar y de compartir con otros. La modularización es la práctica de organizar el código en unidades independientes, cohesivas y reutilizables. Una estructura de carpetas consistente es su complemento natural.
+
+Este capítulo cubre por qué modularizar, cómo hacerlo en Python, y por qué un equipo necesita acordar una plantilla de estructura de proyecto antes de comenzar a trabajar.
+
+## El Problema del Notebook Monolítico
+
+El flujo de trabajo más común en ciencia de datos comienza en un Jupyter Notebook: se cargan los datos, se exploran, se limpian, se entrenan modelos, y se generan visualizaciones, todo en un solo archivo que puede llegar a tener cientos de celdas.
+
+Este enfoque es perfectamente válido durante la fase exploratoria. El problema aparece cuando ese notebook se convierte en el artefacto final del proyecto:
+
+- **No es reutilizable**: si necesitas la misma función de limpieza en otro proyecto, la copias y pegas
+- **No es testeable**: es difícil escribir tests para código dentro de un notebook
+- **No es colaborativo**: dos personas no pueden trabajar en el mismo notebook sin conflictos de merge
+- **No es reproducible**: el orden de ejecución de las celdas importa, y es fácil que el estado sea inconsistente
+- **No escala**: desplegar un notebook a producción requiere transformarlo de todas formas
+
+::: {.callout-important}
+## La regla de oro
+Los notebooks son para **explorar y comunicar**. El código que vas a reutilizar, probar o desplegar debe vivir en módulos Python (`.py`).
+
+Incluso la explocación la puedes hacer en un script. Muchas personas no saben que puedes ejecutar código de script linea a línea o por selección, sin necesidad de crear celdad ni usar notebooks.
+:::
+
+## Alternativa a Jupyter Notebook: Quarto
+
+Estos problemas que mencionamos son de los Jupyter Notebook, pero si usan notebooks de Quarto, no tendrán estos problemas, por lo que les recomiendo pasarse a Quarto. 
+
+Además, en vez de utilizar VSCode como IDE, recomiendo utilizar Positron, que es un fork de VSCode pero creado para Data Scientists. Y sí, puedes usar agentes en Positron, es más, puedes usar unos que están pre-tuneados para resolver problemas de ciencia de datos e interactuar con código y datos de ciencia de datos.
+
+Este libro fue hecho con Quarto en Positron, utilizando integración con agentes de Claude.
+
+## ¿Qué es Modularizar?
+
+Modularizar es dividir el código en **módulos**: archivos `.py` que agrupan funciones, clases y constantes relacionadas entre sí, con una responsabilidad bien definida.
+
+Un módulo bien diseñado tiene tres propiedades:
+
+**Alta cohesión:** todo lo que está dentro del módulo está relacionado. Un módulo `preprocessing.py` contiene funciones de preprocesamiento — no de visualización ni de entrenamiento.
+
+**Bajo acoplamiento:** los módulos dependen lo menos posible entre sí. Un módulo `models.py` puede importar de `preprocessing.py`, pero no debería depender de cómo está implementado internamente.
+
+**Interfaz clara:** las funciones tienen nombres descriptivos, parámetros bien definidos, y docstrings que explican qué hacen, qué reciben y qué retornan.
+
+## Por Qué Modularizar
+
+### Reutilización
+
+Una función que vive en un módulo puede importarse a cualquier script o módulo del proyecto con una sola línea:
+
+```python
+from src.preprocessing import limpiar_datos, imputar_nulos
+
+df_limpio = limpiar_datos(df_crudo)
+```
+
+Si esa función estuviera en un notebook, tendrías que copiar el código cada vez que lo necesitas — creando múltiples versiones que eventualmente divergen.
+
+### Testeabilidad
+
+El código en módulos puede probarse con frameworks como `pytest`. Esto es imposible de manera práctica con código en notebooks.
+
+```python
+# tests/test_preprocessing.py
+from src.preprocessing import limpiar_datos
+import pandas as pd
+
+def test_limpiar_datos_elimina_duplicados():
+    df = pd.DataFrame({'a': [1, 1, 2], 'b': [3, 3, 4]})
+    resultado = limpiar_datos(df)
+    assert len(resultado) == 2
+
+def test_limpiar_datos_no_modifica_original():
+    df = pd.DataFrame({'a': [1, 2, 3]})
+    _ = limpiar_datos(df)
+    assert len(df) == 3  # El original no cambia
+```
+
+Los tests son la red de seguridad que permite refactorizar con confianza. Sin ellos, cualquier cambio puede romper algo sin que te des cuenta.
+
+### Colaboración
+
+Cuando el código vive en módulos `.py`, el control de versiones funciona de manera natural:
+
+- Dos personas pueden modificar distintos módulos simultáneamente sin conflictos
+- Los diffs de Git son legibles — se ve exactamente qué función cambió y cómo
+- Los code reviews son posibles: revisar un módulo de 100 líneas es factible, revisar un notebook de 500 celdas no lo es
+
+### Mantenibilidad
+
+Si una función necesita cambiar, el cambio se hace en un solo lugar y se propaga automáticamente a todo lo que la usa. Con código copiado en múltiples notebooks, hay que encontrar y actualizar cada copia.
+
+### Reproducibilidad y Producción
+
+El código modularizado es el punto de partida natural para:
+
+- **Pipelines de datos**: encadenar módulos en secuencia reproducible
+- **Despliegue**: empaquetar módulos como una librería o API
+- **Experimentación reproducible**: los experimentos llaman las mismas funciones, garantizando que la diferencia entre resultados se debe a los parámetros, no al código
+
+## Cómo Modularizar en Python
+
+### El Módulo Básico
+
+Un módulo es simplemente un archivo `.py` con funciones relacionadas:
+
+```python
+# src/preprocessing.py
+
+import pandas as pd
+import numpy as np
+
+
+def limpiar_datos(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Aplica limpieza básica al dataframe.
+
+    Elimina duplicados, normaliza nombres de columnas
+    y convierte tipos de datos.
+
+    Args:
+        df: DataFrame con datos crudos.
+
+    Returns:
+        DataFrame limpio.
+    """
+    df = df.copy()  # No modificar el original
+    df = df.drop_duplicates()
+    df.columns = df.columns.str.lower().str.replace(' ', '_')
+    return df
+
+
+def imputar_nulos(
+    df: pd.DataFrame,
+    estrategia: str = 'mediana'
+) -> pd.DataFrame:
+    """
+    Imputa valores nulos en columnas numéricas.
+
+    Args:
+        df: DataFrame con posibles nulos.
+        estrategia: 'mediana', 'media' o 'cero'.
+
+    Returns:
+        DataFrame sin nulos en columnas numéricas.
+    """
+    df = df.copy()
+    cols_numericas = df.select_dtypes(include='number').columns
+
+    if estrategia == 'mediana':
+        df[cols_numericas] = df[cols_numericas].fillna(
+            df[cols_numericas].median()
+        )
+    elif estrategia == 'media':
+        df[cols_numericas] = df[cols_numericas].fillna(
+            df[cols_numericas].mean()
+        )
+    elif estrategia == 'cero':
+        df[cols_numericas] = df[cols_numericas].fillna(0)
+    else:
+        raise ValueError(f"Estrategia desconocida: {estrategia}")
+
+    return df
+```
+
+### El Archivo `__init__.py`
+
+El archivo `__init__.py` convierte un directorio en un **paquete Python**, permitiendo importaciones relativas y controlando qué se expone al exterior:
+
+```python
+# src/__init__.py
+from .preprocessing import limpiar_datos, imputar_nulos
+from .features import crear_features
+from .models import entrenar_modelo, evaluar_modelo
+
+__version__ = "0.1.0"
+```
+
+Con esto, desde cualquier parte del proyecto puedes importar:
+
+```python
+from src import limpiar_datos, entrenar_modelo
+```
+
+### Separación de Responsabilidades
+
+Cada módulo debe tener una responsabilidad clara. Una división típica en proyectos de Data Science:
+
+```
+src/
+├── __init__.py
+├── data/
+│   ├── __init__.py
+│   ├── ingestion.py      # Cargar datos desde fuentes
+│   └── preprocessing.py  # Limpiar y transformar
+├── features/
+│   ├── __init__.py
+│   └── engineering.py    # Crear nuevas variables
+├── models/
+│   ├── __init__.py
+│   ├── training.py       # Entrenar modelos
+│   └── evaluation.py     # Métricas y evaluación
+└── visualization/
+    ├── __init__.py
+    └── plots.py          # Funciones de gráficos
+```
+
+### Buenas Prácticas de Diseño
+
+**Funciones puras cuando sea posible:** una función que dado el mismo input siempre produce el mismo output, sin efectos secundarios, es predecible y fácil de testear.
+
+```python
+# ✅ Función pura
+def normalizar(serie: pd.Series) -> pd.Series:
+    return (serie - serie.min()) / (serie.max() - serie.min())
+
+# ⚠️ Efecto secundario — modifica el argumento
+def normalizar_inplace(df, columna):
+    df[columna] = (df[columna] - df[columna].min()) / (df[columna].max() - df[columna].min())
+```
+
+**Docstrings siempre:** el código se escribe una vez y se lee muchas. Un docstring bien escrito ahorra tiempo a todos, incluyendo a ti mismo en 6 meses.
+
+**Type hints:** agregar tipos a las funciones mejora la legibilidad y permite herramientas de análisis estático.
+
+```python
+def entrenar_modelo(
+    X_train: pd.DataFrame,
+    y_train: pd.Series,
+    n_estimators: int = 100,
+    random_state: int = 42
+) -> object:
+    ...
+```
+
+**No más de una responsabilidad por función:** si una función hace dos cosas, probablemente debería ser dos funciones.
+
+## Plantilla de Estructura de Proyecto
+
+### Por Qué un Equipo Necesita una Plantilla
+
+Cuando un equipo de 3-4 personas trabaja en un proyecto de datos sin una estructura acordada de antemano, el resultado inevitable es el caos:
+
+- Cada persona organiza sus archivos de manera diferente
+- Nadie sabe dónde están los datos procesados vs los crudos
+- Los Jupyter Notebooks tienen nombres como `analisis_final_v3_ESTE.ipynb`
+- Reproducir el análisis de otra persona requiere preguntarle a ella personalmente
+- Incorporar a un nuevo miembro al equipo toma días
+
+Una **plantilla de estructura** resuelve estos problemas antes de que aparezcan. Es un acuerdo explícito sobre dónde va cada tipo de archivo, cómo se nombra, y cómo se organiza el proyecto.
+
+### Una Estructura Recomendada
+
+La siguiente estructura está inspirada en [Cookiecutter Data Science](https://drivendata.github.io/cookiecutter-data-science/), adaptada para proyectos del curso:
+
+```
+mi-proyecto/
+│
+├── README.md               # Descripción del proyecto, cómo ejecutar
+├── pyproject.toml          # Dependencias y configuración del proyecto
+├── .env                    # Variables de entorno (NO subir a git)
+├── .gitignore              # Archivos a ignorar en git
+│
+├── data/
+│   ├── raw/                # Datos originales, NUNCA modificar
+│   ├── interim/            # Datos en proceso de transformación
+│   ├── processed/          # Datos listos para modelar
+│   └── external/           # Datos de fuentes externas
+│
+├── notebooks/
+│   ├── 01-exploracion.qmd
+│   ├── 02-preprocessing.qmd
+│   └── 03-modelamiento.qmd
+│
+├── src/
+│   ├── __init__.py
+│   ├── data/
+│   │   └── preprocessing.py
+│   ├── features/
+│   │   └── engineering.py
+│   ├── models/
+│   │   ├── training.py
+│   │   └── evaluation.py
+│   └── visualization/
+│       └── plots.py
+│
+├── tests/
+│   ├── test_preprocessing.py
+│   ├── test_features.py
+│   └── test_models.py
+│
+├── reports/
+│   ├── figures/            # Gráficos generados
+│   └── informe_final.pdf
+│
+└── models/
+    └── modelo_v1.pkl       # Modelos entrenados serializados
+```
+
+### Convenciones de Nomenclatura
+
+Una plantilla también debe definir cómo nombrar las cosas. La consistencia en nombres reduce fricción cognitiva.
+
+**Archivos de datos:**
+```
+data/raw/ventas_2024_01.csv        # fuente_año_mes.csv
+data/processed/ventas_features.parquet
+```
+
+**Notebooks:**
+```
+01-exploracion-inicial.qmd       # número-descripción.qmd
+02-limpieza-datos.qmd
+03-feature-engineering.qmd
+04-modelamiento-baseline.qmd
+```
+
+**Módulos Python:**
+```
+snake_case para archivos:          preprocessing.py, feature_engineering.py
+PascalCase para clases:            ModeloBase, TransformadorDatos
+snake_case para funciones:         limpiar_datos(), crear_features()
+MAYUSCULAS para constantes:        RANDOM_STATE = 42, TARGET_COLUMN = 'label'
+```
+
+**Ramas de Git:**
+```
+main                               # Código en producción / entregable
+develop                            # Rama de integración
+feature/eda-inicial                # feature/descripción
+fix/bug-imputacion                 # fix/descripción
+```
+
+### Datos: La Regla Más Importante
+
+::: {.callout-important}
+## Los datos crudos son sagrados
+El directorio `data/raw/` nunca debe modificarse. Los datos originales son la única fuente de verdad del proyecto. Cualquier transformación genera un nuevo archivo en `data/interim/` o `data/processed/`.
+
+Si los datos crudos se modifican, no hay forma de reproducir el análisis desde cero.
+:::
+
+Esta regla tiene una consecuencia práctica: **todos los pasos de transformación deben ser código**, no operaciones manuales en Excel o similares. Si el paso no está en código, no es reproducible.
+
+### El README como Contrato
+
+El `README.md` es el primer archivo que lee cualquier persona que llega al proyecto. Debe responder:
+
+- ¿Qué hace este proyecto?
+- ¿Cómo instalar las dependencias?
+- ¿Cómo reproducir el análisis?
+- ¿Cuál es la estructura del proyecto?
+- ¿Cómo contribuir?
+
+```markdown
+# Proyecto: Predicción de Churn
+
+Predicción de abandono de clientes para Empresa XYZ usando datos
+de comportamiento de los últimos 12 meses.
+
+## Instalación
+
+```bash
+git clone https://github.com/equipo/proyecto-churn
+cd proyecto-churn
+uv sync  # o pip install -r requirements.txt
+```
+
+## Estructura
+
+```
+data/raw/        → Datos originales (no modificar)
+data/processed/  → Datos listos para modelar
+notebooks/       → Exploración y comunicación
+src/             → Código reutilizable y testeable
+```
+
+## Reproducción
+
+```bash
+python src/data/preprocessing.py   # Preprocesar datos
+python src/models/training.py      # Entrenar modelo
+```
+\```
+
+## Herramientas de Scaffolding
+
+En lugar de crear la estructura manualmente cada vez, existen herramientas que generan la plantilla automáticamente:
+
+**Cookiecutter Data Science:**
+
+```bash
+pip install cookiecutter
+cookiecutter https://github.com/drivendata/cookiecutter-data-science
+```
+
+**uv (creación de proyecto):**
+
+```bash
+uv init mi-proyecto
+cd mi-proyecto
+```
+
+**Creación manual con script:**
+
+```bash
+#!/bin/bash
+# setup_project.sh
+mkdir -p data/{raw,interim,processed,external}
+mkdir -p notebooks
+mkdir -p src/{data,features,models,visualization}
+mkdir -p tests
+mkdir -p reports/figures
+mkdir -p models
+
+touch src/__init__.py
+touch src/data/__init__.py
+touch src/features/__init__.py
+touch src/models/__init__.py
+touch src/visualization/__init__.py
+touch .gitignore .env README.md
+
+echo "data/raw/" >> .gitignore
+echo ".env" >> .gitignore
+echo "__pycache__/" >> .gitignore
+echo "*.pyc" >> .gitignore
+
+echo "Proyecto creado."
+```
+
+## Integración: Notebooks y Módulos
+
+La modularización no significa abandonar los notebooks. Significa usarlos para lo que son buenos, y los módulos para lo que son buenos.
+
+**El flujo recomendado:**
+
+1. **Explorar** en un notebook de Quarto: probar ideas, visualizar datos, entender el problema. Aunque Perfectamente puedes explorar directo en un .py o .r.
+2. **Extraer** el código útil: mover las funciones que funcionan a módulos en `src/`
+3. **Testear** los módulos: escribir tests básicos en `tests/`
+4. **Usar** desde scripts: podemos importan de `src/` en lugar de reimplementar
+
+```python
+# notebooks/03-modelamiento.qmd
+
+# En lugar de tener 200 líneas de código de preprocessing aquí:
+from src.data.preprocessing import limpiar_datos, imputar_nulos
+from src.features.engineering import crear_features
+from src.models.training import entrenar_modelo, evaluar_modelo
+
+# El notebook se convierte en una narrativa de alto nivel
+df = pd.read_parquet('data/raw/datos.parquet')
+df_limpio = limpiar_datos(df)
+df_features = crear_features(df_limpio)
+
+X_train, X_test, y_train, y_test = train_test_split(...)
+modelo = entrenar_modelo(X_train, y_train)
+metricas = evaluar_modelo(modelo, X_test, y_test)
+```
+
+El notebook ahora es legible como una historia: carga datos, limpia, crea features, entrena, evalúa. Los detalles de implementación están en los módulos.
+
+## Resumen
+
+La modularización y una estructura de proyecto consistente son las dos prácticas que más impactan la calidad del trabajo en equipo en proyectos de datos:
+
+- **Modularizar** permite reutilizar, testear, colaborar y desplegar
+- **Una estructura acordada** elimina la fricción de "¿dónde va esto?"
+- **Los datos crudos son sagrados**: nunca modificarlos, siempre transformar en código
+- **Los notebooks exploran y comunican**: el código reutilizable vive en módulos
+
+::: {.callout-tip}
+## Para el proyecto del curso
+Acuerden la estructura de carpetas en la primera semana, antes de escribir una sola línea de código de análisis. El tiempo invertido en esto se recupera con creces durante el semestre.
+:::
+
+## Referencias
+
+- [Cookiecutter Data Science](https://drivendata.github.io/cookiecutter-data-science/)
+- [Python Packaging — Real Python](https://realpython.com/python-modules-packages/)
+- [pytest — documentación oficial](https://docs.pytest.org/)
+- [The Turing Way — Project Structure](https://the-turing-way.netlify.app/project-design/project-repo.html)
+- [en_coders: Jupyter Notebooks en el ambiente laboral: Herramienta o trampa](https://www.youtube.com/watch?v=nwxCpYuZGCE)
+- [en_coders: E65 - Quarto: Programación Literaria reproducible y multiformato (mejor que Jupyter Notebook)](https://www.youtube.com/watch?v=AKw8csShz2E)
+- [en_coders: E157 - Positron: Un IDE para Data Scientists](https://www.youtube.com/watch?v=tIEMHPUTflM)
+- [en_coders: E115 - Demo: Modularización y guardado de outputs](https://www.youtube.com/watch?v=MY4nMmF8gOU)

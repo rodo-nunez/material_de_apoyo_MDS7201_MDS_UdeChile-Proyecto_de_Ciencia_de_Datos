@@ -1,0 +1,19 @@
+[project]
+name = "mds"
+version = "0.1.0"
+requires-python = ">=3.11,<3.14"
+
+dependencies = [
+    "imblearn",
+    "jupyter",
+    "lightgbm>=4.6.0",
+    "matplotlib>=3.8",
+    "numpy",
+    "optuna>=4.9.0",
+    "pacmap",
+    "pandas",
+    "scipy",
+    "tsfresh>=0.21.2",
+    "umap-learn>=0.5.12",
+    "ydata-profiling",
+]

@@ -1,0 +1,415 @@
+# Visualización de Datos
+
+La visualización es una de las herramientas más poderosas en Ciencia de Datos. No se trata solo de hacer gráficos bonitos: una buena visualización comunica información compleja de manera inmediata, revela patrones ocultos, y puede incluso salvar vidas. Una mala visualización puede engañar, confundir o simplemente desperdiciar la atención del lector.
+
+Este capítulo cubre los fundamentos de la visualización efectiva: por qué importa, cómo funciona la percepción humana, principios para datos multidimensionales, y las reglas prácticas que distinguen una visualización que comunica de una que no lo hace.
+
+## ¿Por Qué Visualizar?
+
+### La Visión como Canal de Comunicación
+
+La visión es el canal de comunicación más eficiente que tenemos. El nervio óptico tiene entre 770.000 y 1.700.000 axones — un ancho de banda enorme comparado con cualquier otro sentido.
+
+![Capacidad sensorial comparada (Credit: Tor Norretranders)](../chapter_files/images/vizualizacion/image1.png){fig-align="center" width="60%"}
+
+![Nervio óptico (Credit: Rice University)](../chapter_files/images/vizualizacion/image16.png){fig-align="center" width="30%"}
+
+Esta capacidad extraordinaria crea una brecha entre la cantidad de datos que generamos y nuestra capacidad cognitiva para procesarlos.
+
+![Brecha datos/cognición (HiPEAC Vision 2015)](../chapter_files/images/vizualizacion/image11.png){fig-align="center" width="70%"}
+
+El crecimiento de los datos sigue la Ley de Moore o más rápido, pero nuestra capacidad cognitiva es constante. La visualización es el puente que permite cruzar esa brecha.
+
+### La Ley de Stevenson
+
+Stevenson & Kording (2011) documentaron que el número de neuronas que podemos registrar simultáneamente se duplica cada 7,4 años. Llegaríamos al número de conexiones del nervio óptico ($\sim 10^6$) en unos 100 años:
+
+$$100 \times 2^{100/7.4} \sim 10^6$$
+
+![Stevenson & Kording 2011 — crecimiento de neuronas registradas simultáneamente](../chapter_files/images/vizualizacion/image14.png){fig-align="center" width="55%"}
+
+### Una Buena Visualización Puede Salvar Vidas
+
+El estudio de Borkin et al. (2011) evaluó distintos esquemas de color para visualizar estrés de cizalla en arterias coronarias. El resultado fue contundente: los mapas de color divergentes en 2D superan ampliamente al arcoíris en exactitud diagnóstica.
+
+![Borkin et al. 2011 — representaciones 2D y 3D de arterias coronarias con distintos esquemas de color](../chapter_files/images/vizualizacion/image9.png){fig-align="center" width="80%"}
+
+![Borkin et al. 2011 — resultados cuantitativos: 91% de precisión con esquema divergente 2D vs 56% con arcoíris 3D](../chapter_files/images/vizualizacion/image3.png){fig-align="center" width="80%"}
+
+La elección del mapa de colores no es un detalle estético: puede determinar si un médico detecta o no una región de riesgo.
+
+## Mapas de Colores
+
+### Requisitos para un Buen Mapa de Colores
+
+Un buen mapa de colores debe cumplir tres condiciones:
+
+- **Perceptualmente uniforme**: un cambio igual en el valor de los datos produce un cambio igual en la percepción del color
+- **Legible en blanco y negro**: no depende del color para transmitir información
+- **Amigable con personas daltónicas**: funciona para los distintos tipos de daltonismo
+
+El modelo de percepción de colores **CIECAM02-UCS** (Comisión Internacional de Iluminación) calcula seis dimensiones técnicas de la apariencia de un color: brightness, lightness, colorfulness, chroma, saturation y hue. Los mapas de colores modernos de matplotlib se diseñaron para ser perceptualmente uniformes en este espacio.
+
+![Modelos de color HSL y HSV](../chapter_files/images/vizualizacion/image10.png){fig-align="center" width="60%"}
+
+### Comparación de Mapas de Colores
+
+#### Jet ❌
+
+![Evaluación de jet — no uniforme, no legible en B&N, problemático para daltónicos](../chapter_files/images/vizualizacion/image15.png){fig-align="center" width="90%"}
+
+`jet` es el mapa de colores más popular históricamente, pero es el peor en términos perceptuales. Sus picos de luminosidad crean artefactos visuales que no existen en los datos.
+
+#### Gray
+
+![Evaluación de gray — uniforme, pero baja separación perceptual](../chapter_files/images/vizualizacion/image4.png){fig-align="center" width="90%"}
+
+#### Magma
+
+![Evaluación de magma — perceptualmente uniforme, buena legibilidad en B&N](../chapter_files/images/vizualizacion/image21.png){fig-align="center" width="90%"}
+
+#### Inferno
+
+![Evaluación de inferno — perceptualmente uniforme](../chapter_files/images/vizualizacion/image6.png){fig-align="center" width="90%"}
+
+#### Plasma
+
+![Evaluación de plasma — perceptualmente uniforme](../chapter_files/images/vizualizacion/image8.png){fig-align="center" width="90%"}
+
+#### Viridis ✅
+
+![Evaluación de viridis — el mejor en términos de uniformidad perceptual y accesibilidad](../chapter_files/images/vizualizacion/image13.png){fig-align="center" width="90%"}
+
+`viridis` y sus variantes (magma, inferno, plasma) fueron diseñados específicamente para superar las limitaciones de `jet`. La diferencia es visible:
+
+![Comparación jet vs viridis en simulación astrofísica](../chapter_files/images/vizualizacion/image17.jpg){fig-align="center" width="80%"}
+
+### Tipos de Mapas de Colores
+
+![Mapas de colores secuenciales perceptualmente uniformes y divergentes en matplotlib](../chapter_files/images/vizualizacion/image24.png){fig-align="center" width="70%"}
+
+Hay dos categorías principales:
+
+**Secuenciales** (viridis, plasma, inferno, magma, cividis): para datos con una dirección natural, del mínimo al máximo.
+
+**Divergentes** (RdBu, coolwarm, etc.): para datos con un punto neutro significativo (temperatura respecto a la media, diferencias respecto a cero).
+
+### Paletas para Daltonismo
+
+Para datos categóricos, las paletas Wong (2011, Nature) e IBM son las más recomendadas. Ambas fueron diseñadas explícitamente para ser distinguibles bajo los principales tipos de daltonismo.
+
+![Paletas accesibles para daltonismo: IBM, Wong y Tol, con su comportamiento bajo distintos tipos de daltonismo](../chapter_files/images/vizualizacion/image20.png){fig-align="center" width="90%"}
+
+::: {.callout-tip}
+## Herramientas
+
+- [Coloring for Colorblindness](https://davidmathlogic.com/colorblind/) — simulador interactivo
+- [bids.github.io/colormap](https://bids.github.io/colormap/) — comparación de mapas de colores
+- [A better default colormap for matplotlib](https://www.youtube.com/watch?v=xAoljeRJ3lU) — video explicativo
+:::
+
+## Visualización de Datos Multidimensionales
+
+El gran desafío en Ciencia de Datos es que nuestros datasets tienen muchas dimensiones, pero los humanos solo percibimos 2D (o con algo de esfuerzo, 3D). Las siguientes técnicas abordan este problema de distintas maneras.
+
+Los slides 22–25 de Santiago Lombeyda (FCFM, 2021) ilustran cómo los mismos datos pueden representarse con distintos tipos de gráficos — scatter, línea, barras — y cómo agregar una segunda variable a través de color o líneas de conexión.
+
+::: {.callout-note}
+## Video recomendado
+[Santiago Lombeyda, Visualización, FCFM, 2021](https://www.youtube.com/watch?v=oY7vzhiBF70) — excelente introducción a la percepción visual aplicada a la visualización de datos.
+:::
+
+### Bubble Plot
+
+Extiende el scatter plot añadiendo una tercera dimensión a través del tamaño de los puntos, y una cuarta a través del color.
+
+![Bubble plot — GDP per cápita vs expectativa de vida, con tamaño proporcional a la población y color indicando la tasa de natalidad](../chapter_files/images/vizualizacion/image32.png){fig-align="center" width="80%"}
+
+Cuatro dimensiones en un solo gráfico: posición x, posición y, área del círculo y color.
+
+### Pair Plot
+
+Matriz de scatter plots que muestra todos los pares posibles de dimensiones. En la diagonal se muestra la distribución de cada variable individual. Es la primera aproximación recomendada cuando el número de dimensiones es menor a ~10.
+
+![Pair plot del dataset Iris — distribuciones por especie en la diagonal, scatter plots por pares fuera de la diagonal](../chapter_files/images/vizualizacion/image38.png){fig-align="center" width="80%"}
+
+### Parallel Coordinates
+
+Cada observación se representa como una línea que conecta sus valores en ejes paralelos. Útil para detectar patrones entre grupos.
+
+![Parallel coordinates — diferencias entre autos europeos, japoneses y estadounidenses en múltiples dimensiones](../chapter_files/images/vizualizacion/image36.png){fig-align="center" width="80%"}
+
+### Radar Plots
+
+Cada punto se representa como un polígono cuyos vértices son las dimensiones. Son "parallel coordinates circulares". Útiles para comparar perfiles de pocos individuos.
+
+![Radar plots mostrando múltiples perfiles](../chapter_files/images/vizualizacion/image42.png){fig-align="center" width="80%"}
+
+### RadViz
+
+Cada dimensión representa la tensión de un resorte virtual conectado a los vértices de un polígono regular. Un punto se ubica donde las tensiones se equilibran.
+
+![RadViz — separación de autos americanos, japoneses y europeos](../chapter_files/images/vizualizacion/image34.png){fig-align="center" width="70%"}
+
+### Chernoff Faces
+
+Aprovecha la capacidad humana de reconocimiento facial. Permite representar hasta 18 dimensiones como atributos de caras (forma, tamaño de ojos, curvatura de boca, etc.).
+
+![Chernoff faces (1973)](../chapter_files/images/vizualizacion/image40.png){fig-align="center" width="70%"}
+
+::: {.callout-warning}
+No se recomienda usar Chernoff faces en la práctica. La interpretación es subjetiva, no intuitiva para personas sin entrenamiento, y los atributos faciales no tienen un orden natural de magnitud.
+:::
+
+### Reducción de Dimensionalidad
+
+Para datasets con muchas dimensiones (>10), la estrategia más efectiva es reducir primero la dimensionalidad con métodos automáticos y luego visualizar en 2D.
+
+![UMAP aplicado a datos del broker ALeRCE — objetos astronómicos separados por clase](../chapter_files/images/vizualizacion/image41.png){fig-align="center" width="70%"}
+
+Los métodos más usados son PCA, t-SNE, UMAP, PaCMAP y Self-Organizing Maps (SOMs). Estos se trataron en detalle en el capítulo de EDA.
+
+## Information Visualization
+
+La visualización de información (infoviz) tiene una historia rica. Algunos hitos históricos demuestran que los principios de buena visualización son atemporales.
+
+### Una Buena Visualización: Data + Function + Design
+
+![Diagrama de Venn: una buena visualización requiere datos, función y diseño](../chapter_files/images/vizualizacion/image48.png){fig-align="center" width="60%"}
+
+La intersección de los tres elementos produce una buena visualización. Tener solo datos sin diseño produce algo rígido y complejo. Tener diseño sin función produce algo bello pero ilegible.
+
+### Hitos Históricos
+
+**William Playfair, 1786** — Uno de los primeros gráficos de líneas de la historia: exportaciones e importaciones entre Inglaterra y Dinamarca/Noruega. Inventó el gráfico de barras y el de líneas.
+
+![William Playfair — exportaciones e importaciones hacia y desde Dinamarca y Noruega, 1786](../chapter_files/images/vizualizacion/image49.png){fig-align="center" width="90%"}
+
+**John Snow, 1854** — Mapa de casos de cólera en Londres que permitió identificar la bomba de agua contaminada como fuente del brote. Una visualización que literalmente salvó vidas.
+
+![John Snow — mapa de casos de cólera en Londres, 1854](../chapter_files/images/vizualizacion/image55.png){fig-align="center" width="80%"}
+
+**Charles Joseph Minard, 1869** — Considerado por Tufte como el mejor gráfico estadístico jamás producido. Muestra en una sola imagen seis dimensiones de la campaña de Napoleón a Rusia: tamaño del ejército, posición geográfica, dirección del movimiento, temperatura, fecha y lugar.
+
+![Charles Joseph Minard — la invasión de Francia a Rusia, 1869](../chapter_files/images/vizualizacion/image43.png){fig-align="center" width="100%"}
+
+## Principios de Visualización (Tufte)
+
+Edward Tufte, en *The Visual Display of Quantitative Information* (1983), estableció los principios fundamentales que siguen siendo la referencia en el campo.
+
+### 1. Realizar Comparaciones
+
+Mostrar comparaciones, contrastes, diferencias. La pregunta que el lector debería poder responder es: ¿en comparación con qué?
+
+![Variwide chart — emisiones de CO₂ per cápita, donde el ancho de la barra representa la población total](../chapter_files/images/vizualizacion/image66.png){fig-align="center" width="80%"}
+
+### 2. Mostrar Causalidad
+
+Mostrar el mecanismo que produce el efecto. No basta con mostrar correlación; la visualización debe sugerir la estructura causal.
+
+![Playfair — historia comercial universal mostrando ascenso y caída de naciones, causa y efecto](../chapter_files/images/vizualizacion/image39.png){fig-align="center" width="90%"}
+
+### 3. Mostrar Datos Multivariados
+
+Mostrar más de una o dos variables simultáneamente. Los fenómenos reales son multivariados; la visualización debe reflejar esa complejidad.
+
+![Bubble plot — GDP per cápita vs fertilidad, con tamaño proporcional a la población (The Economist)](../chapter_files/images/vizualizacion/image37.png){fig-align="center" width="80%"}
+
+### 4. Anotar los Gráficos
+
+Integrar palabras, números, imágenes y diagramas directamente en el gráfico. Las anotaciones dentro del gráfico son mucho más efectivas que una leyenda separada.
+
+![Gráfico de densidad de velocidad de habla e información por idioma — directamente anotado (The Economist)](../chapter_files/images/vizualizacion/image35.png){fig-align="center" width="80%"}
+
+### 5. Documentar
+
+Usar títulos detallados, indicar autores y fuentes, mostrar escalas de medición, señalar hechos relevantes. Un gráfico sin fuente no es confiable.
+
+![Mapa de Minard como ejemplo de documentación exhaustiva](../chapter_files/images/vizualizacion/image43.png){fig-align="center" width="90%"}
+
+### 6. Calidad e Integridad
+
+La visualización sobrevivirá el tiempo dependiendo de la calidad, relevancia e integridad de su contenido.
+
+![Variaciones de temperatura superficial — gráfico con datos de 1000 años, anotado directamente](../chapter_files/images/vizualizacion/image45.png){fig-align="center" width="80%"}
+
+### 7. Escoger el Formato Adecuado
+
+Las estructuras básicas son: frases (uno o dos números), tablas (cuando se requieren valores exactos), semi-gráficos y gráficos. La elección debe hacerse según lo que el lector necesita hacer con la información.
+
+![The Economist — versión original vs versión Instagram del mismo contenido](../chapter_files/images/vizualizacion/image44.png){fig-align="center" width="90%"}
+
+La jerarquía de precisión perceptual de Mackinlay (1987) ordena los canales visuales de más a menos preciso:
+
+![Mackinlay 1987 — jerarquía de precisión de tareas perceptuales cuantitativas](../chapter_files/images/vizualizacion/image46.png){fig-align="center" width="60%"}
+
+La posición es el canal más preciso; el volumen y el color son los menos precisos. Esto tiene consecuencias directas: un gráfico de barras (posición) comunica diferencias más precisamente que un pie chart (ángulo/área).
+
+![Mackinlay 1987 — ranking para datos cuantitativos, ordinales y nominales](../chapter_files/images/vizualizacion/image57.png){fig-align="center" width="80%"}
+
+### 8. Combinar Datos y Texto
+
+Los gráficos son párrafos sobre datos y deben tratarse como tales. El texto no es un complemento opcional: hace la complejidad accesible.
+
+![Financial Times — precio de acciones de Twitter con anotaciones de eventos clave](../chapter_files/images/vizualizacion/image47.png){fig-align="center" width="80%"}
+
+### Guía Práctica: Qué Ayuda y Qué No
+
+| Ayuda al lector | No ayuda al lector |
+|-----------------|-------------------|
+| Palabras sin abreviaciones extrañas | Abreviaciones abundantes que requieren ver el texto |
+| Palabras de izquierda a derecha | Palabras de arriba a abajo o en varias direcciones |
+| Pequeños mensajes que ayudan a entender los datos | Gráficos difíciles de interpretar que requieren leer texto |
+| Etiquetas sobrepuestas al gráfico | Rellenos, sombreados o colores complicados |
+| Gráficos que atraen la atención y curiosidad | Gráficos desalentadores, llenos de información irrelevante |
+| Colores amigables con personas daltónicas | Verde y rojo como contrastes principales |
+| Fuentes claras, precisas, sobrias | Fuentes poco claras o saturadas |
+| Fuentes con mayúsculas y minúsculas | Fuentes en mayúsculas |
+
+## Otras Recomendaciones Prácticas
+
+### Usar Razón Datos/Tinta ~80%
+
+La razón datos/tinta es la proporción del área del gráfico dedicada a representar datos versus elementos decorativos. Tufte recomienda maximizarla: eliminar grillas innecesarias, fondos de colores, sombras y decoraciones que no añaden información.
+
+![Comparación low vs high data-ink ratio para el mismo dataset](../chapter_files/images/vizualizacion/image58.png){fig-align="center" width="80%"}
+
+### Evitar Gráficos de Barras para Promedios
+
+El 20% de las personas cree que un gráfico de barras muestra el rango de valores medidos, no solo la media. Mostrar la distribución completa es siempre más honesto.
+
+![Problema con barras para promedios — ocultan la variabilidad](../chapter_files/images/vizualizacion/image67.png){fig-align="center" width="70%"}
+
+### Mostrar los Datos
+
+En lugar de resumir en una barra o un punto, mostrar los datos individuales con jitter, transparencia o puntos pequeños.
+
+![Pasos para hacer visible la distribución: reducir tamaño de puntos, transparencia, jitter aleatorio, jitter simétrico](../chapter_files/images/vizualizacion/image64.png){fig-align="center" width="90%"}
+
+### Usar Violin Plots
+
+Los violin plots combinan la información del boxplot (mediana, cuartiles) con la forma de la distribución (KDE). Son superiores a los gráficos de barras para comparar distribuciones.
+
+![Violin plots vs barras — el violin revela diferencias de distribución que la barra oculta](../chapter_files/images/vizualizacion/image61.png){fig-align="center" width="80%"}
+
+![Comparación raw data, boxplot y violin plot para el mismo dataset](../chapter_files/images/vizualizacion/image84.gif){fig-align="center" width="80%"}
+
+### No Usar Pie Charts ni Gráficos 3D
+
+Los pie charts dificultan la comparación de ángulos similares. Los gráficos 3D introducen distorsión perspectiva. En ambos casos, un gráfico de puntos o barras comunica la misma información con mayor precisión.
+
+![Pie chart 3D vs gráfico de puntos — el gráfico de puntos permite comparar con mucha más precisión](../chapter_files/images/vizualizacion/image63.png){fig-align="center" width="80%"}
+
+### No Cortar los Ejes
+
+Los ejes deben empezar desde cero cuando se habla de cantidades. Cortar el eje exagera visualmente las diferencias.
+
+![Ejemplo de gráfico con exceso de información superflua que distrae del mensaje](../chapter_files/images/vizualizacion/image72.png){fig-align="center" width="70%"}
+
+### Usar Treemaps para Clases Desbalanceadas
+
+Cuando hay desbalance muy grande entre categorías, el área es mejor indicador de cantidad que la longitud. Un treemap hace visibles las categorías pequeñas.
+
+![Barras vs treemap para el mismo dataset con clases muy desbalanceadas](../chapter_files/images/vizualizacion/image65.png){fig-align="center" width="90%"}
+
+### El Waffle Chart como Alternativa
+
+Un estudio del UK COVID-19 dashboard encontró que aunque los usuarios preferían el gráfico de barras por familiaridad, el waffle chart (opción C) era el más efectivo para comunicar la información.
+
+![User testing: barras (A), barras con leyenda (B) y waffle chart (C) — el 90% encontró C más útil](../chapter_files/images/vizualizacion/image85.png){fig-align="center" width="80%"}
+
+### No Usar Muchos Colores
+
+El máximo recomendado es 7 colores distintos. Con más, la discriminación se vuelve difícil y la leyenda se convierte en un obstáculo.
+
+![Ejemplo de demasiados colores vs uso efectivo de dos colores con etiquetas directas](../chapter_files/images/vizualizacion/image79.png){fig-align="center" width="80%"}
+
+La excepción: cuando se etiquetan las series directamente sobre el gráfico (sin leyenda), se pueden usar más colores porque el lector no necesita ir y volver a la leyenda.
+
+![Financial Times — mortalidad COVID por país, muchos colores pero con etiquetas directas sobre cada línea](../chapter_files/images/vizualizacion/image74.png){fig-align="center" width="80%"}
+
+### Escala y Proporción
+
+- **Relación ancho/alto**: entre 1.4 y 1.8 (la proporción áurea es 1.6). Los gráficos más anchos que altos son más fáciles de leer.
+- **Causa y efecto**: el eje x debe representar la causa; el eje y, el efecto.
+- **Tamaño del texto**: cuando el gráfico se usa en presentación, el texto debe ser legible proyectado.
+
+![Distintas proporciones ancho/alto — entre 1.4 y 1.8 es lo recomendado](../chapter_files/images/vizualizacion/image53.png){fig-align="center" width="80%"}
+
+### Revisitar los Principios
+
+Las reglas son guías, no leyes absolutas. A veces romperlas produce visualizaciones más efectivas o más atractivas.
+
+![Gráfico de hielo ártico 3D — viola la regla del 3D pero es más intuitivo que una tabla](../chapter_files/images/vizualizacion/image69.png){fig-align="center" width="70%"}
+
+![Ghost-benefit analysis — mezcla ilustraciones con datos de manera efectiva (The Economist)](../chapter_files/images/vizualizacion/image78.png){fig-align="center" width="80%"}
+
+::: {.callout-tip}
+## Lectura recomendada
+[Why you sometimes need to break the rules in data viz](https://medium.economist.com/why-you-sometimes-need-to-break-the-rules-in-data-viz-4d8ece284919) — The Economist
+:::
+
+## Tipos de Gráficos Avanzados
+
+Más allá de los tipos básicos, existen visualizaciones especializadas para ciertos tipos de datos y relaciones.
+
+### Bar Plot con Storytelling
+
+Un buen gráfico de barras puede contar una historia completa cuando está bien diseñado: con anotaciones, iconos, y estructura visual que guía la lectura.
+
+![Bar plot — acciones de impacto climático por toneladas de CO₂ ahorradas por año](../chapter_files/images/vizualizacion/image81.png){fig-align="center" width="80%"}
+
+### Sankey Diagram
+
+Para representar flujos entre categorías. El ancho de cada flujo es proporcional a la cantidad.
+
+![Sankey diagram — presupuesto nacional de Omán 2019, fuentes y destinos del gasto](../chapter_files/images/vizualizacion/image83.png){fig-align="center" width="90%"}
+
+### Chord Diagram
+
+Para representar relaciones bidireccionales entre categorías en un layout circular.
+
+![Chord diagram — menciones cruzadas entre candidatos políticos](../chapter_files/images/vizualizacion/image76.png){fig-align="center" width="70%"}
+
+### Streamgraph
+
+Para representar la evolución temporal de categorías, con el área proporcional a la magnitud.
+
+![Streamgraph — popularidad de artistas musicales en el tiempo](../chapter_files/images/vizualizacion/image88.png){fig-align="center" width="90%"}
+
+### Combinar Gráficos para Contar una Historia
+
+Las visualizaciones más efectivas combinan múltiples tipos de gráficos para construir una narrativa completa.
+
+![Infografía de metano — combina barras, íconos, líneas de tiempo y texto para contar una historia completa](../chapter_files/images/vizualizacion/image75.png){fig-align="center" width="90%"}
+
+### El Pulsar CP 1919
+
+Una historia sobre la visualización como arte: los datos del pulsar CP 1919, visualizados en el libro *The Cambridge Encyclopedia of Astronomy*, inspiraron la portada del álbum *Unknown Pleasures* de Joy Division (1979) y se convirtieron en uno de los gráficos más reconocidos de la cultura popular.
+
+![Pulsar CP 1919 — pulsos sucesivos superpuestos verticalmente, y Jocelyn Bell Burnell, quien descubrió el primer púlsar](../chapter_files/images/vizualizacion/image86.png){fig-align="center" width="80%"}
+
+::: {.callout-note}
+## Video recomendado
+[Historia del pulsar y su visualización](https://www.youtube.com/watch?v=reEQye0EOAw)
+:::
+
+### Visualización Científica Personal
+
+Una buena visualización puede también ser una contribución científica en sí misma. Este gráfico fue creado por Francisco Förster para comunicar el riesgo de contagio de COVID-19 en espacios cerrados en función del exceso de CO₂:
+
+![CO₂ como indicador indirecto del riesgo de contagio — combinación de datos experimentales, modelos y anotaciones en español](../chapter_files/images/vizualizacion/image87.png){fig-align="center" width="80%"}
+
+## Referencias
+
+- Tufte, E. R. (1983). *The Visual Display of Quantitative Information*. Graphics Press.
+- Tufte, E. R. (2006). *Beautiful Evidence*. Graphics Press.
+- Mackinlay, J. (1987). Automating the Design of Graphical Presentations of Relational Information. *ACM Transactions on Graphics*, 6(2), 110–141.
+- Borkin, M. A., et al. (2011). Evaluation of Artery Visualizations for Heart Disease Diagnosis. *IEEE Transactions on Visualization and Computer Graphics*, 17(12).
+- Wong, B. (2011). Color blindness. *Nature Methods*, 8(6), 441.
+- Stevenson, I. H., & Kording, K. P. (2011). How advances in neural recording affect data analysis. *Nature Neuroscience*, 14(2), 139–142.
+- [Santiago Lombeyda, Visualización, FCFM, 2021 (YouTube)](https://www.youtube.com/watch?v=oY7vzhiBF70)
+- [Why you sometimes need to break the rules in data viz](https://medium.economist.com/why-you-sometimes-need-to-break-the-rules-in-data-viz-4d8ece284919)
+- [A better default colormap for matplotlib](https://www.youtube.com/watch?v=xAoljeRJ3lU)
+- [CIECAM02 — Wikipedia](https://en.wikipedia.org/wiki/CIECAM02)
+- [bids.github.io/colormap](https://bids.github.io/colormap/)

@@ -1,0 +1,282 @@
+# Introducción al Curso
+
+## Propósito del Curso
+
+El curso **Proyecto de Ciencia de Datos (MDS7201)** tiene como objetivo principal que los estudiantes apliquen los conceptos fundamentales de la Ciencia de Datos en un proyecto práctico real. A través de este curso, obtendrás una visión integral de lo que implica llevar a cabo un proyecto de datos desde su concepción hasta la presentación de resultados.
+
+### Objetivos de Aprendizaje
+
+Al finalizar este curso, serás capaz de:
+
+- Aplicar conceptos fundamentales de la Ciencia de Datos en proyectos reales
+- Resolver problemas mediante herramientas de manejo, análisis y visualización de información
+- Desarrollar un proyecto práctico completo de principio a fin
+- Comunicar resultados técnicos de manera efectiva a diferentes audiencias
+
+## Tópicos del Curso
+
+Durante el desarrollo del proyecto trabajarás los siguientes tópicos:
+
+### Gestión y Metodología
+
+- Metodologías para proyectos de Ciencia de Datos (CRISP-DM)
+- Herramientas de organización de trabajo
+- Desarrollo del proyecto en base a hitos de avance
+
+### Datos
+
+- Acceso a datos y entendimiento del problema
+- Análisis exploratorio y preprocesamiento
+- Herramientas de exploración y manipulación de datos
+- Herramientas de estructura y procesamiento de datos especializadas
+
+### Análisis y Modelamiento
+
+- Técnicas estadísticas aplicadas
+- Modelamiento de datos
+- Aprendizaje automático
+- Evaluación de modelos y líneas base
+
+### Comunicación
+
+- Visualización de datos efectiva
+- Presentación de proyectos de Ciencia de Datos
+- Desarrollo de informes de resultados
+- Recomendaciones para stakeholders
+
+## Competencias a Desarrollar
+
+### Competencias Específicas (CE)
+
+- **Gestión de proyectos**: Planificar, organizar y ejecutar proyectos de datos
+- **Modelos y lenguajes de consulta**: Utilizar herramientas apropiadas para cada etapa
+- **Políticas de seguridad**: Aplicar buenas prácticas en manejo de datos
+- **Descubrimiento de conocimiento**: Extraer información relevante mediante análisis de datos
+
+### Competencias Genéricas (CG)
+
+- **Comunicación académica y profesional**: Presentar resultados de forma clara y efectiva
+- **Trabajo en equipo**: Colaborar eficientemente en grupos multidisciplinarios
+- **Compromiso ético**: Considerar implicancias éticas en el análisis de datos
+- **Innovación**: Proponer soluciones creativas a problemas complejos
+
+## Metodología del Curso
+
+El curso sigue una metodología basada en **CRISP-DM** (Cross-Industry Standard Process for Data Mining), adaptada a las necesidades de proyectos modernos de Ciencia de Datos.
+
+### Etapas del Proyecto
+
+1. **Comprensión y Formulación del Problema**
+
+   - Entender el contexto del negocio o investigación
+   - Definir objetivos claros y medibles
+   - Identificar stakeholders y requerimientos
+
+2. **Adquisición de Datos**
+
+   - Identificación de fuentes de datos
+   - Extracción y recolección
+   - Limpieza y transformación inicial
+
+3. **Análisis y Modelamiento de Datos**
+
+   - Análisis exploratorio de datos (EDA)
+   - Aplicación de técnicas estadísticas
+   - Implementación de modelos de machine learning
+   - Evaluación y validación de resultados
+
+4. **Comunicación del Resultado**
+
+   - Visualización de datos efectiva
+   - Presentación de insights y hallazgos
+   - Documentación técnica
+
+5. **Demo / MVP**
+
+   - Desarrollo de un producto mínimo viable funcional
+   - Demostración de la solución propuesta
+
+6. **Traspaso**
+
+   - Entrega del proyecto a la contraparte
+   - Documentación para continuidad
+   - Transferencia de conocimiento para implementación
+
+::: {.callout-note}
+## Metodología Iterativa
+Esta metodología es iterativa. Es común volver a etapas anteriores conforme se descubre nueva información o surgen nuevos requerimientos.
+
+**Referencia**: Martínez-Plumed et al. (2021). [*CRISP-DM Twenty Years Later: From Data Mining Processes to Data Science Trajectories*](https://ieeexplore.ieee.org/abstract/document/8943998)
+:::
+
+## Sistema de Evaluación
+
+### Componentes de Evaluación
+
+El curso evalúa tu desempeño mediante los siguientes componentes:
+
+| Componente | Ponderación | Descripción |
+|------------|-------------|-------------|
+| **Asistencia / Aprendizaje** | 10% | Participación activa en clases |
+| **Hito 1** | 15% | Presentación del problema |
+| **Hito 2** | 15% | Análisis exploratorio |
+| **Hito 3** | 15% | Definición del problema + línea base |
+| **Hito 4** | 15% | Presentación de resultados y traspaso |
+| **Presentación Final** | 15% | Exposición oral del proyecto completo |
+| **Informe Final y Póster** | 15% | Documento técnico + póster |
+
+### Descripción de Hitos
+
+Los hitos corresponden a entregas periódicas que marcan el avance del proyecto:
+
+1. **Hito 1: Presentación del Problema**
+
+   - Comprensión del problema
+   - Definición de objetivos
+   - Plan de trabajo inicial
+
+2. **Hito 2: Análisis Exploratorio**
+
+   - Exploración de datos
+   - Identificación de patrones
+   - Preprocesamiento inicial
+
+3. **Hito 3: Definición del Problema + Línea Base**
+
+   - Refinamiento del problema
+   - Implementación de modelos base
+   - Métricas de evaluación
+
+4. **Hito 4: Presentación de Resultados y Traspaso**
+
+   - Resultados finales
+   - Análisis de modelos
+   - Plan de traspaso a contraparte
+   - Recomendaciones
+
+### Periodo de Exámenes
+
+Durante el periodo de exámenes se realizan las entregas finales:
+
+- **Informe Final y Póster**: 
+  - Grabación en oficinas de contraparte
+  - Envío por U-Cursos
+  - Documento técnico en formato Quarto
+  
+
+- **Presentación Final**:
+  - Exposición del proyecto completo
+  - Demostración de resultados
+  - Preguntas del equipo docente
+
+### Co-evaluaciones
+
+En todos los hitos y la presentación final se realizan co-evaluaciones entre los miembros del equipo. Estas evaluaciones son fundamentales para:
+
+- Evaluar el trabajo individual dentro del grupo
+- Identificar contribuciones específicas de cada miembro
+- Asegurar distribución equitativa del trabajo
+
+::: {.callout-warning}
+## Reglas Importantes de Evaluación
+
+- **NDA Obligatorio**: Si la empresa les dice que no es necesario, suban un correo o alguna otra prueba de que ellos no requieren NDA. Si no está firmado o la evidencia de no necesitarlo, se descuenta 1 punto de la nota final. En ambos casos deben subirlo a U-Cursos. 
+- **Compartir Repositorio**: Si no se comparte el repositorio con el equipo docente, se descuenta 1 punto al siguiente hito por cada semana de retraso
+- **Co-evaluaciones**: Obligatorias en todos los hitos y presentación final. No responder la coevaluación descuenta 0.5 puntos a la nora del hito respectivo.
+:::
+
+## Reglas y Consideraciones del Curso
+
+### Trabajo en Equipo
+
+- Trabajarás en grupos de 3-4 estudiantes
+- Cada grupo tendrá un proyecto asignado con una contraparte real
+- Se espera reuniones regulares con la contraparte. Una vez a la semana es recomendable. Además, deben apoyarse con su profesor auxiliar regularmente. Cualquier duda que quieran escalar a los profesores de cátedra debería pasar por su auxiliar primero.
+- La comunicación interna del equipo es fundamental
+- **Distribuyan el trabajo de forma justa** entre todos los miembros
+
+### Dedicación
+
+- **El MDS exige dedicación exclusiva**: 
+- Trabajar en una empresa no es excusa válida para incumplimientos
+- Trabajo continuo durante todo el semestre, no solo cercano a entregas
+- La ausencia de commits en el repositorio refleja falta de trabajo en el código
+
+### Calendario y Fechas
+
+::: {.callout-important}
+## Política de Fechas
+
+- El calendario detallado está disponible en U-Cursos
+- **No se cambian fechas de entregas ni presentaciones**
+- Si alguien falta en una presentación, el grupo debe continuar y evaluar a su compañero como estimen conveniente en la co-evaluación
+- Las reuniones regulares con contrapartes son responsabilidad de los grupos
+:::
+
+### Eliminación del Curso
+
+Si necesitas eliminar el ramo:
+
+- **Hazlo al inicio del semestre**
+- Eliminarlo después del inicio perjudica a:
+  - Tus compañeros de equipo
+  - La contraparte del proyecto
+  - La planificación del curso
+
+### Apoyo Durante el Semestre
+
+- **Auxiliares**: Apóyate con el equipo de auxiliares asignados
+- Clases sobre tópicos específicos importantes para desarrollar proyectos reales
+
+### Herramientas de Organización
+
+Se recomienda utilizar herramientas para coordinar el trabajo en equipo:
+
+- **Coordinación de reuniones**: When2meet, Doodle, Google Calendar
+- **Gestión de proyecto**: GitHub Projects, Trello, Notion
+- **Comunicación**: Slack, Discord, Microsoft Teams
+- **Control de versiones**: Git (obligatorio), GitHub, GitLab, Bitbucket
+
+## Recursos Bibliográficos
+
+### Referencias Principales
+
+1. **Baumer, Ben** (2015). *A Data Science Course for Undergraduates: Thinking With Data*
+
+2. **Hardt, M., & Recht, B.** (2021). *Patterns, predictions, and actions: A story about machine learning*
+
+3. **O'Neil, C. & Schutt, R.** (2014). *Doing Data Science: Straight Talk From the Frontline*. O'Reilly Media
+
+4. **VanderPlas, J.** (2016). *Python Data Science Handbook*. O'Reilly Media
+
+### Referencias Complementarias
+
+5. **Kyrian Dale** (2016). *Data Visualization with Python and JavaScript*
+
+6. **McKinney, W.** (2012). *Python for Data Analysis*. O'Reilly Media
+
+7. **Paarsch H., Golyaev K.** (2016). *A Gentle Introduction to Effective Computing in Quantitative Research*. MIT Press
+
+8. **Tufte, E. R.** (1985). *The Visual Display of Quantitative Information*
+
+## Equipo Docente
+
+- **Francisco Förster** – fforster@uchile.cl [LinkedIn](https://www.linkedin.com/in/franciscoforster/)
+- **Rodolfo Núñez** – rodo.nunez.u@gmail.com [LinkedIn](https://www.linkedin.com/in/rodonunez/)
+- Equipo de auxiliares asignados por proyecto
+
+::: {.callout-tip}
+## Comunicación
+Mantén comunicación regular con el equipo docente. No esperes hasta tener problemas graves para pedir ayuda. Las reuniones periódicas son clave para el éxito del proyecto.
+:::
+
+## Próximos Pasos
+
+1. **Formar equipos**: Elige tus preferencias de proyecto, con lo que haremos un match entre estudiantes y proyectos. Si quieres trabajar con compañeros específicos deben votar exactamente igual y poner en los comentarios que quieren trabajar juntos. No prometemos nada, pero es posible que los podamos dejar juntos.
+2. **Conocer tu proyecto**: Revisa la descripción del proyecto asignado
+3. **Primera reunión con contraparte**: Agenda y prepara la reunión inicial
+4. **Configurar herramientas**: Setup de repositorio remoto, ambientes de desarrollo, herramientas de comunicación
+5. **Firmar NDA**: Completa el acuerdo de confidencialidad con tu contraparte
+6. **Planificar Hito 1**: Define un plan de trabajo para la primera entrega
+
+¡Bienvenido al curso! ¡Te deseamos mucho éxito y que puedas aprender mucho!

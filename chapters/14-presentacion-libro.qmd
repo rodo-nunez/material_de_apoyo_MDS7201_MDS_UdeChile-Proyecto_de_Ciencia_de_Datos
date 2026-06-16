@@ -1,0 +1,271 @@
+# Técnicas de Comunicación y Presentación
+
+Presentar bien no es un talento innato: es un conjunto de habilidades que se aprenden y practican. Este capítulo integra tres perspectivas complementarias sobre la comunicación oral efectiva: las **5 Vocal Foundations** de Vinh Giang, el trabajo de **Matt Abrahams** sobre el manejo de la ansiedad y el pensamiento espontáneo, y las **110 técnicas de comunicación** de **David JP Phillips**.
+
+El objetivo no es convertirte en un orador profesional, sino darte herramientas concretas para comunicar mejor tus proyectos de datos a audiencias técnicas y no técnicas.
+
+## Las 5 Fundaciones Vocales (Vinh Giang)
+
+Vinh Giang, mago y comunicador australiano, propone que toda comunicación vocal efectiva se construye sobre cinco fundaciones. No son técnicas avanzadas — son los elementos básicos que, cuando se dominan, transforman radicalmente cómo te percibe una audiencia.
+
+::: {.callout-note}
+## Videos recomendados — Vinh Giang
+- [The 5 Vocal Foundations](https://www.youtube.com/watch?v=CuaY4qe4V34)
+- [Comunicación y presencia](https://www.youtube.com/watch?v=44Q4A3cEzzc)
+:::
+
+### 1. Rate of Speech (Velocidad)
+
+La velocidad a la que hablas comunica más de lo que crees. Hablar muy rápido señala nerviosismo y hace difícil seguirte. Hablar muy lento puede perder la atención de la audiencia.
+
+**La clave no es una velocidad constante** — es la variación. Acelerar levemente en las partes de contexto y desacelerar dramáticamente en los puntos importantes crea énfasis natural.
+
+- **Rápido:** partes de transición, contexto, información conocida
+- **Lento:** ideas nuevas, conclusiones importantes, llamadas a la acción
+
+Cuando alguien habla a velocidad constante todo el tiempo, el cerebro de la audiencia deja de procesar activamente porque no hay señales de qué es más importante.
+
+### 2. Volume (Volumen)
+
+El volumen tiene dos funciones: asegurar que te escuchen, y crear énfasis. Una voz que nunca cambia de volumen suena monótona independientemente del contenido.
+
+**Errores comunes:**
+
+- Bajar el volumen al final de las frases (muy frecuente cuando uno está nervioso)
+- Hablar siempre al mismo volumen sin importar lo que se está diciendo
+- Hablar demasiado bajo por temor a parecer arrogante
+
+**Ejercicio práctico:** Grábate hablando y escucha específicamente si terminas las frases con volumen descendente. Si es así, practica mantener o incluso subir el volumen al llegar a la palabra más importante de cada oración.
+
+### 3. Pitch / Melody (Tono y Melodía)
+
+El pitch es la altura tonal de tu voz. La melodía es cómo ese pitch varía durante una oración o discurso. Una voz sin variación de pitch suena monótona — literalmente, como un solo tono.
+
+**El pitch descendente al final de una frase comunica afirmación y confianza.**
+**El pitch ascendente al final de una frase comunica pregunta o incertidumbre.**
+
+Un error muy común en presentadores nerviosos es terminar todas las afirmaciones con pitch ascendente, como si fueran preguntas. Esto erosiona la credibilidad, porque suena como si el presentador tampoco estuviera seguro de lo que dice.
+
+### 4. Tonality / Emotion (Tonalidad y Emoción)
+
+La tonalidad es la coloración emocional de tu voz. Cuando hablas de algo que genuinamente te parece importante, interesante o preocupante, tu voz lo refleja — y la audiencia lo siente.
+
+El problema es que muchos presentadores "apagan" su tonalidad para parecer más profesionales o por miedo a parecer exagerados. El resultado es una presentación plana que no genera conexión.
+
+**Principio clave:** Tu audiencia no puede sentir más emoción por tu tema de la que tú demuestras. Si presentas tus hallazgos de datos con la misma emoción con la que leería una lista del supermercado, tu audiencia procesará la información de la misma manera.
+
+Esto no significa actuar — significa permitirte expresar genuinamente lo que ya sientes sobre el tema.
+
+### 5. Pause (Pausa)
+
+La pausa es la herramienta más subutilizada en comunicación oral. La mayoría de los presentadores le temen al silencio y lo llenan con muletillas ("eh", "mm", "o sea", "básicamente").
+
+**Lo que hace la pausa:**
+
+- Le da tiempo a la audiencia para procesar lo que acaba de decir
+- Crea anticipación antes de un punto importante
+- Comunica calma y confianza (solo alguien seguro puede estar callado sin incomodidad)
+- Separa ideas, funcionando como la puntuación del discurso oral
+
+**La regla de oro:** Reemplaza cada "eh" o "mm" por una pausa. Al principio se sentirá incómodo. Para tu audiencia, siempre se sentirá mejor.
+
+::: {.callout-tip}
+## Ejercicio: Las 5 fundaciones
+Grábate presentando durante 2 minutos. Luego escúchate una vez por cada fundación: ¿varía tu velocidad? ¿tu volumen? ¿tu pitch? ¿hay emoción en tu voz? ¿usas pausas o las rellenas con muletillas?
+:::
+
+## Nervios y Cómo Manejarlos
+
+### Por Qué Sentimos Ansiedad al Presentar
+
+La ansiedad ante la presentación es una respuesta evolutiva normal. Cuando percibimos que estamos siendo evaluados por un grupo, el sistema nervioso simpático se activa — el mismo mecanismo que nos prepara para huir o pelear. El resultado es una cascada de síntomas físicos.
+
+**Matt Abrahams**, profesor de comunicación de Stanford y autor de *Think Fast, Talk Smart*, propone una reencuadración fundamental: la ansiedad y la excitación producen exactamente la misma respuesta fisiológica. La diferencia es solo la etiqueta que les ponemos.
+
+En lugar de intentar eliminar los nervios (lo cual es imposible y contraproducente), el objetivo es **reencuadrarlos como energía** que puedes usar para tu presentación.
+
+::: {.callout-note}
+## Recursos — Matt Abrahams
+- [Think Fast. Talk Smart](https://www.youtube.com/watch?v=HAnw168huqA)
+- [Speaking Up Without Freaking Out](https://www.youtube.com/watch?v=XIXvKKEQQJo)
+- [Podcast: Think Fast, Talk Smart](https://mattabrahams.com/podcast/)
+:::
+
+### Síntomas Comunes de Ansiedad
+
+Es útil reconocer los síntomas para no ser sorprendido por ellos. Todos son normales y todos son manejables:
+
+| Síntoma | Qué hacer |
+|---------|-----------|
+| Náuseas antes de presentar | Respiración profunda, no comer en exceso antes |
+| Boca seca | Tener agua disponible, morder suavemente la lengua antes |
+| Manos o voz temblorosa | Movimiento físico previo, respiración diafragmática |
+| Mente en blanco | Tener un "mapa" de estructura, no memorizar palabra por palabra |
+| Hablar muy rápido | Conciencia de la pausa, respirar entre ideas |
+| Ruborizarse | Aceptarlo en lugar de resistirlo (la resistencia lo amplifica) |
+| Palpitaciones | Normal — es adrenalina, no peligro |
+| Sudoración | Normal — se reduce con la práctica y cuando empieza la presentación |
+
+### ¿Es Tan Terrible Equivocarse?
+
+Una de las fuentes más grandes de ansiedad es el miedo a cometer errores. Vale la pena cuestionarlo directamente:
+
+- La audiencia raramente nota los errores que tú notas
+- Cuando la audiencia sí nota un error y el presentador lo maneja con calma, frecuentemente aumenta la credibilidad (demuestra que es humano y seguro)
+- Un error no arruina una presentación — la forma en que lo manejas, sí puede arruinarla o rescatarla
+
+**Principio:** Prepárate bien, pero no busques la perfección. Busca la conexión.
+
+### El Mapa en Lugar de la Memorización
+
+Memorizar una presentación palabra por palabra es contraproducente por dos razones: si olvidas una palabra, pierdes todo el hilo; y suena artificial porque lo es.
+
+En cambio, Abrahams propone tener un **mapa estructural**: conocer profundamente las ideas clave y el orden en que van, y dejar que las palabras sean espontáneas. Esto produce un discurso que suena natural y permite adaptarse a la audiencia en tiempo real.
+
+### Qué Hacer con los "Eh"
+
+Las muletillas ("eh", "mm", "o sea", "básicamente", "¿me explico?") son señales de que el hablante está buscando tiempo para pensar. Son universales y humanas, pero en exceso distraen a la audiencia y erosionan la percepción de competencia.
+
+**La solución es simple pero requiere práctica:** reemplazar cada muletilla por una pausa. El efecto para la audiencia es completamente diferente — la pausa comunica reflexión, la muletilla comunica nerviosismo.
+
+**Cómo practicarlo:**
+
+1. Grábate y cuenta tus muletillas
+2. Habla más lento de lo que crees necesario — la velocidad es la causa principal de las muletillas
+3. Permite el silencio conscientemente cuando necesitas pensar
+
+## Estructura del Mensaje
+
+### What / So What / Now What
+
+Matt Abrahams propone una estructura simple y poderosa para cualquier comunicación espontánea o estructurada:
+
+**What:** ¿Qué estoy describiendo? El hecho, la situación, el hallazgo.
+
+**So What:** ¿Por qué importa? ¿Cuál es la relevancia para esta audiencia? Esta es la parte más frecuentemente omitida — los presentadores técnicos tienden a describir el qué en detalle y olvidar conectarlo con el por qué le debería importar a la audiencia.
+
+**Now What:** ¿Qué hacemos con esto? La acción, la decisión, el próximo paso.
+
+Esta estructura funciona para una presentación completa, para responder preguntas espontáneas, y para estructurar cada slide individual.
+
+::: {.callout-tip}
+## Ejemplo aplicado a un proyecto de datos
+
+**What:** Encontramos que el 40% de los pedidos con retraso se concentran en una sola ruta logística.
+
+**So What:** Esto significa que podemos eliminar más de la mitad de los retrasos totales interviniendo en un solo punto del sistema, sin necesidad de rediseñar toda la operación.
+
+**Now What:** Recomendamos asignar un analista dedicado a monitorear esta ruta y probar con rutas alternativas durante las próximas 4 semanas.
+:::
+
+### Otras Estructuras Útiles
+
+**Problem / Solution / Benefit:** Para propuestas de proyectos o recomendaciones.
+
+**Context / Complication / Resolution:** Similar a Plot / Twist / Ending del capítulo de Storytelling — útil para presentaciones más largas.
+
+**PREP (Point / Reason / Example / Point):** Para responder preguntas breves con claridad.
+
+## Gestos Funcionales
+
+Los gestos son una parte integral de la comunicación, no un accesorio opcional. La investigación de David JP Phillips muestra que los oradores que usan gestos son percibidos como más cálidos, más competentes y más creíbles.
+
+**Gestos funcionales** son aquellos que refuerzan el mensaje verbal. Se oponen a los gestos de nerviosismo (tocarse la cara, frotarse las manos, balancearse) y a los gestos decorativos sin sentido.
+
+### Tipos de Gestos Funcionales
+
+**Gestos de tamaño:** Separar las manos para indicar "grande", acercarlas para indicar "pequeño".
+
+**Gestos de cantidad:** Usar dedos para enumerar puntos ("primero... segundo... tercero...").
+
+**Gestos de dirección:** Señalar hacia donde va algo, separar el espacio para distinguir conceptos ("aquí tenemos X, allá tenemos Y").
+
+**Gestos de énfasis:** Un puño suave, un golpe en el aire, para marcar el punto más importante de una idea.
+
+### Lo Que No Hacer
+
+- **No cruzar los brazos** — comunica defensividad o incomodidad
+- **No poner las manos en los bolsillos** — aunque es cómodo, reduce la percepción de energía
+- **No balancearse** — señal clara de nerviosismo que distrae a la audiencia
+- **No gesticular constantemente sin significado** — los gestos vacíos diluyen el impacto de los funcionales
+
+## Las 110 Técnicas de Comunicación (David JP Phillips)
+
+David JP Phillips, autor y coach de comunicación sueco, compiló 110 técnicas de comunicación y oratoria, organizadas en categorías que van desde el manejo del nerviosismo hasta el nivel de maestría.
+
+![Las 110 técnicas de comunicación y oratoria de David JP Phillips](../chapter_files/images/comunicacion/tecnicas_de_comunicacion.png){fig-align="center" width="100%"}
+
+Las categorías principales son: nerviosismo, voz, lenguaje corporal, expresiones faciales, lenguaje verbal, y el nivel de maestría. La imagen muestra las 110 técnicas organizadas en esta taxonomía — es una referencia útil para identificar en qué áreas trabajar según tus fortalezas y debilidades.
+
+::: {.callout-note}
+## Videos recomendados — David JP Phillips
+- [The magical science of storytelling (TEDx)](https://www.youtube.com/watch?v=Nj-hdQMa3uA)
+- [The 110 techniques of communication and public speaking](https://www.youtube.com/watch?v=K0pxo-dS9Hc)
+- [How to avoid death by PowerPoint](https://www.youtube.com/watch?v=Iwpi1Lm6dFo)
+:::
+
+### Principios Clave de Phillips
+
+Phillips ha identificado que los comunicadores más efectivos activan en su audiencia tres neuroquímicos:
+
+- **Dopamina:** Anticipación y curiosidad. Se genera cuando hay una historia en desarrollo, cuando se hace una pregunta antes de responderla, cuando hay suspenso.
+- **Oxitocina:** Confianza y conexión. Se genera a través del contacto visual, el humor auténtico, la vulnerabilidad apropiada, y las historias personales.
+- **Endorfinas:** Placer. Se genera principalmente a través del humor y la ligereza.
+
+Una presentación que activa solo uno de estos produce un efecto; una que activa los tres produce una experiencia memorable.
+
+### Cómo Evitar Death by PowerPoint
+
+Phillips propone reglas simples para que las diapositivas apoyen en lugar de sabotear la comunicación:
+
+- **Una idea por slide:** El cerebro no puede leer y escuchar simultáneamente. Si hay texto en el slide, la audiencia lo lee y deja de escucharte.
+- **Máximo 6 palabras por slide:** Suficiente para anclar la idea, no tanto para que la audiencia lea en lugar de escuchar.
+- **El tamaño del texto importa:** Nada menor a 24pt si vas a proyectar.
+- **Oscurece el fondo, aclara el texto:** Mejor contraste, menos fatiga visual.
+- **Una imagen > mil palabras:** Una imagen fuerte reemplaza cinco bullets.
+- **No leer las slides:** Las slides son para la audiencia, no para el presentador.
+
+## Integración: Una Presentación de Datos Efectiva
+
+Los principios de este capítulo y del capítulo anterior (Storytelling con Datos) se complementan:
+
+| Storytelling con Datos | Técnicas de Presentación |
+|----------------------|------------------------|
+| Estructura narrativa (Plot/Twist/Ending) | What / So What / Now What |
+| Eliminar clutter del gráfico | Eliminar texto de las slides |
+| Dirigir la atención con color | Dirigir la atención con la voz y la pausa |
+| Un mensaje por visualización | Una idea por slide |
+| Anotar directamente en el gráfico | Gesticular hacia lo que se quiere destacar |
+
+El resultado que buscamos: una presentación donde los datos cuentan una historia, las slides apoyan sin saturar, la voz comunica convicción, y la audiencia sabe exactamente qué hacer con la información al terminar.
+
+## Resumen
+
+::: {.callout-tip}
+## Lista de verificación para tu próxima presentación
+
+**Antes:**
+- ¿Conozco mis ideas principales (no de memoria, sino profundamente)?
+- ¿Tengo un mapa estructural claro?
+- ¿Mis slides tienen máximo una idea cada una?
+
+**Durante:**
+- ¿Estoy variando velocidad, volumen y pitch?
+- ¿Estoy usando pausas en lugar de muletillas?
+- ¿Mis gestos refuerzan lo que digo?
+
+**El mensaje:**
+- ¿Está claro el What / So What / Now What?
+- ¿Mi audiencia sabe qué hacer al terminar?
+:::
+
+## Referencias
+
+- Giang, V. [The 5 Vocal Foundations](https://www.youtube.com/watch?v=CuaY4qe4V34)
+- Abrahams, M. *Think Fast. Talk Smart: Communication Techniques*. Stanford GSB.
+- Abrahams, M. [Speaking Up Without Freaking Out](https://www.youtube.com/watch?v=XIXvKKEQQJo)
+- Abrahams, M. [Podcast: Think Fast, Talk Smart](https://mattabrahams.com/podcast/)
+- Phillips, D. JP. [The magical science of storytelling (TEDx)](https://www.youtube.com/watch?v=Nj-hdQMa3uA)
+- Phillips, D. JP. [The 110 techniques of communication and public speaking](https://www.youtube.com/watch?v=K0pxo-dS9Hc)
+- Phillips, D. JP. [How to avoid death by PowerPoint](https://www.youtube.com/watch?v=Iwpi1Lm6dFo)
+- [Simply Amazing Training — Speech Anxiety Symptoms](https://simplyamazingtraining.co.uk/blog/speech-anxiety-symptoms)

@@ -1,0 +1,1206 @@
+# Git Intermedio
+
+## Introducción
+
+Ahora que dominas los conceptos básicos de Git, es momento de profundizar en técnicas más avanzadas que te harán un usuario mucho más eficiente y profesional. Este capítulo cubre desde la arquitectura interna de Git hasta workflows complejos y técnicas de resolución de problemas.
+
+::: {.callout-note}
+## Prerequisitos
+Asume que ya dominas los comandos básicos del capítulo anterior: `init`, `add`, `commit`, `push`, `pull`, `branch`, `checkout`, `merge`.
+:::
+
+## Repaso de Conceptos Fundamentales
+
+### Por Qué y Para Qué Usar Git
+
+Recordemos brevemente por qué Git es fundamental:
+
+**Para el trabajo técnico:**
+
+- Versionamiento de código y análisis
+- Colaboración sin conflictos
+- Experimentación segura
+- Reproducibilidad completa
+
+**Para Data Science específicamente:**
+
+- Track de experimentos
+- Versionamiento de notebooks (con herramientas)
+- Documentación de decisiones
+- Portafolio profesional
+
+### Origen de Git
+
+**Historia:**
+
+- Creado por Linus Torvalds en 2005
+- Para desarrollo del kernel de Linux
+- Necesitaban algo más rápido que sistemas existentes
+- Completamente distribuido
+
+**Por qué ganó:**
+
+- Velocidad extrema
+- Branching eficiente
+- Completamente distribuido
+- Manejo de proyectos grandes
+
+## Arquitectura Interna de Git
+
+### Tipos de Objetos
+
+Git es fundamentalmente un sistema de archivos con contenido direccionado. Todo se almacena como objetos.
+
+**Los 3 tipos principales de objetos:**
+
+#### 1. Blobs (Binary Large Objects)
+
+**Qué son:**
+
+- Contenido de archivos
+- Solo el contenido, sin metadata (nombre, permisos, etc.)
+- Identificados por hash SHA-1 del contenido
+
+**Ejemplo:**
+
+```bash
+# Crear blob
+echo "Hola mundo" | git hash-object -w --stdin
+# Output: 2d832d9044c698081e59c322d5a2a459da546469
+
+# Ver contenido
+git cat-file -p 2d832d9
+# Hola mundo
+
+# Ver tipo
+git cat-file -t 2d832d9
+# blob
+```
+
+**Concepto clave:**
+Si dos archivos tienen exactamente el mismo contenido, Git solo almacena un blob (deduplicación automática).
+
+#### 2. Trees (Árboles)
+
+**Qué son:**
+
+- Representan directorios
+- Contienen referencias a blobs y otros trees
+- Almacenan nombres de archivos y permisos
+
+**Estructura:**
+
+```
+tree
+├── blob (archivo1.py)
+├── blob (archivo2.py)
+└── tree (directorio/)
+    ├── blob (archivo3.py)
+    └── blob (archivo4.py)
+```
+
+**Ejemplo:**
+
+```bash
+# Ver contenido de un tree
+git cat-file -p main^{tree}
+# 100644 blob abc123  README.md
+# 040000 tree def456  src
+# 100644 blob ghi789  .gitignore
+```
+
+#### 3. Commits
+
+**Qué son:**
+
+- Snapshots del proyecto en un momento
+- Apuntan a un tree (estado del proyecto)
+- Contienen metadata: autor, fecha, mensaje
+- Apuntan a commit(s) padre(s)
+
+**Anatomía interna de un commit:**
+
+```bash
+git cat-file -p HEAD
+# tree abc123def456...
+# parent xyz789abc123...
+# author Tu Nombre <email> timestamp
+# committer Tu Nombre <email> timestamp
+#
+# Mensaje del commit
+```
+
+**Cadena de commits:**
+
+```
+C1 (tree T1) ← C2 (tree T2) ← C3 (tree T3) ← HEAD
+```
+
+### Punteros en Git
+
+#### Branches
+
+**Internamente:**
+Un branch es solo un archivo que contiene un hash SHA-1 del commit al que apunta.
+
+```bash
+# Ver qué commit apunta main
+cat .git/refs/heads/main
+# abc123def456...
+
+# Crear branch = crear archivo con hash
+echo "abc123def456..." > .git/refs/heads/feature-branch
+```
+
+**Por qué son tan livianos:**
+
+- Solo 41 bytes (40 caracteres hash + newline)
+- Crear branch es instantáneo
+- No hay copia de archivos
+
+#### Tags
+
+**Dos tipos:**
+
+**1. Lightweight tags:**
+```bash
+# Tag ligero = alias a commit
+git tag v1.0
+
+# Internamente es solo:
+echo "abc123def456..." > .git/refs/tags/v1.0
+```
+
+**2. Annotated tags:**
+```bash
+# Tag anotado = objeto completo con metadata
+git tag -a v1.0 -m "Release 1.0"
+
+# Contiene:
+# - Referencia al commit
+# - Nombre del tagger
+# - Fecha
+# - Mensaje
+```
+
+### Los 4 Ambientes de Trabajo
+
+```
+┌─────────────────┐
+│ Working Copy    │  Archivos que ves y editas
+│                 │
+└────────┬────────┘
+         │ git add
+         ↓
+┌─────────────────┐
+│ Staging Area    │  Cambios preparados para commit
+│ (Index)         │
+└────────┬────────┘
+         │ git commit
+         ↓
+┌─────────────────┐
+│ Local Repo      │  Historial de commits local
+│ (.git/)         │
+└────────┬────────┘
+         │ git push
+         ↓
+┌─────────────────┐
+│ Remote Repo     │  Repositorio en GitHub/GitLab
+│ (origin)        │
+└─────────────────┘
+```
+
+**Flujo típico:**
+
+```bash
+# 1. Modificar archivo (Working Copy)
+vim file.py
+
+# 2. Agregar a staging
+git add file.py
+
+# 3. Commit al repo local
+git commit -m "Update function"
+
+# 4. Push al remoto
+git push origin main
+```
+
+## Configuración Avanzada
+
+### Niveles de Configuración
+
+Git tiene 3 niveles de configuración (en orden de precedencia):
+
+#### 1. Sistema (`--system`)
+
+**Ubicación:** `/etc/gitconfig` (Linux/Mac) o `C:\ProgramData\Git\config` (Windows)
+
+**Afecta:** Todos los usuarios del sistema
+
+```bash
+git config --system core.editor nano
+```
+
+Rara vez se usa.
+
+#### 2. Global (`--global`)
+
+**Ubicación:** `~/.gitconfig` o `~/.config/git/config`
+
+**Afecta:** Todos los repos del usuario
+
+```bash
+git config --global user.name "Tu Nombre"
+git config --global user.email "tu@email.com"
+```
+
+**Archivo `~/.gitconfig` típico:**
+
+```ini
+[user]
+    name = Tu Nombre
+    email = tu@email.com
+[core]
+    editor = code --wait
+    autocrlf = input
+[init]
+    defaultBranch = main
+[alias]
+    st = status
+    co = checkout
+    br = branch
+    ci = commit
+[color]
+    ui = auto
+```
+
+#### 3. Local (`--local`)
+
+**Ubicación:** `<repo>/.git/config`
+
+**Afecta:** Solo el repositorio actual
+
+```bash
+cd mi-proyecto
+git config user.email "proyecto-especifico@email.com"
+```
+
+**Uso típico:**
+
+- Email diferente para trabajo vs. personal
+- Configuraciones específicas del proyecto
+
+**Ver configuración efectiva:**
+
+```bash
+# Ver toda la configuración (con origen)
+git config --list --show-origin
+
+# Ver configuración específica
+git config user.name
+```
+
+### Credenciales
+
+**Archivo `~/.git-credentials`:**
+
+Almacena credenciales en texto plano (no muy seguro).
+
+```
+https://usuario:token@github.com
+```
+
+**Mejor opción - Credential Helper:**
+
+```bash
+# Cache credenciales por 1 hora
+git config --global credential.helper cache
+
+# Cache por 4 horas
+git config --global credential.helper 'cache --timeout=14400'
+
+# Store permanentemente (menos seguro)
+git config --global credential.helper store
+
+# En Windows: usar wincred
+git config --global credential.helper wincred
+
+# En Mac: usar osxkeychain
+git config --global credential.helper osxkeychain
+```
+
+### Múltiples Remotos
+
+Puedes tener múltiples remotos para un mismo repositorio.
+
+**Casos de uso:**
+
+- Fork de proyecto + original
+- Backup en múltiples servicios
+- Deploy a diferentes ambientes
+
+**Configurar múltiples remotos:**
+
+```bash
+# Ver remotos actuales
+git remote -v
+# origin  https://github.com/tu-usuario/proyecto.git (fetch)
+# origin  https://github.com/tu-usuario/proyecto.git (push)
+
+# Agregar remoto adicional
+git remote add upstream https://github.com/autor-original/proyecto.git
+
+# Agregar backup
+git remote add backup https://gitlab.com/tu-usuario/proyecto.git
+
+# Ahora tienes:
+git remote -v
+# origin    https://github.com/tu-usuario/proyecto.git
+# upstream  https://github.com/autor-original/proyecto.git
+# backup    https://gitlab.com/tu-usuario/proyecto.git
+
+# Push a remotos específicos
+git push origin main
+git push backup main
+
+# Fetch de upstream
+git fetch upstream
+git merge upstream/main
+```
+
+**Cambiar URL de remoto:**
+
+```bash
+# Cambiar URL de origin
+git remote set-url origin https://nueva-url.git
+
+# Verificar
+git remote -v
+```
+
+::: {.callout-tip}
+## Ejercicio 1
+
+1. Crea tu propio repo en GitHub
+2. Clónalo localmente
+3. Configura tu usuario localmente (no global)
+4. Explora `~/.gitconfig` y `.git/config`
+5. Agrega un remoto adicional apuntando al repo de un compañero
+:::
+
+## Guía de Estilo para Commits
+
+### Por Qué Importan los Buenos Mensajes
+
+**Commits son documentación:**
+
+- Explican decisiones del proyecto
+- Ayudan a entender el historial
+- Facilitan code review
+- Permiten generar changelogs automáticos
+
+### Anatomía de un Buen Commit Message
+
+**Estructura:**
+
+```
+<tipo>(<scope>): <resumen corto>
+
+<descripción detallada>
+
+<footer con referencias>
+```
+
+**Ejemplo:**
+
+```
+feat(preprocessing): add outlier detection using IQR method
+
+Implemented outlier detection for numerical variables using
+the Interquartile Range (IQR) method. Outliers beyond 1.5*IQR
+are capped at the whisker values to preserve sample size while
+reducing extreme influence.
+
+This improved model accuracy from 78% to 82% on validation set.
+See analysis in notebooks/03_outlier_analysis.ipynb
+
+Closes #23
+```
+
+### Tipos de Commits
+
+**Convencionales (Conventional Commits):**
+
+```bash
+# Nueva funcionalidad
+feat: add user authentication
+feat(api): add endpoint for predictions
+
+# Corrección de bug
+fix: correct null handling in preprocessing
+fix(model): resolve division by zero error
+
+# Documentación
+docs: update README with installation steps
+docs(api): add docstrings to prediction functions
+
+# Refactorización
+refactor: extract feature engineering to module
+refactor(data): simplify loading pipeline
+
+# Performance
+perf: optimize data loading using chunking
+perf(model): reduce inference time by 50%
+
+# Tests
+test: add unit tests for preprocessing
+test(features): add tests for temporal features
+
+# Chore (mantenimiento)
+chore: update dependencies
+chore(ci): add GitHub Actions workflow
+
+# Style (formatting, no cambia lógica)
+style: format code with black
+style: fix indentation
+
+# Build
+build: update requirements.txt
+build(docker): optimize Docker image size
+
+# CI/CD
+ci: add automated testing pipeline
+ci: configure deployment to production
+```
+
+### Reglas para Buenos Mensajes
+
+**1. Primera línea (resumen):**
+
+- Máximo 50 caracteres
+- Imperativo: "Add" no "Added" ni "Adds"
+- No punto al final
+- Capitalizar primera letra
+
+**2. Cuerpo (descripción):**
+
+- Separar con línea en blanco
+- Máximo 72 caracteres por línea
+- Explicar QUÉ y POR QUÉ, no CÓMO
+- El código muestra el cómo
+
+**3. Footer:**
+
+- Referencias a issues: `Closes #123`, `Fixes #456`
+- Breaking changes: `BREAKING CHANGE: ...`
+- Co-autores: `Co-authored-by: Nombre <email>`
+
+### Ejemplos Buenos vs. Malos
+
+```bash
+# ❌ Malos
+git commit -m "fix"
+git commit -m "updates"
+git commit -m "codigo nuevo del modelo"
+git commit -m "asdfasdf"
+
+# ✅ Buenos
+git commit -m "fix: correct encoding in data loader
+
+CSV files were being loaded with wrong encoding (utf-8)
+causing special characters to break. Changed to latin-1
+based on source system documentation.
+
+Fixes #42"
+
+git commit -m "feat: add baseline random forest model
+
+Implemented baseline Random Forest with default parameters:
+
+- 100 estimators
+- max_depth=10
+- Achieved 78% accuracy on validation set
+
+Next: hyperparameter tuning
+
+Related to #15"
+
+git commit -m "refactor: modularize preprocessing pipeline
+
+Extracted preprocessing steps into separate functions
+to improve testability and reusability:
+
+- handle_missing_values()
+- encode_categorical()
+- scale_numerical()
+
+No functional changes, pure refactor."
+```
+
+::: {.callout-tip}
+## Ejercicio 2
+
+1. Configura un alias para commits con template
+2. Crea un archivo README.md en tu repo
+3. Commitea usando un mensaje bien estructurado
+4. Practica diferentes tipos de commits (feat, fix, docs, etc.)
+:::
+
+## README.md y Markdown
+
+### Importancia del README
+
+El README es la cara de tu proyecto. Un buen README:
+
+- Explica qué hace el proyecto
+- Muestra cómo instalarlo y usarlo
+- Documenta la estructura
+- Incluye ejemplos
+- Muestra resultados
+
+### Markdown Básico
+
+```markdown
+# Título Principal (H1)
+## Subtítulo (H2)
+### Tercer Nivel (H3)
+
+**Negrita** y *cursiva*
+
+- Lista
+- Con viñetas
+  - Anidada
+
+1. Lista
+2. Numerada
+
+[Link](https://ejemplo.com)
+
+![Imagen](ruta/a/imagen.png)
+
+`código inline`
+
+```python
+# Bloque de código
+def funcion():
+    pass
+```
+
+> Cita o nota importante
+
+| Columna 1 | Columna 2 |
+|-----------|-----------|
+| Dato 1    | Dato 2    |
+
+---
+
+Línea horizontal
+
+- [ ] Checkbox sin marcar
+- [x] Checkbox marcado
+```
+
+### Template de README para DS
+
+```markdown
+# Nombre del Proyecto
+
+Breve descripción en una línea del proyecto.
+
+## 📋 Descripción
+
+Descripción más detallada del proyecto, problema que resuelve,
+y objetivos principales.
+
+## 👥 Equipo
+
+- [Ana García](mailto:ana@email.com) - Data Scientist
+- [Pedro López](mailto:pedro@email.com) - ML Engineer  
+- [María Silva](mailto:maria@email.com) - Data Analyst
+
+## 🚀 Setup
+
+```bash
+# Clonar repositorio
+git clone https://github.com/usuario/proyecto.git
+cd proyecto
+
+# Crear ambiente virtual
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+venv\Scripts\activate  # Windows
+
+# Instalar dependencias
+pip install -r requirements.txt
+
+# Configurar variables de entorno
+cp .env.example .env
+# Editar .env con tus credenciales
+```
+
+## 📁 Estructura del Proyecto
+
+```
+proyecto/
+├── data/
+│   ├── raw/              # Datos originales
+│   ├── processed/        # Datos preprocesados
+│   └── external/         # Datos externos
+├── notebooks/
+│   ├── 01_eda.ipynb     # Análisis exploratorio
+│   ├── 02_preprocessing.ipynb
+│   └── 03_modeling.ipynb
+├── src/
+│   ├── data/            # Scripts de datos
+│   ├── features/        # Feature engineering
+│   ├── models/          # Modelos
+│   └── visualization/   # Visualizaciones
+├── tests/               # Tests unitarios
+├── models/              # Modelos entrenados
+├── reports/             # Informes y figuras
+├── requirements.txt
+├── .gitignore
+└── README.md
+```
+
+## 💻 Uso
+
+```python
+from src.models.predict import ChurnPredictor
+
+# Cargar modelo
+predictor = ChurnPredictor('models/best_model.pkl')
+
+# Hacer predicción
+customer_data = {
+    'tenure': 24,
+    'monthly_charges': 65.50,
+    'total_charges': 1572.00
+}
+prediction = predictor.predict(customer_data)
+print(f"Churn probability: {prediction:.2%}")
+```
+
+## 📊 Resultados
+
+### Métricas del Modelo
+
+| Modelo | Accuracy | Precision | Recall | F1-Score |
+|--------|----------|-----------|--------|----------|
+| Baseline (Logistic Regression) | 78% | 0.76 | 0.74 | 0.75 |
+| Random Forest | 82% | 0.81 | 0.79 | 0.80 |
+| **XGBoost (Final)** | **85%** | **0.84** | **0.83** | **0.835** |
+
+### Insights Principales
+
+- Variable más importante: `tenure` (tiempo como cliente)
+- Clientes con contratos mes-a-mes tienen 3x más churn
+- Modelo reduce churn campaigns cost en 40%
+
+Ver análisis detallado en [notebooks/04_results.qmd](notebooks/04_results.qmd) (link roto solo de ejemplo)
+
+## 🧪 Tests
+
+```bash
+# Correr todos los tests
+pytest
+
+# Con coverage
+pytest --cov=src tests/
+
+# Test específico
+pytest tests/test_preprocessing.py
+```
+
+## 🤝 Contribuir
+
+1. Fork del proyecto
+2. Crear feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit cambios (`git commit -m 'Add AmazingFeature'`)
+4. Push al branch (`git push origin feature/AmazingFeature`)
+5. Abrir Pull Request
+
+## 📝 Licencia
+
+MIT License - ver [LICENSE](LICENSE) para detalles
+
+## 📧 Contacto
+
+Para preguntas o sugerencias:
+
+- Email: equipo@proyecto.com
+- Issues: [GitHub Issues](https://github.com/usuario/proyecto/issues)
+
+## 🙏 Agradecimientos
+
+- [Empresa X] por proporcionar los datos
+- [Profesor Y] por supervisión
+- [Librería Z] por facilitar el análisis
+
+## Aliases de Git
+
+### Por Qué Usar Aliases
+
+**Ventajas:**
+
+- Comandos más cortos y rápidos
+- Menos errores de tipeo
+- Workflows más eficientes
+- Comandos complejos simplificados
+
+### Aliases Comunes
+
+**Básicos:**
+
+```bash
+# Status
+git config --global alias.st status
+
+# Checkout
+git config --global alias.co checkout
+
+# Branch
+git config --global alias.br branch
+
+# Commit
+git config --global alias.ci commit
+
+# Push
+git config --global alias.ps push
+
+# Pull  
+git config --global alias.pl pull
+```
+
+**Intermedios:**
+
+```bash
+# Commit con mensaje
+git config --global alias.cm 'commit -m'
+
+# Commit all y mensaje
+git config --global alias.cam 'commit -am'
+
+# Checkout y crear branch
+git config --global alias.cob 'checkout -b'
+
+# Ver último commit
+git config --global alias.last 'log -1 HEAD'
+
+# Unstage archivo
+git config --global alias.unstage 'reset HEAD --'
+
+# Ver qué cambió en último commit
+git config --global alias.dlc 'diff --cached HEAD^'
+```
+
+**Avanzados:**
+
+```bash
+# Log bonito con graph
+git config --global alias.lg "log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative"
+
+# Log con archivos modificados
+git config --global alias.ll "log --pretty=format:'%C(yellow)%h%Cred%d %Creset%s%Cblue [%cn]' --decorate --numstat"
+
+# Ver branches con último commit
+git config --global alias.brl "branch -vv"
+
+# Listar aliases
+git config --global alias.alias "config --get-regexp ^alias\."
+
+# Amend sin editar mensaje
+git config --global alias.amend "commit --amend --no-edit"
+
+# Deshacer último commit pero mantener cambios
+git config --global alias.undo "reset --soft HEAD^"
+
+# Ver contributors
+git config --global alias.contributors "shortlog -sn"
+
+# Push forzado seguro
+git config --global alias.pushf "push --force-with-lease"
+```
+
+**Para Data Science:**
+
+```bash
+# Ver notebooks modificados
+git config --global alias.nb "diff --name-only *.ipynb"
+
+# Clear notebook outputs antes de commit
+git config --global alias.nbclean "!jupyter nbconvert --clear-output --inplace"
+
+# Ver tamaño de archivos
+git config --global alias.size "!git ls-files | xargs ls -lh | sort -k5 -h"
+
+# Listar archivos grandes (>1MB)
+git config --global alias.large "!git ls-tree -r -t -l --full-name HEAD | sort -n -k 4 | tail -n 10"
+```
+
+### Usar Aliases
+
+```bash
+# En lugar de:
+git status
+git checkout -b feature/new-analysis
+git commit -am "Add analysis"
+
+# Usa:
+git st
+git cob feature/new-analysis
+git cam "Add analysis"
+
+# Log bonito
+git lg
+
+# Ver últimos 10 commits con graph
+git lg -10
+```
+
+### Aliases como Scripts
+
+Puedes crear aliases que ejecuten scripts complejos:
+
+```bash
+# Alias que ejecuta script externo
+git config --global alias.stats '!$HOME/scripts/git-stats.sh'
+
+# Alias con múltiples comandos
+git config --global alias.sync '!git pull && git push'
+
+# Alias con parámetros
+git config --global alias.find '!git log --all --oneline | grep'
+```
+
+::: {.callout-tip}
+## Ejercicio 2 (continuación)
+
+1. Configura al menos 5 aliases útiles para ti
+2. Crea un README.md usando markdown
+3. Commitea usando tus nuevos aliases
+4. Practica el workflow: `git st` → `git add` → `git ci -m "mensaje"` → `git ps`
+:::
+
+## Branching Strategies
+
+### Por Qué Necesitas una Estrategia
+
+Sin estrategia clara:
+
+- Caos en el repositorio
+- Conflictos frecuentes
+- Difícil saber qué está en producción
+- Code reviews complicados
+
+Con estrategia:
+
+- Workflow claro para todos
+- Menos conflictos
+- Releases organizados
+- Fácil colaboración
+
+### Git Flow
+
+**La estrategia más popular para proyectos con releases.**
+
+**Branches principales:**
+
+1. **`main`** (o `master`): Código en producción
+
+   - Siempre estable
+   - Cada commit es una release
+   - Tagged con versión
+
+2. **`develop`**: Integración de features
+
+   - Próxima release
+   - Features se integran aquí
+   - Cuando está listo → release branch
+
+**Branches de soporte:**
+
+3. **`feature/*`**: Nuevas funcionalidades
+
+   - Se crea desde `develop`
+   - Se merge de vuelta a `develop`
+   - Nombre: `feature/nombre-descriptivo`
+
+4. **`release/*`**: Preparar nueva release
+
+   - Se crea desde `develop`
+   - Solo bug fixes
+   - Se merge a `main` Y `develop`
+   - Tagged en `main`
+
+5. **`hotfix/*`**: Arreglos urgentes en producción
+
+   - Se crea desde `main`
+   - Se merge a `main` Y `develop`
+   - Para bugs críticos
+
+**Flujo típico:**
+
+```
+main ──┬────────────────●─────────────────────●──
+       │               release             hotfix
+       │               merge               merge
+develop ┬──●──●──●────┬──●─────────┬──────●────
+        │  feature1   │  feature2   │
+        └─────────────┘─────────────┘
+```
+
+### Git Flow - Comandos
+
+**Instalar Git Flow:**
+
+```bash
+# Mac
+brew install git-flow
+
+# Linux
+sudo apt-get install git-flow
+
+# Windows
+# Incluido en Git for Windows
+```
+
+**Inicializar Git Flow:**
+
+```bash
+git flow init
+
+# Te preguntará nombres de branches
+# Generalmente aceptar defaults:
+# Production branch: main
+# Development branch: develop
+# Feature prefix: feature/
+# Release prefix: release/
+# Hotfix prefix: hotfix/
+# Version tag prefix: v
+```
+
+**Trabajar con features:**
+
+```bash
+# Crear feature branch
+git flow feature start exploratory-analysis
+# Crea feature/exploratory-analysis desde develop
+# Automáticamente hace checkout
+
+# Trabajar normalmente
+git add notebooks/eda.ipynb
+git commit -m "Add exploratory analysis"
+
+# Finalizar feature
+git flow feature finish exploratory-analysis
+# Merge a develop
+# Elimina feature branch
+# Vuelve a develop
+```
+
+**Crear release:**
+
+```bash
+# Cuando develop está listo para release
+git flow release start 0.1.0
+# Crea release/0.1.0 desde develop
+
+# Solo bug fixes aquí
+git commit -m "Fix typo in documentation"
+
+# Finalizar release
+git flow release finish 0.1.0
+# Merge a main
+# Tag en main con v0.1.0
+# Merge de vuelta a develop
+# Elimina release branch
+```
+
+**Hotfix urgente:**
+
+```bash
+# Bug crítico en producción
+git flow hotfix start critical-bug
+# Crea hotfix/critical-bug desde main
+
+# Arreglar bug
+git commit -m "Fix null pointer exception"
+
+# Finalizar hotfix
+git flow hotfix finish critical-bug
+# Merge a main
+# Tag en main
+# Merge a develop
+# Elimina hotfix branch
+```
+
+### Git Flow Sin la Herramienta
+
+Si no quieres instalar git-flow, puedes hacerlo manualmente:
+
+```bash
+# Feature
+git checkout develop
+git checkout -b feature/my-feature
+# ... trabajo ...
+git checkout develop
+git merge feature/my-feature
+git branch -d feature/my-feature
+
+# Release
+git checkout develop
+git checkout -b release/1.0.0
+# ... bug fixes ...
+git checkout main
+git merge release/1.0.0
+git tag -a v1.0.0 -m "Release 1.0.0"
+git checkout develop
+git merge release/1.0.0
+git branch -d release/1.0.0
+
+# Hotfix
+git checkout main
+git checkout -b hotfix/critical
+# ... fix ...
+git checkout main
+git merge hotfix/critical
+git tag -a v1.0.1 -m "Hotfix 1.0.1"
+git checkout develop
+git merge hotfix/critical
+git branch -d hotfix/critical
+```
+
+### Estrategia Simplificada para el Curso
+
+Git Flow completo puede ser excesivo para proyectos del curso. Una versión simplificada:
+
+**Branches:**
+
+1. **`main`**: Versión estable para hitos
+2. **`feature/*`**: Features individuales
+
+**Workflow:**
+
+```bash
+# Inicio de hito
+git checkout main
+
+# Cada miembro trabaja en su feature
+git checkout -b feature/eda
+git checkout -b feature/preprocessing  
+git checkout -b feature/modeling
+
+# Al terminar feature
+git checkout main
+git merge feature/eda
+git push
+
+# Al terminar hito
+git tag -a hito-2 -m "Hito 2: Análisis y Baseline"
+git push origin hito-2
+```
+
+::: {.callout-tip}
+## Ejercicio 3
+
+1. Inicializa Git Flow en un repo de prueba
+2. Simula desarrollo de proyecto:
+
+   - Crea 2-3 features (archivos dummy)
+   - Finaliza las features
+   - Crea una release
+   - Simula un hotfix
+3. Observa el historial con `git log --graph --all`
+:::
+
+## Manejo de Conflictos
+
+### Cuándo Ocurren Conflictos
+
+Los conflictos pueden ocurrir en varios comandos:
+
+**1. `git merge`**
+```bash
+git merge feature-branch
+# CONFLICT (content): Merge conflict in file.py
+```
+
+**2. `git pull`** (que es fetch + merge)
+```bash
+git pull
+# CONFLICT (content): Merge conflict in file.py
+```
+
+**3. `git rebase`**
+```bash
+git rebase main
+# CONFLICT (content): Merge conflict in file.py
+```
+
+**4. `git cherry-pick`**
+```bash
+git cherry-pick abc123
+# CONFLICT (content): Merge conflict in file.py
+```
+
+**5. `git stash apply`**
+```bash
+git stash pop
+# CONFLICT (content): Merge conflict in file.py
+```
+
+### Cómo se Ven los Conflictos
+
+Cuando hay conflicto, Git marca el archivo:
+
+```python
+def calculate_metric(data):
+<<<<<<< HEAD
+    # Versión en tu branch actual
+    result = data.mean()
+    return result * 100
+=======
+    # Versión en el branch que estás merging
+    result = data.median()
+    return result
+>>>>>>> feature-branch
+```
+
+**Secciones:**
+
+- `<<<<<<< HEAD`: Inicio de tu versión
+- `=======`: Separador
+- `>>>>>>> branch-name`: Fin de la otra versión
+
+### Resolver Conflictos
+
+**Proceso:**
+
+1. **Identificar archivos con conflictos**
+```bash
+git status
+# both modified:   src/analysis.py
+# both modified:   notebooks/eda.ipynb
+```
+
+2. **Abrir archivo y resolver manualmente**
+
+Opciones:
+
+- Mantener tu versión
+- Mantener su versión
+- Combinar ambas
+- Escribir algo completamente nuevo
+
+```python
+# Después de resolver:
+def calculate_metric(data):
+    # Decidiste usar median pero con factor 100
+    result = data.median()
+    return result * 100
+```
+
+3. **Marcar como resuelto**
+```bash

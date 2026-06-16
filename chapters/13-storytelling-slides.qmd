@@ -1,0 +1,422 @@
+---
+title: "Storytelling con Datos"
+subtitle: "MDS7201 - Master of Data Science"
+author: "Universidad de Chile"
+format:
+  revealjs:
+    theme: [default, ../custom-slides.scss]
+    slide-number: true
+    chalkboard: true
+    preview-links: auto
+    code-fold: false
+    code-tools: true
+    transition: slide
+    background-transition: fade
+  beamer:
+    theme: Madrid
+    colortheme: default
+    fonttheme: professionalfonts
+    aspectratio: 169
+    navigation: horizontal
+    section-titles: true
+    toc: true
+---
+
+# ¿Qué es el Storytelling? {background-color="#1a1a1a"}
+
+## Storytelling con Datos
+
+**Cole Nussbaumer Knaflic — Storytelling with Data (2015)**
+
+::: {.incremental}
+- Saber analizar datos no es suficiente
+- Si no puedes comunicar tus hallazgos, el análisis pierde su valor
+- El storytelling transforma un análisis correcto en un mensaje que mueve a actuar
+:::
+
+::: {.callout-note}
+[Video introductorio](https://www.youtube.com/watch?v=8EMW7io4rSI) — Cole Nussbaumer Knaflic
+:::
+
+## Exploratorio vs. Explicativo
+
+::: {.columns}
+::: {.column width="50%"}
+**Análisis Exploratorio**
+
+- Para *entender* los datos
+- Iterativo, para ti o tu equipo
+- No importa si es prolijo
+- La mayoría del tiempo de trabajo
+:::
+::: {.column width="50%"}
+**Análisis Explicativo**
+
+- Para *comunicar* lo que encontraste
+- Mensaje específico
+- Audiencia específica
+- Lo que se presenta
+:::
+:::
+
+::: {.callout-important}
+El error más común: comunicar el proceso exploratorio como si fuera explicativo.
+:::
+
+# Antes y Después {background-color="#2a2a2a"}
+
+## Ejemplo 1: Barras → Líneas
+
+**Tema: contrataciones por mes y año**
+
+::: {.columns}
+::: {.column width="50%"}
+**Antes**
+
+*[Placeholder: gráfico de barras agrupadas por mes y año — difícil detectar tendencia]*
+:::
+::: {.column width="50%"}
+**Después**
+
+*[Placeholder: gráfico de líneas — tendencia temporal inmediatamente visible]*
+:::
+:::
+
+::: {.callout-tip}
+Cuando el tiempo es la variable explicativa, las líneas comunican la tendencia mejor que las barras.
+:::
+
+## Ejemplo 2: Pie Chart → Barras
+
+**Tema: cómo se siente la gente haciendo ciencia**
+
+::: {.columns}
+::: {.column width="50%"}
+**Antes**
+
+*[Placeholder: pie chart con múltiples segmentos similares — imposible comparar]*
+:::
+::: {.column width="50%"}
+**Después**
+
+*[Placeholder: barras horizontales ordenadas — comparación inmediata]*
+:::
+:::
+
+Los humanos somos malos comparando ángulos. Las barras son siempre más precisas.
+
+## Ejemplo 3: Barras + Contexto
+
+**Tema: precio promedio para ser competitivo**
+
+::: {.columns}
+::: {.column width="50%"}
+**Antes**
+
+*[Placeholder: barras simples sin referencia]*
+:::
+::: {.column width="50%"}
+**Después**
+
+*[Placeholder: barras + línea de precio competitivo + color para productos sobre/bajo umbral]*
+:::
+:::
+
+El contexto (línea de referencia) y el color como señal de alerta generan acción.
+
+# Los 6 Principios {background-color="#1a1a1a"}
+
+## Seis Principios de Knaflic
+
+::: {.incremental}
+1. **Understand the context** — ¿Quién, qué, cómo?
+2. **Choose an appropriate visual display** — El gráfico correcto para la relación correcta
+3. **Eliminate clutter** — Todo lo que no añade, resta
+4. **Focus attention where you want it** — Dirigir la mirada conscientemente
+5. **Think like a designer** — Jerarquía, alineación, accesibilidad
+6. **Tell a story** — Plot, Twist, Ending
+:::
+
+## 1. Entender el Contexto
+
+Antes de hacer cualquier gráfico, responde:
+
+::: {.incremental}
+- **¿Quién es tu audiencia?** Una persona específica, no "todos"
+- **¿Qué quieres que hagan?** Aprobar algo, cambiar algo, entender algo
+- **¿Cómo vas a comunicarlo?** Presentación, informe, dashboard — cambia todo
+:::
+
+**Big Idea:** una sola frase que articula tu punto único y es un argumento completo.
+
+## 3. Eliminar el Desorden
+
+Elementos que típicamente son ruido:
+
+::: {.incremental}
+- Grillas pesadas y ejes con muchas marcas
+- Bordes y cajas innecesarios
+- Efectos 3D y sombras
+- Leyendas cuando se puede etiquetar directamente
+- Decimales innecesarios
+- Títulos redundantes
+:::
+
+# Dirigir la Atención {background-color="#2a2a2a"}
+
+## El Experimento de Conteo
+
+**¿Cuántos 3s hay en esta tabla? (5 segundos)**
+
+```
+1 5 6 3 7 2 8 4 9 3 1 6
+5 3 2 8 1 4 6 9 3 7 2 8
+4 6 3 1 9 5 2 7 3 8 4 6
+2 8 5 3 7 1 4 6 3 9 2 5
+```
+
+. . .
+
+Ahora imagina los mismos números pero con los **3s en negrita y rojo**.
+
+Los encontrarías instantáneamente. El contenido es idéntico. La diferencia: **atributos pre-atentivos**.
+
+## Atributos Pre-Atentivos
+
+El cerebro los procesa antes de la atención consciente — simplemente "saltan":
+
+::: {.columns}
+::: {.column width="50%"}
+**Para destacar elementos:**
+
+- Color ← el más poderoso
+- Tamaño
+- Intensidad / Contraste
+- Forma
+:::
+::: {.column width="50%"}
+**Para mostrar estructura:**
+
+- Posición
+- Movimiento
+:::
+:::
+
+::: {.callout-important}
+En cada visualización, **solo una cosa** debería "saltar". Si todo es importante, nada es importante.
+:::
+
+## Color para Llamar la Atención
+
+**Estrategia base de Knaflic:**
+
+> Usa gris para todo, excepto lo que quieres destacar.
+
+::: {.columns}
+::: {.column width="50%"}
+**Antes**
+
+*[Placeholder: todas las barras en azul — ¿qué debería mirar?]*
+:::
+::: {.column width="50%"}
+**Después**
+
+*[Placeholder: barras grises + una en azul oscuro — la mirada va directo ahí]*
+:::
+:::
+
+::: {.callout-note}
+[How to use color in your data visualization](https://www.youtube.com/watch?v=AiD6etOB6qI)
+:::
+
+## Proceso para Diseñar el Foco
+
+::: {.incremental}
+1. Decide cuál es el **mensaje principal**
+2. Identifica el **elemento visual** que lo representa
+3. **Destaca** ese elemento con color, tamaño o posición
+4. Convierte todo lo demás a **gris**
+5. Añade una **anotación textual** que refuerza el mensaje
+:::
+
+## Ejemplo: Llamada de Atención en Barras
+
+*[Placeholder: ejemplo del cap. 4 del libro — transformación de gráfico de barras genérico a uno con foco claro mediante color y anotación]*
+
+# Contar una Historia {background-color="#1a1a1a"}
+
+## Por Qué Funciona la Narrativa
+
+Las historias tienen una estructura que el cerebro reconoce y procesa eficientemente:
+
+::: {.incremental}
+- Generan **tensión** que mantiene la atención
+- Crean **contexto** que hace interpretable la información
+- Producen una **respuesta emocional** que refuerza la memoria
+- Llevan a la audiencia a una **conclusión** de manera natural
+:::
+
+## Estructura: Plot · Twist · Ending
+
+::: {.columns}
+::: {.column width="33%"}
+**Plot**
+
+La situación. ¿Qué está pasando? Establece la línea base.
+:::
+::: {.column width="33%"}
+**Twist**
+
+El hallazgo. ¿Qué es diferente de lo esperado? La tensión narrativa.
+:::
+::: {.column width="33%"}
+**Ending**
+
+La solución o llamada a la acción. ¿Qué debería hacerse?
+:::
+:::
+
+## Ejemplo: Niños y Ciencias
+
+*[Placeholder: before/after del caso de estudio — datos sin estructura vs datos organizados como Plot/Twist/Ending]*
+
+::: {.incremental}
+- **Plot:** Los programas de ciencias tienen buenos indicadores de participación
+- **Twist:** Los niños reportan mayoritariamente aburrimiento y desconexión
+- **Ending:** Se solicita aprobación para piloto de nueva metodología en 3 escuelas
+:::
+
+Sin narrativa: un reporte. Con narrativa: un argumento.
+
+# 7 Lecciones sobre el Color {background-color="#2a2a2a"}
+
+## Las 7 Lecciones
+
+::: {.incremental}
+1. **El color llama la atención** — atributo pre-atentivo
+2. **El color señala dónde mirar** — un color de énfasis por gráfico
+3. **Debe usarse mesuradamente** — empieza en gris, añade color con propósito
+4. **Puede tomar un valor cuantitativo** — escalas secuenciales
+5. **Tiene tono y significado** — rojo ≠ verde, azul ≠ naranja
+6. **No todos ven el color igual** — 8% de los hombres tienen daltonismo
+7. **Debe usarse consistentemente** — mismo color = mismo significado
+:::
+
+## Significado del Color
+
+| Color | Asociación típica |
+|-------|------------------|
+| 🔴 Rojo | Alarma, problema, pérdida |
+| 🟢 Verde | Positivo, ganancia, seguridad |
+| 🟡 Amarillo | Precaución, atención |
+| 🔵 Azul | Neutralidad, datos, confianza |
+
+::: {.callout-warning}
+Nunca usar rojo para el mejor resultado del año — la señal contradice el dato.
+:::
+
+## Accesibilidad y Daltonismo
+
+::: {.incremental}
+- ~8% de los hombres tienen algún tipo de daltonismo
+- La combinación rojo-verde es la más problemática
+- Usar paletas diseñadas para accesibilidad: Wong, IBM, Viridis
+- Añadir forma o posición además del color
+- Verificar con simuladores antes de publicar
+:::
+
+[Coloring for Colorblindness](https://davidmathlogic.com/colorblind/)
+
+# Tipos de Gráficos {background-color="#1a1a1a"}
+
+## ¿Qué Comparación Quieres Mostrar?
+
+| Relación | Gráfico recomendado |
+|----------|-------------------|
+| Comparar categorías | Barras horizontales/verticales |
+| Cambio en el tiempo | Líneas |
+| Parte del todo | Barras apiladas (no pie charts) |
+| Relación entre variables | Scatter plot |
+| Distribución | Histograma, violin plot |
+
+## Gráfico de Barras
+
+::: {.incremental}
+- Para comparar categorías entre sí
+- Barras horizontales cuando los nombres son largos
+- **Siempre empezar el eje en cero**
+- Ordenar por valor a menos que el orden tenga significado
+- Nunca en 3D
+:::
+
+## Gráfico de Líneas
+
+::: {.incremental}
+- Para cambio en el tiempo o tendencias continuas
+- Las líneas implican continuidad — no usar para datos categóricos
+- Máximo 5-7 líneas por gráfico
+- Etiquetar directamente en vez de usar leyendas
+:::
+
+## Scatter Plot y Área
+
+::: {.columns}
+::: {.column width="50%"}
+**Scatter Plot**
+
+- Relación entre dos variables continuas
+- Detectar correlaciones, clusters, outliers
+- Añadir línea de tendencia si la correlación es el mensaje
+:::
+::: {.column width="50%"}
+**Gráfico de Área**
+
+- Cambio acumulado en el tiempo
+- Énfasis en el volumen total
+- Máximo 2-3 series en áreas apiladas
+:::
+:::
+
+## Qué Evitar
+
+::: {.incremental}
+- ❌ **Gráficos 3D** — distorsionan proporciones
+- ❌ **Pie charts** con más de 2-3 categorías similares
+- ❌ **Sobrecargar con información** — si tarda >5s en entenderse, dividir
+- ❌ **Leyendas cuando se puede etiquetar directamente**
+- ❌ **Color decorativo** — cada color debe significar algo
+:::
+
+# Recursos {background-color="#2a2a2a"}
+
+## Herramientas
+
+::: {.columns}
+::: {.column width="50%"}
+**Librerías Python**
+
+- [matplotlib](https://matplotlib.org/stable/index.html)
+- [seaborn](https://seaborn.pydata.org/index.html)
+- [plotly](https://plotly.com/python/)
+:::
+::: {.column width="50%"}
+**Tipos de gráficos avanzados**
+
+- [Raincloud plots (Python)](https://medium.com/mlearning-ai/getting-started-with-raincloud-plots-in-python-2ea5c2d01c11)
+- [Raincloud plots (R/ggplot2)](https://www.cedricscherer.com/2021/06/06/visualizing-distributions-with-raincloud-plots-and-how-to-create-them-with-ggplot2/)
+:::
+:::
+
+## Videos y Lecturas
+
+- [Storytelling with Data — video introductorio](https://www.youtube.com/watch?v=8EMW7io4rSI)
+- [How to use color in your data visualization](https://www.youtube.com/watch?v=AiD6etOB6qI)
+- [Death to Pie Charts](https://www.storytellingwithdata.com/blog/2011/07/death-to-pie-charts)
+- [@storytellingwithdata en YouTube](https://www.youtube.com/@storytellingwithdata)
+- [Why pie charts are bad](https://www.youtube.com/watch?v=oPwttnmM7zs)
+
+## Referencia
+
+Nussbaumer Knaflic, C. (2015). *Storytelling with Data: A Data Visualization Guide for Business Professionals*. Wiley.
+
+# ¿Preguntas? {background-color="#1a1a1a"}

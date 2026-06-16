@@ -1,0 +1,866 @@
+---
+title: "Manifiesto de Programación para Data Science"
+subtitle: "MDS7201 - Master of Data Science"
+author: "Universidad de Chile"
+format:
+  revealjs:
+    theme: [default, ../custom-slides.scss]
+    slide-number: true
+    chalkboard: true
+    preview-links: auto
+    code-fold: false
+    code-tools: true
+    transition: slide
+    background-transition: fade
+  beamer:
+    theme: Madrid
+    colortheme: default
+    fonttheme: professionalfonts
+    aspectratio: 169
+    navigation: horizontal
+    section-titles: true
+    toc: true
+---
+
+# Introducción {background-color="#1a1a1a"}
+
+## Por Qué Importa el Código
+
+::: {.callout-note}
+## Código es Comunicación
+El código se **lee** muchas más veces de las que se **escribe**
+:::
+
+Un buen código comunica claramente su intención
+
+## Características Únicas de DS
+
+::: {.incremental}
+- Comienza con exploración. No es necesario usar notebooks, pero si usas, usa .qmd
+- Balance experimentación vs. producción
+- Requiere reproducibilidad rigurosa
+- Combina estadística, visualización y ML
+- Evoluciona rápidamente
+:::
+
+# Principios del Buen Código {background-color="#2a2a2a"}
+
+## Los 9 Principios
+
+::: {.incremental}
+1. 🦾 Resiliente y robusto
+2. ⏭️ Facilita traspaso
+3. 👟 Eficiente
+4. 🛠️ Permite usar distintas herramientas
+5. 🤖 Fácil paso a producción
+6. 🏛️ Cultura en común
+7. 💪 Estructura flexible
+8. 💰 Genera valor
+9. ⏲️ Toma tiempo
+:::
+
+## 🦾 Resiliente y Robusto
+
+**Maneja casos edge y errores**
+
+```python
+# ✅ Validación de inputs
+def calculate_churn(customer_data: pd.DataFrame):
+    if customer_data.empty:
+        raise ValueError("Data no puede estar vacío")
+    
+    required = ['tenure', 'monthly_charges']
+    missing = set(required) - set(customer_data.columns)
+    if missing:
+        raise ValueError(f"Faltan columnas: {missing}")
+    
+    # Procesar...
+```
+
+## 🦾 Manejo de Errores
+
+```python
+def load_data(filepath: str) -> pd.DataFrame:
+    """Carga datos con manejo robusto."""
+    
+    if not os.path.exists(filepath):
+        raise FileNotFoundError(f"Archivo no encontrado")
+    
+    try:
+        df = pd.read_csv(filepath)
+    except pd.errors.ParserError as e:
+        raise ValueError(f"Error parseando CSV: {e}")
+    
+    if len(df) == 0:
+        raise ValueError("DataFrame vacío")
+    
+    return df
+```
+
+## ⏭️ Facilita Traspaso
+
+**Otro puede entender tu código**
+
+::: {.columns}
+::: {.column width="50%"}
+**❌ Malo**
+```python
+def f(x, y, z):
+    return x * y + z
+```
+:::
+
+::: {.column width="50%"}
+**✅ Bueno**
+```python
+def calculate_total_price(
+    base_price: float,
+    quantity: int,
+    tax: float
+) -> float:
+    """Calcula precio total."""
+    subtotal = base_price * quantity
+    return subtotal + tax
+```
+:::
+:::
+
+## 👟 Eficiente
+
+**Usa recursos inteligentemente**
+
+::: {.callout-note}
+"Premature optimization is the root of all evil" - Donald Knuth
+:::
+
+**Prioridades:**
+1. Código correcto y claro
+2. Código eficiente donde importa
+3. Profile antes de optimizar
+
+## 👟 Vectorización
+
+```python
+# ❌ Lento: Loop sobre DataFrame
+result = []
+for idx, row in df.iterrows():
+    result.append(row['a'] * row['b'])
+df['c'] = result
+
+# ✅ Rápido: Operaciones vectorizadas
+df['c'] = df['a'] * df['b']
+```
+
+**100-1000x más rápido**
+
+## 🛠️ Permite Usar Distintas Herramientas
+
+**Código modular y adaptable**
+
+```python
+from abc import ABC, abstractmethod
+
+class BaseModel(ABC):
+    """Interfaz común."""
+    
+    @abstractmethod
+    def train(self, X, y):
+        pass
+    
+    @abstractmethod
+    def predict(self, X):
+        pass
+
+# Cualquier modelo con misma interfaz
+def train_and_evaluate(model: BaseModel, X, y):
+    model.train(X, y)
+    return model.evaluate(X, y)
+```
+
+## 🤖 Fácil Paso a Producción
+
+**Separar exploración de producción**
+
+```python
+# ✅ Módulos reutilizables
+# src/models/predict.py
+class ChurnPredictor:
+    def __init__(self, model_path: str):
+        self.model = joblib.load(model_path)
+    
+    def predict(self, customer_data: dict) -> float:
+        """Predice probabilidad de churn."""
+        # Validar, transformar, predecir
+        pass
+
+# Usar en API
+predictor = ChurnPredictor('models/model.pkl')
+
+@app.post("/predict")
+def predict_churn(customer: dict):
+    return {"prob": predictor.predict(customer)}
+```
+
+## 🏛️ Cultura en Común
+
+**Estándares compartidos del equipo**
+
+::: {.incremental}
+- PEP 8 como base
+- Black para formateo automático
+- Docstrings estilo Google/NumPy
+- Type hints en funciones públicas
+- Code reviews obligatorias
+:::
+
+## 💪 Estructura Flexible
+
+```
+project/
+├── README.md
+├── requirements.txt
+├── data/
+│   ├── raw/
+│   └── processed/
+├── notebooks/
+├── src/
+│   ├── data/
+│   ├── features/
+│   └── models/
+├── tests/
+└── config/
+```
+
+## 💰 Genera Valor
+
+**Resuelve problemas de negocio**
+
+```python
+# ❌ Solo métrica técnica
+model = optimize_for_accuracy(X, y)  # 95%!
+
+# ✅ Optimizar para valor de negocio
+model = optimize_for_business_value(
+    X, y,
+    cost_false_positive=50,   # Molestar cliente
+    cost_false_negative=500,  # Perder cliente
+)
+```
+
+## ⏲️ Toma Tiempo
+
+::: {.callout-tip}
+## Inversión, no Costo
+- 20-30% más tiempo inicialmente
+- 5-10x ahorro en mantenimiento
+- Se paga multiplicado a largo plazo
+:::
+
+**Balance en el curso:**
+- Exploración: OK ser rápido
+- Una vez funciona: refactorizar
+- Para entregas: código limpio
+
+# Técnicas Esenciales {background-color="#1a1a1a"}
+
+## Las 7 Técnicas Esenciales
+
+::: {.incremental}
+1. Estructura de carpetas
+2. Nombres descriptivos
+3. Comentar códigos
+4. Buen uso de funciones
+5. Modularizar proyectos
+6. Scripts vs. Notebooks
+7. Conocer IDEs
+:::
+
+## 1. Estructura de Carpetas
+
+**Mínimo viable:**
+```
+proyecto/
+├── README.md
+├── requirements.txt
+├── data/
+├── notebooks/
+├── src/
+└── tests/
+```
+
+**Siempre usar estructura consistente**
+
+## 2. Nombres Descriptivos
+
+::: {.columns}
+::: {.column width="50%"}
+**❌ Malo**
+```python
+x = 42
+data = load_data()
+df2 = df.copy()
+temp = calc(val)
+```
+:::
+
+::: {.column width="50%"}
+**✅ Bueno**
+```python
+customer_age = 42
+transactions = load_customer_data()
+high_churn = customers.copy()
+monthly_revenue = calculate(tx)
+```
+:::
+:::
+
+## 2. Nombres - Reglas
+
+**Variables:** Sustantivos descriptivos
+
+**Funciones:** Verbos que describen acción
+
+**Clases:** Sustantivos en PascalCase
+
+**Constantes:** MAYÚSCULAS_CON_GUIONES
+
+## 3. Comentar Códigos
+
+**Principio: Explican POR QUÉ, no QUÉ**
+
+::: {.columns}
+::: {.column width="50%"}
+**❌ Malo**
+```python
+# Incrementar i en 1
+i = i + 1
+
+# Loop sobre filas
+for row in df.iterrows():
+    pass
+```
+:::
+
+::: {.column width="50%"}
+**✅ Bueno**
+```python
+# Índice empieza en 1, no 0
+i = i + 1
+
+# WARNING: iterrows() lento
+# pero necesario para API calls
+for row in df.iterrows():
+    api_call(row)
+```
+:::
+:::
+
+## 3. Comentarios Útiles
+
+::: {.incremental}
+- **Decisiones no obvias**: Por qué este enfoque
+- **Advertencias**: Cuidados al usar
+- **TODOs y FIXMEs**: Trabajo pendiente
+- **Referencias**: Links a papers, docs
+:::
+
+## 4. Buen Uso de Funciones
+
+**Una función hace una cosa**
+
+```python
+# ❌ Hace demasiado
+def process_and_train_and_evaluate(data):
+    data_clean = clean(data)
+    features = create_features(data_clean)
+    model = train(features)
+    metrics = evaluate(model)
+    save(model)
+    return metrics
+
+# ✅ Funciones enfocadas
+def clean_data(data): pass
+def create_features(data): pass
+def train_model(features): pass
+```
+
+## 4. Funciones Cortas
+
+::: {.callout-tip}
+## Regla General
+< 50 líneas por función
+
+Si es más largo, probablemente hace demasiado
+:::
+
+## 5. Modularizar Proyectos
+
+```
+src/
+├── __init__.py
+├── data/
+│   ├── loaders.py
+│   └── preprocessors.py
+├── features/
+│   └── engineering.py
+└── models/
+    ├── train.py
+    └── predict.py
+```
+
+**Cada módulo es importable y reutilizable**
+
+## 6. Scripts vs. Notebooks
+
+::: {.columns}
+::: {.column width="50%"}
+**Notebooks para:**
+- Exploración inicial
+- Prototipado rápido
+- Visualizaciones
+- Comunicar análisis
+:::
+
+::: {.column width="50%"}
+**Scripts para:**
+- Código producción
+- Pipelines automáticos
+- Funciones reutilizables
+- Testing
+- Deployment
+:::
+:::
+
+## 6. Flujo Típico
+
+```
+1. Explorar en notebook
+   ↓
+2. Identificar qué funciona
+   ↓
+3. Refactorizar a scripts
+   ↓
+4. Importar en notebook limpio
+   ↓
+5. Desplegar scripts (no notebooks)
+```
+
+## 7. Conocer IDEs
+
+**Opciones populares:**
+
+- **Jupyter Lab**: Exploración interactiva
+- **VS Code**: Editor general purpose
+- **PyCharm**: IDE completo Python
+- **Google Colab**: Jupyter en la nube
+
+**Recomendación:**
+- Exploración: Jupyter/Colab
+- Producción: VS Code
+
+# Técnicas Básicas {background-color="#2a2a2a"}
+
+## Incorporar Gradualmente
+
+::: {.incremental}
+- Type hints
+- Docstrings
+- Logging
+- Testing básico
+- Linting/formateo
+:::
+
+## Type Hints
+
+**Anotar tipos de datos**
+
+```python
+from typing import List, Optional
+
+def calculate_total(
+    prices: List[float],
+    tax_rate: float
+) -> float:
+    """Calcula total con impuestos."""
+    return sum(prices) * (1 + tax_rate)
+
+def train_model(
+    X: pd.DataFrame,
+    y: pd.Series,
+    threshold: Optional[float] = None
+) -> Any:
+    pass
+```
+
+## Docstrings
+
+**Google Style:**
+
+```python
+def calculate_churn_probability(
+    customer_features: pd.DataFrame,
+    model_path: str = 'models/default.pkl'
+) -> np.ndarray:
+    """
+    Calcula probabilidad de churn.
+    
+    Args:
+        customer_features: DataFrame con features
+        model_path: Path al modelo
+        
+    Returns:
+        Array con probabilidades (0-1)
+        
+    Raises:
+        FileNotFoundError: Si model_path no existe
+    """
+    pass
+```
+
+## Logging
+
+**No usar print()**
+
+```python
+import logging
+
+logger = logging.getLogger(__name__)
+
+def train_model(X, y):
+    logger.info("Starting training")
+    logger.debug(f"X shape: {X.shape}")
+    
+    try:
+        model.fit(X, y)
+        logger.info("Training completed")
+    except Exception as e:
+        logger.error(f"Training failed: {e}")
+        raise
+```
+
+## Logging - Niveles
+
+```python
+# DEBUG: Información detallada
+logger.debug(f"Processing customer {id}")
+
+# INFO: Confirmación
+logger.info("Training completed")
+
+# WARNING: Inesperado pero no crítico
+logger.warning("Missing data, using default")
+
+# ERROR: Error serio
+logger.error(f"Failed to load model")
+
+# CRITICAL: Error muy serio
+logger.critical("Database connection failed")
+```
+
+## Testing Básico
+
+**Por qué testear:**
+
+::: {.incremental}
+- Verificar que código funciona
+- Detectar bugs tempranamente
+- Facilitar refactoring
+- Documentar comportamiento
+:::
+
+## Testing con pytest
+
+```python
+# src/features/engineering.py
+def create_age_groups(ages: pd.Series) -> pd.Series:
+    return pd.cut(ages, bins=[0,18,35,50,65,100])
+
+# tests/test_features.py
+def test_create_age_groups_basic():
+    ages = pd.Series([10, 25, 40, 55, 70])
+    result = create_age_groups(ages)
+    assert result[0] == '<18'
+    assert result[1] == '18-35'
+
+def test_create_age_groups_with_nulls():
+    ages = pd.Series([25, None, 40])
+    result = create_age_groups(ages)
+    assert pd.isna(result[1])
+```
+
+## Linting y Formateo
+
+**Herramientas:**
+
+```bash
+# Black - Formateo automático
+pip install black
+black src/
+
+# Flake8 - Linting
+pip install flake8
+flake8 src/
+
+# isort - Ordenar imports
+pip install isort
+isort src/
+```
+
+## Pre-commit Hooks
+
+**Automatizar checks:**
+
+```yaml
+# .pre-commit-config.yaml
+repos:
+  - repo: https://github.com/psf/black
+    hooks:
+      - id: black
+  - repo: https://github.com/pycqa/flake8
+    hooks:
+      - id: flake8
+```
+
+```bash
+pip install pre-commit
+pre-commit install
+# Se ejecuta automáticamente antes de commit
+```
+
+# Técnicas Avanzadas {background-color="#1a1a1a"}
+
+## Opcionales pero Valiosas
+
+::: {.incremental}
+- Design patterns
+- Context managers
+- Decorators
+- Configuration management
+- Property-based testing
+:::
+
+## Design Patterns
+
+**Factory Pattern:**
+
+```python
+class ModelFactory:
+    @staticmethod
+    def create_model(model_type: str, **kwargs):
+        if model_type == 'random_forest':
+            return RandomForestClassifier(**kwargs)
+        elif model_type == 'xgboost':
+            return XGBClassifier(**kwargs)
+        else:
+            raise ValueError(f"Unknown: {model_type}")
+
+# Uso
+model = ModelFactory.create_model('random_forest')
+```
+
+## Context Managers
+
+```python
+from contextlib import contextmanager
+import time
+
+@contextmanager
+def timer(name: str):
+    """Medir tiempo."""
+    start = time.time()
+    print(f"Starting {name}...")
+    try:
+        yield
+    finally:
+        elapsed = time.time() - start
+        print(f"{name} took {elapsed:.2f}s")
+
+# Uso
+with timer("model training"):
+    model.fit(X, y)
+```
+
+## Decorators
+
+```python
+from functools import wraps
+import time
+
+def timing_decorator(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        result = func(*args, **kwargs)
+        elapsed = time.time() - start
+        print(f"{func.__name__} took {elapsed:.2f}s")
+        return result
+    return wrapper
+
+@timing_decorator
+def train_model(X, y):
+    model.fit(X, y)
+    return model
+```
+
+## Configuration Management
+
+```yaml
+# config/config.yaml
+data:
+  train_path: data/processed/train.csv
+  features: [age, tenure, charges]
+
+model:
+  type: random_forest
+  params:
+    n_estimators: 100
+    max_depth: 10
+```
+
+```python
+import yaml
+
+with open('config.yaml') as f:
+    config = yaml.safe_load(f)
+
+model_type = config['model']['type']
+```
+
+# Para el Curso {background-color="#2a2a2a"}
+
+## Enfoque Pragmático
+
+::: {.callout-tip}
+**Hito 1-2: Exploración**
+- Notebooks pueden ser desordenados
+- Enfoque en descubrimiento
+
+**Hito 3: Refactorización**
+- Convertir código a módulos
+- Agregar estructura y tests
+
+**Hito 4: Calidad**
+- Código limpio y documentado
+- Listo para evaluación
+:::
+
+## Balance Calidad vs. Velocidad
+
+```
+Exploración:
+└─ Velocidad > Calidad
+
+Implementación:
+└─ Velocidad ≈ Calidad
+
+Entrega:
+└─ Calidad > Velocidad
+```
+
+## Cultura de Código
+
+**Establecer desde el inicio:**
+
+::: {.incremental}
+1. Style guide acordado
+2. Estructura estándar
+3. Git workflow
+4. Definition of Done
+5. Tiempo para refactoring
+:::
+
+## Mantener Durante Proyecto
+
+::: {.incremental}
+- Code reviews constructivas
+- Pair programming cuando apropiado
+- Refactoring continuo
+- Retrospectivas de código
+:::
+
+# Resumen {background-color="#1a1a1a"}
+
+## Principios Fundamentales
+
+::: {.incremental}
+1. Código comunica intención
+2. Simple > Complejo
+3. Consistencia > Perfección
+4. Calidad se paga a largo plazo
+:::
+
+## Técnicas por Nivel
+
+**Esenciales (dominar YA):**
+- Estructura, nombres, comentarios, funciones
+
+**Básicas (incorporar gradualmente):**
+- Type hints, docstrings, logging, tests
+
+**Avanzadas (cuando necesario):**
+- Patterns, decorators, configs
+
+## Para Este Curso
+
+::: {.callout-important}
+## Recuerda
+
+1. Semana 1: Establecer estructura
+2. Hitos 1-2: Explorar libremente
+3. Hito 3: Refactorizar
+4. Hito 4: Código de calidad
+
+**El código es parte de la evaluación**
+:::
+
+# Recursos {background-color="#2a2a2a"}
+
+## Libros
+
+- **"Clean Code"** - Robert C. Martin
+- **"The Pragmatic Programmer"** - Hunt & Thomas
+- **"Refactoring"** - Martin Fowler
+- **"Python for Data Analysis"** - Wes McKinney
+
+## Online
+
+- [PEP 8](https://pep8.org/)
+- [Google Python Style Guide](https://google.github.io/styleguide/pyguide.html)
+- [Real Python](https://realpython.com/)
+- [pytest Docs](https://docs.pytest.org/)
+
+## Ejercicios Prácticos
+
+::: {.incremental}
+1. Refactorizar notebook desordenado
+2. Escribir tests para preprocesamiento
+3. Code review con checklist
+4. Setup Black + Flake8 + pre-commit
+5. Documentar módulo completo
+:::
+
+# ¡Éxito en tu Proyecto! {background-color="#1a1a1a"}
+
+## Recapitulación del Curso
+
+Has aprendido:
+
+::: {.incremental}
+- **Cap 1**: Introducción y estructura del curso
+- **Cap 2**: Metodologías de DS (CRISP-DM, TDSP, etc.)
+- **Cap 3**: Manifiesto Ágil y principios
+- **Cap 4**: Metodologías específicas (Scrum, Kanban, XP)
+- **Cap 5**: Herramientas de gestión
+- **Cap 6**: Buenas prácticas de programación
+:::
+
+## Aplicación Integrada
+
+**Tu proyecto exitoso combina:**
+
+1. Metodología de DS (CRISP-DM adaptado)
+2. Valores ágiles (colaboración, iteración)
+3. Herramientas apropiadas (Git, Kanban, Slack)
+4. Código de calidad (limpio, testeado, documentado)
+
+## ¿Preguntas? {background-color="#2a2a2a"}

@@ -1,0 +1,448 @@
+---
+title: "Agentes con LLMs: PydanticAI"
+subtitle: "MDS7201 - Master of Data Science"
+author: "Universidad de Chile"
+format:
+  revealjs:
+    theme: [default, ../custom-slides.scss]
+    slide-number: true
+    chalkboard: true
+    preview-links: auto
+    code-fold: false
+    code-tools: true
+    transition: slide
+    background-transition: fade
+  beamer:
+    theme: Madrid
+    colortheme: default
+    fonttheme: professionalfonts
+    aspectratio: 169
+    navigation: horizontal
+    section-titles: true
+    toc: true
+jupyter: python3
+---
+
+```{python}
+#| include: false
+import os
+os.environ["ANTHROPIC_API_KEY"] = open("claude_FF.key").read().strip()
+```
+
+# ¿Qué es PydanticAI? {background-color="#1a1a1a"}
+
+## El Problema
+
+::: {.incremental}
+- Los LLMs retornan **texto plano**
+- Suficiente para un chatbot — problemático para sistemas reales
+- ¿Cómo obtener datos estructurados, validados y confiables?
+:::
+
+::: {.fragment}
+**PydanticAI** combina dos ideas:
+
+1. **Pydantic** — define esquemas de datos y valida contra ellos
+2. **Agentes** — unidades autónomas que interactúan con el LLM, opcionalmente llamando herramientas externas, hasta producir una respuesta validada
+:::
+
+## El Resultado
+
+::: {.callout-note}
+## LLM output → objeto Python tipado
+
+En lugar de parsear strings manualmente, `result.output` es directamente una instancia de tu clase Pydantic — con todos sus campos correctamente tipados.
+:::
+
+```python
+star = result.output          # StellarClassification
+star.spectral_type            # str  → "M2Iab"
+star.effective_temperature_K  # int  → 3500
+star.is_main_sequence         # bool → False
+```
+
+## Temario
+
+| § | Tema |
+|---|---|
+| 1 | Agentes básicos y outputs estructurados |
+| 2 | Herramientas (function calling) |
+| 3 | Inyección de dependencias y contexto |
+| 4 | Flujos multi-agente |
+
+# §1 — Agentes Básicos {background-color="#2a2a2a"}
+
+## El Agente más Simple
+
+```{python}
+from pydantic_ai import Agent
+
+simple_agent = Agent(
+    "anthropic:claude-sonnet-4-6",
+    instructions="You are a knowledgeable astronomy assistant. Be concise.",
+)
+
+result = await simple_agent.run("What is a pulsar?")
+print(result.output)
+```
+
+::: {.fragment}
+Sin `output_type` → el output es un `str` plano. Simple, pero impredecible a escala.
+:::
+
+## El Problema del Texto Libre
+
+```{python}
+result = await simple_agent.run("""
+Return classification parameters for Betelgeuse:
+spectral type, temperature in K, luminosity in L_sun, main sequence?
+""")
+print(result.output)
+```
+
+::: {.fragment}
+Para extraer los valores necesitaríamos un parser frágil. Cada llamada puede formatear la respuesta de forma diferente.
+:::
+
+## Definir un Esquema Pydantic
+
+```{python}
+from pydantic import BaseModel, Field
+from typing import Optional
+
+class StellarClassification(BaseModel):
+    object_name: str = Field(description="Name or designation of the stellar object")
+    spectral_type: str = Field(description="Spectral type, e.g. G2V or M5III")
+    effective_temperature_K: int = Field(description="Effective surface temperature in Kelvin")
+    luminosity_solar: float = Field(description="Luminosity in units of solar luminosity")
+    is_main_sequence: bool = Field(description="True if the star is on the main sequence")
+    notable_feature: Optional[str] = Field(default=None,
+        description="One interesting feature, if any")
+```
+
+## Agente con `output_type`
+
+```{python}
+classifier_agent = Agent(
+    "anthropic:claude-sonnet-4-6",
+    output_type=StellarClassification,
+    instructions="You are an expert stellar classifier. Return classification parameters.",
+)
+
+result = await classifier_agent.run("Classify the star Betelgeuse.")
+star = result.output
+
+print(f"Tipo espectral : {star.spectral_type}")
+print(f"Temperatura    : {star.effective_temperature_K} K")
+print(f"Luminosidad    : {star.luminosity_solar:.0f} L_sun")
+print(f"Sec. principal : {star.is_main_sequence}")
+print(f"Característica : {star.notable_feature}")
+```
+
+::: {.fragment}
+Si la validación falla, el agente **automáticamente le pide al LLM que lo intente de nuevo**.
+:::
+
+# §2 — Herramientas {background-color="#1a1a1a"}
+
+## ¿Por Qué Herramientas?
+
+::: {.incremental}
+- Un agente sin herramientas solo tiene el conocimiento de entrenamiento del LLM
+- **Corte de conocimiento**: no conoce datos recientes
+- **No puede acceder a datos reales**: catálogos, APIs, bases de datos
+- **No debería hacer aritmética**: los LLMs cometen errores numéricos
+:::
+
+::: {.fragment}
+Las **herramientas** son funciones Python que el LLM puede decidir llamar durante su razonamiento. El LLM infiere cuándo y cómo llamarlas a partir de los docstrings.
+:::
+
+## Herramientas Integradas
+
+| Herramienta | Descripción |
+|---|---|
+| `WebSearchTool` | Búsqueda web |
+| `CodeExecutionTool` | Ejecutar código |
+| `WebFetchTool` | Obtener páginas web |
+| `MemoryTool` | Memoria entre conversaciones |
+| `FileSearchTool` | Búsqueda vectorial (RAG) |
+| `MCPServerTool` | Conectar con servidores MCP |
+
+```{python}
+from pydantic_ai import Agent, WebSearchTool
+
+agent = Agent('anthropic:claude-sonnet-4-6', builtin_tools=[WebSearchTool()])
+result = await agent.run('Noticia más importante de Chile esta semana.')
+print(result.output)
+```
+
+## Tus Propias Herramientas: `@agent.tool_plain`
+
+```{python}
+CATALOG = {
+    "m87": {"common_name": "Messier 87", "type": "Elliptical Galaxy",
+             "distance_kpc": 16_400.0, "redshift": 0.00436},
+    "m31": {"common_name": "Andromeda Galaxy", "type": "Spiral Galaxy",
+             "distance_kpc": 770.0, "redshift": -0.001},
+}
+
+galaxy_agent = Agent("anthropic:claude-sonnet-4-6",
+    instructions="Use catalog tools to look up galaxy data and compute derived quantities.")
+
+@galaxy_agent.tool_plain
+def lookup_galaxy(catalog_id: str) -> dict:
+    """Busca una galaxia en el catálogo local por su ID (ej. 'm87', 'm31')."""
+    key = catalog_id.lower().replace(" ", "")
+    return CATALOG.get(key, {"error": f"'{catalog_id}' no encontrado."})
+
+@galaxy_agent.tool_plain
+def redshift_to_velocity(redshift: float) -> float:
+    """Calcula velocidad recesional en km/s desde el redshift z."""
+    return redshift * 299_792.458
+```
+
+## Flujo Interno de Herramientas
+
+```{python}
+result = await galaxy_agent.run("What is the recessional velocity of M87?")
+print(result.output)
+```
+
+::: {.fragment}
+**Lo que ocurrió:**
+
+1. LLM decide llamar `lookup_galaxy("m87")` → obtiene redshift 0.00436
+2. LLM decide llamar `redshift_to_velocity(0.00436)` → obtiene 1307.1 km/s
+3. LLM produce la respuesta final
+
+El LLM **nunca hizo la aritmética** — delegó al código Python determinista.
+:::
+
+# §3 — Inyección de Dependencias {background-color="#2a2a2a"}
+
+## El Problema del Estado Compartido
+
+::: {.incremental}
+- `@agent.tool_plain` no puede acceder a recursos en tiempo de ejecución
+- ¿Cómo compartir una conexión a BD, una clave de API o configuración entre herramientas?
+- Usar variables globales es frágil y dificulta las pruebas
+:::
+
+::: {.fragment}
+**Solución:** el sistema de inyección de dependencias de PydanticAI:
+
+```python
+@dataclass
+class MisDeps:
+    db_connection: ...
+    api_key: str
+    config: dict
+
+agent = Agent(..., deps_type=MisDeps)
+
+@agent.tool   # no tool_plain
+def mi_herramienta(ctx: RunContext[MisDeps], ...) -> ...:
+    return ctx.deps.db_connection.query(...)
+```
+:::
+
+## Ejemplo: Planificador de Observaciones
+
+```{python}
+from dataclasses import dataclass
+from pydantic_ai import Agent, RunContext
+
+@dataclass
+class ObservatoryDeps:
+    observer_name: str
+    telescope_aperture_m: float
+    read_noise_e: float
+    pixel_scale_arcsec: float
+    seeing_fwhm_arcsec: float
+    sky_mag_v_per_arcsec2: float
+    system_throughput: float
+    log: list
+
+planner_agent = Agent(
+    "anthropic:claude-sonnet-4-6",
+    deps_type=ObservatoryDeps,
+    instructions="Observation planning assistant. Use the tool to find the right exposure time.",
+)
+
+@planner_agent.instructions
+def telescope_context(ctx: RunContext[ObservatoryDeps]) -> str:
+    d = ctx.deps
+    return (f"Telescope: {d.telescope_aperture_m}m, "
+            f"seeing {d.seeing_fwhm_arcsec}\", throughput {d.system_throughput:.0%}.")
+```
+
+## La Herramienta con Contexto
+
+```{python}
+@planner_agent.tool
+def estimate_limiting_magnitude(ctx: RunContext[ObservatoryDeps],
+                                 exposure_s: float, snr_threshold: float = 5.0) -> float:
+    """Estima la magnitud límite V a SNR dado usando la ecuación CCD."""
+    import math
+    d = ctx.deps
+    F0 = 8.8e4; A = math.pi * (d.telescope_aperture_m * 50)**2
+    zp = F0 * d.system_throughput * A
+    B = zp * d.pixel_scale_arcsec**2 * 10**(-0.4 * d.sky_mag_v_per_arcsec2)
+    n_pix = math.pi * (1.5 * d.seeing_fwhm_arcsec / d.pixel_scale_arcsec)**2
+    noise = n_pix * (B * exposure_s + d.read_noise_e**2)
+    S = snr_threshold * (snr_threshold + math.sqrt(snr_threshold**2 + 4*noise)) / (2*exposure_s)
+    m_lim = round(-2.5 * math.log10(S / zp), 2)
+    d.log.append(f"t={exposure_s:.0f}s → m_lim={m_lim}")
+    return m_lim
+```
+
+## Ejecutar con Dependencias
+
+```{python}
+from pydantic import BaseModel, Field
+
+class ObservationPlan(BaseModel):
+    target: str
+    recommended_exposure_s: float
+    limiting_magnitude: float
+    notes: str
+
+planner_agent.output_type = ObservationPlan
+log = []
+deps = ObservatoryDeps("E. Hubble", 1.0, 5.0, 0.5, 1.2, 21.0, 0.25, log)
+
+result = await planner_agent.run(
+    "Detect V=21 point sources at 5σ. What exposure time?", deps=deps)
+
+plan = result.output
+print(f"Exposición  : {plan.recommended_exposure_s:.0f} s")
+print(f"Mag. límite : {plan.limiting_magnitude}")
+print(f"Log         : {log}")
+```
+
+# §4 — Flujos Multi-Agente {background-color="#1a1a1a"}
+
+## El Patrón Coordinador + Especialistas
+
+::: {.incremental}
+- Las tareas complejas se benefician de la **especialización**
+- Un **coordinador** recibe la tarea de alto nivel
+- Sus herramientas llaman a **agentes especialistas** internamente
+- El uso de tokens se propaga con `usage=ctx.usage`
+:::
+
+## Arquitectura del Pipeline
+
+```
+          prompt del usuario
+                 │
+                 ▼
+    ┌────────────────────────┐
+    │    coordinator_agent   │
+    │  output: PipelineReport│
+    └──┬─────────────────┬───┘
+       │ ① classify      │ ② photometry
+       ▼                 ▼
+┌──────────────┐  ┌─────────────────┐
+│ classifier   │  │ photometry      │
+│ → SourceType │  │ → Strategy      │
+└──────────────┘  └─────────────────┘
+```
+
+Cada especialista tiene su propio `output_type` — validados independientemente.
+
+## Los Tres Agentes
+
+```{python}
+from pydantic import BaseModel, Field
+from pydantic_ai import Agent, RunContext
+from typing import Literal
+
+class SourceType(BaseModel):
+    source_class: Literal["star","galaxy","nebula","quasar","transient","unknown"]
+    confidence: float = Field(ge=0.0, le=1.0)
+    reasoning: str
+
+class PhotometryStrategy(BaseModel):
+    method: str
+    required_calibrations: list[str]
+    estimated_precision_mag: float
+    caveats: str
+
+class PipelineReport(BaseModel):
+    classification: SourceType
+    photometry_strategy: PhotometryStrategy
+    executive_summary: str
+
+classifier_agent  = Agent("anthropic:claude-sonnet-4-6", output_type=SourceType,
+    instructions="Source classification expert. Be concise.")
+photometry_agent  = Agent("anthropic:claude-sonnet-4-6", output_type=PhotometryStrategy,
+    instructions="Photometric data reduction expert. Recommend a strategy. Be concise.")
+coordinator_agent = Agent("anthropic:claude-sonnet-4-6", output_type=PipelineReport,
+    instructions="Pipeline coordinator. Classify the source and design a photometry strategy.")
+```
+
+## Las Herramientas del Coordinador
+
+```{python}
+@coordinator_agent.tool
+async def classify_source(ctx: RunContext[None], description: str) -> dict:
+    """Clasifica una fuente astronómica desde una descripción."""
+    result = await classifier_agent.run(description, usage=ctx.usage)
+    return result.output.model_dump()
+
+@coordinator_agent.tool
+async def get_photometry_strategy(ctx: RunContext[None],
+                                   source_type: str, instrument: str) -> dict:
+    """Recomienda una estrategia fotométrica para el tipo e instrumento dados."""
+    result = await photometry_agent.run(
+        f"Source: {source_type}. Instrument: {instrument}.", usage=ctx.usage)
+    return result.output.model_dump()
+```
+
+## Pipeline en Acción
+
+```{python}
+result = await coordinator_agent.run(
+    "Unresolved blue point source, variable on day timescales. "
+    "Instrument: 1-m telescope, CCD, BVRI filters."
+)
+r = result.output
+print(f"Clase       : {r.classification.source_class} ({r.classification.confidence:.0%})")
+print(f"Razonamiento: {r.classification.reasoning}")
+print(f"Método      : {r.photometry_strategy.method}")
+print(f"Precisión   : ±{r.photometry_strategy.estimated_precision_mag:.3f} mag")
+print(f"Resumen     : {r.executive_summary}")
+print(f"Tokens totales: {result.usage()}")
+```
+
+# Resumen {background-color="#2a2a2a"}
+
+## Mapa de Conceptos
+
+| Concepto | Cuándo usarlo |
+|---|---|
+| `Agent(output_type=M)` | Siempre que necesites output confiable y tipado |
+| `@agent.tool_plain` | Cálculos y búsquedas sin estado compartido |
+| `@agent.tool` + `RunContext` | BD, claves de API, estado de sesión |
+| `deps_type` + `@agent.instructions` | Personalización, aplicaciones multiusuario |
+| Agente → Agente | Pipelines complejos de múltiples pasos |
+
+## Lo Que Deberías Llevarte
+
+::: {.incremental}
+- PydanticAI convierte outputs de LLM en **objetos Python tipados** — sin parsers frágiles
+- Las **herramientas** conectan el LLM con código determinista real
+- La **inyección de dependencias** permite compartir recursos sin variables globales
+- Los **flujos multi-agente** permiten especialización y composición limpia
+- Puedes mezclar proveedores (Anthropic, OpenAI, Gemini) dentro del mismo pipeline
+:::
+
+# ¿Preguntas? {background-color="#1a1a1a"}
+
+## Referencias
+
+- PydanticAI: [ai.pydantic.dev](https://ai.pydantic.dev/)
+- Pydantic v2: [docs.pydantic.dev](https://docs.pydantic.dev/)
+- GitHub: [github.com/pydantic/pydantic-ai](https://github.com/pydantic/pydantic-ai)

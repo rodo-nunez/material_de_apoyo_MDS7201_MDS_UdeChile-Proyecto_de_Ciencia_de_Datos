@@ -1,0 +1,393 @@
+---
+title: "Modularización y Estructura de Proyectos"
+subtitle: "MDS7201 - Master of Data Science"
+author: "Universidad de Chile"
+format:
+  revealjs:
+    theme: [default, ../custom-slides.scss]
+    slide-number: true
+    chalkboard: true
+    preview-links: auto
+    code-fold: false
+    code-tools: true
+    transition: slide
+    background-transition: fade
+  beamer:
+    theme: Madrid
+    colortheme: default
+    fonttheme: professionalfonts
+    aspectratio: 169
+    navigation: horizontal
+    section-titles: true
+    toc: true
+---
+
+# El Problema {background-color="#1a1a1a"}
+
+## El Notebook Monolítico
+
+Todo proyecto de datos empieza igual:
+
+::: {.incremental}
+- Un notebook con carga de datos, limpieza, modelamiento y visualización
+- 300 celdas, algunas con código comentado
+- Nombre: `analisis_final_v3_ESTE.ipynb`
+- Solo el autor sabe cómo ejecutarlo — y a veces ni él
+:::
+
+::: {.callout-note}
+Esto es **completamente normal** durante la exploración. El problema es cuando ese notebook se convierte en el artefacto final.
+:::
+
+## El Notebook Monolítico — Problemas
+
+::: {.incremental}
+- ❌ **No reutilizable** — copias y pegas entre proyectos
+- ❌ **No testeable** — es muy difícil escribir tests para celdas
+- ❌ **No colaborativo** — conflictos de merge constantes
+- ❌ **No reproducible** — el orden de ejecución importa
+- ❌ **No escala** — para producción hay que reescribir todo
+:::
+
+::: {.callout-important}
+Los notebooks son para **explorar y comunicar**. El código reutilizable vive en módulos `.py`. Pero aún así puedes explorar en un .py o .r
+:::
+
+## Quarto: Anternativa a Jupyter Notebook, pero sin los problemas
+
+Cada vez que quieras usar un notebook, te recomiendo usar un notebook de Quarto, para evitar los problemas que ya discutimos. Esto es porque un notebook de quarto .qmd es un script, no un JSON oculto. Más detalles en: [en_coders: Jupyter Notebooks en el ambiente laboral: Herramienta o trampa](https://www.youtube.com/watch?v=nwxCpYuZGCE).
+
+Además, en vez de utilizar VSCode como IDE, recomiendo utilizar Positron, que es un fork de VSCode pero creado para Data Scientists. Y sí, puedes usar agentes en Positron, es más, puedes usar unos que están pre-tuneados para resolver problemas de ciencia de datos e interactuar con código y datos de ciencia de datos.
+
+# ¿Qué es Modularizar? {background-color="#2a2a2a"}
+
+## Módulos Python
+
+Un módulo es un archivo `.py` que agrupa funciones, clases y constantes **relacionadas entre sí**.
+
+Un módulo bien diseñado tiene:
+
+::: {.incremental}
+- **Alta cohesión** — todo lo que está adentro está relacionado
+- **Bajo acoplamiento** — depende lo menos posible de otros módulos
+- **Interfaz clara** — nombres descriptivos, docstrings, type hints
+:::
+
+## Un Módulo Básico
+
+```python
+# src/preprocessing.py
+
+import pandas as pd
+
+def limpiar_datos(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Aplica limpieza básica al dataframe.
+
+    Args:
+        df: DataFrame con datos crudos.
+    Returns:
+        DataFrame limpio.
+    """
+    df = df.copy()
+    df = df.drop_duplicates()
+    df.columns = df.columns.str.lower().str.replace(' ', '_')
+    return df
+```
+
+## Importar desde Módulos
+
+```python
+# En cualquier notebook o script del proyecto
+
+from src.preprocessing import limpiar_datos, imputar_nulos
+
+df_limpio = limpiar_datos(df_crudo)
+df_imputado = imputar_nulos(df_limpio, estrategia='mediana')
+```
+
+Un cambio en `preprocessing.py` se propaga a **todo lo que lo usa**.
+
+# Por Qué Modularizar {background-color="#1a1a1a"}
+
+## 1. Reutilización
+
+```python
+# proyecto_1/notebook.ipynb
+from src.preprocessing import limpiar_datos
+
+# proyecto_2/notebook.ipynb
+from src.preprocessing import limpiar_datos  # misma función, sin copiar
+```
+
+Sin módulos: copias y pegas → múltiples versiones que divergen.
+
+Con módulos: una fuente de verdad.
+
+## 2. Testeabilidad
+
+```python
+# tests/test_preprocessing.py
+from src.preprocessing import limpiar_datos
+import pandas as pd
+
+def test_elimina_duplicados():
+    df = pd.DataFrame({'a': [1, 1, 2], 'b': [3, 3, 4]})
+    resultado = limpiar_datos(df)
+    assert len(resultado) == 2
+
+def test_no_modifica_original():
+    df = pd.DataFrame({'a': [1, 2, 3]})
+    _ = limpiar_datos(df)
+    assert len(df) == 3  # El original no cambia
+```
+
+Los tests son la **red de seguridad** para refactorizar con confianza.
+
+## 3. Colaboración
+
+::: {.columns}
+::: {.column width="50%"}
+**Sin módulos**
+
+- Un notebook = un colaborador
+- Conflictos de merge ilegibles
+- Code review imposible (500 celdas)
+:::
+::: {.column width="50%"}
+**Con módulos**
+
+- Cada persona trabaja en módulos distintos
+- Diffs legibles en Git
+- Code review factible
+:::
+:::
+
+## 4. Mantenibilidad y Producción
+
+::: {.incremental}
+- Cambio en un módulo → se propaga automáticamente
+- Pipelines reproducibles: encadenar módulos en secuencia
+- Despliegue: empaquetar módulos como librería o API
+- Experimentación: la diferencia entre resultados se debe a parámetros, no al código
+:::
+
+# Cómo Modularizar {background-color="#2a2a2a"}
+
+## Separación de Responsabilidades
+
+```
+src/
+├── __init__.py
+├── data/
+│   ├── ingestion.py      # Cargar desde fuentes
+│   └── preprocessing.py  # Limpiar y transformar
+├── features/
+│   └── engineering.py    # Crear nuevas variables
+├── models/
+│   ├── training.py       # Entrenar modelos
+│   └── evaluation.py     # Métricas
+└── visualization/
+    └── plots.py          # Funciones de gráficos
+```
+
+Cada módulo tiene **una responsabilidad**.
+
+## Buenas Prácticas
+
+::: {.incremental}
+- **Funciones puras** cuando sea posible: mismo input → mismo output
+- **Docstrings siempre**: el código se lee muchas más veces de las que se escribe
+- **Type hints**: mejoran legibilidad y permiten análisis estático
+- **Una responsabilidad por función**: si hace dos cosas, deberían ser dos funciones
+:::
+
+```python
+# ✅ Función pura, clara, tipada
+def normalizar(serie: pd.Series) -> pd.Series:
+    """Normaliza una serie al rango [0, 1]."""
+    return (serie - serie.min()) / (serie.max() - serie.min())
+```
+
+## El Flujo Recomendado
+
+::: {.incremental}
+1. **Explorar** en notebook — probar ideas, entender los datos
+2. **Extraer** el código útil — mover funciones que funcionan a `src/`
+3. **Testear** los módulos — escribir tests básicos en `tests/`
+4. **Usar** desde notebooks — importar de `src/` en lugar de reimplementar
+:::
+
+```python
+# El notebook se convierte en narrativa de alto nivel
+from src.data.preprocessing import limpiar_datos
+from src.features.engineering import crear_features
+from src.models.training import entrenar_modelo
+
+df_limpio   = limpiar_datos(df)
+df_features = crear_features(df_limpio)
+modelo      = entrenar_modelo(df_features, y)
+```
+
+# Estructura de Proyecto {background-color="#1a1a1a"}
+
+## El Problema sin Plantilla
+
+Cuando un equipo empieza sin estructura acordada:
+
+::: {.incremental}
+- Cada persona organiza sus archivos diferente
+- Nadie sabe dónde están los datos procesados vs crudos
+- `analisis_final_v3_ESTE.ipynb`
+- Reproducir el análisis de otra persona requiere preguntarle
+- Incorporar un nuevo miembro al equipo toma días
+:::
+
+Una **plantilla acordada** resuelve esto antes de que aparezca.
+
+## Estructura Recomendada
+
+```
+mi-proyecto/
+├── README.md               # Descripción y cómo ejecutar
+├── pyproject.toml          # Dependencias
+├── .env                    # Variables de entorno (NO a git)
+├── .gitignore
+│
+├── data/
+│   ├── raw/                # Datos originales — NUNCA modificar
+│   ├── interim/            # En proceso de transformación
+│   ├── processed/          # Listos para modelar
+│   └── external/           # Fuentes externas
+│
+├── notebooks/              # Exploración y comunicación
+├── src/                    # Código reutilizable y testeable
+├── tests/                  # Tests automáticos
+├── reports/figures/        # Gráficos generados
+└── models/                 # Modelos entrenados (.pkl)
+```
+
+## Los Datos Crudos son Sagrados
+
+::: {.callout-important}
+## Regla más importante
+`data/raw/` **nunca se modifica**. Los datos originales son la única fuente de verdad.
+
+Cualquier transformación genera un nuevo archivo en `data/interim/` o `data/processed/`.
+
+Si los datos crudos cambian, no hay forma de reproducir el análisis desde cero.
+:::
+
+**Consecuencia:** todos los pasos de transformación deben ser código, no operaciones manuales.
+
+## Convenciones de Nomenclatura
+
+::: {.columns}
+::: {.column width="50%"}
+**Archivos**
+
+```
+# Datos
+ventas_2024_01.csv
+ventas_features.parquet
+
+# Notebooks
+01-exploracion.ipynb
+02-limpieza.ipynb
+03-modelamiento.ipynb
+```
+:::
+::: {.column width="50%"}
+**Python**
+
+```python
+# Archivos: snake_case
+preprocessing.py
+
+# Clases: PascalCase
+class ModeloBase: ...
+
+# Funciones: snake_case
+def limpiar_datos(): ...
+
+# Constantes: MAYUSCULAS
+RANDOM_STATE = 42
+```
+:::
+:::
+
+## Ramas de Git
+
+```
+main          # Código entregable / producción
+develop       # Rama de integración del equipo
+
+feature/eda-inicial        # Nueva funcionalidad
+feature/modelo-xgboost
+fix/bug-imputacion         # Corrección de bugs
+```
+
+Acuerden las convenciones de ramas **antes de comenzar** el proyecto.
+
+## El README como Contrato
+
+El primer archivo que lee cualquier persona que llega al proyecto:
+
+::: {.incremental}
+- ¿Qué hace este proyecto?
+- ¿Cómo instalar las dependencias?
+- ¿Cómo reproducir el análisis?
+- ¿Cuál es la estructura del proyecto?
+:::
+
+Un README bien escrito permite que un nuevo miembro del equipo esté productivo en horas, no días.
+
+## Scaffolding Automático
+
+En lugar de crear la estructura manualmente:
+
+```bash
+# Cookiecutter Data Science
+pip install cookiecutter
+cookiecutter https://github.com/drivendata/cookiecutter-data-science
+
+# uv
+uv init mi-proyecto
+
+# Script propio del equipo
+bash setup_project.sh
+```
+
+::: {.callout-tip}
+Tener un script de setup del equipo garantiza que todos parten desde la misma estructura.
+:::
+
+# Resumen {background-color="#2a2a2a"}
+
+## Lo Que Vimos
+
+::: {.incremental}
+- Los notebooks son para **explorar y comunicar** — no para producción
+- **Modularizar** = dividir en archivos `.py` con responsabilidades claras
+- Los beneficios: reutilización, tests, colaboración, mantenibilidad
+- Una **plantilla de estructura** acordada elimina la fricción del equipo
+- Los **datos crudos son sagrados** — nunca modificarlos, siempre transformar en código
+- El **README** es el contrato del proyecto
+:::
+
+## Para el Proyecto del Curso
+
+::: {.callout-tip}
+Acuerden la estructura de carpetas en la **primera semana**, antes de escribir una sola línea de código de análisis.
+
+El tiempo invertido en esto se recupera con creces durante el semestre.
+:::
+
+## Referencias
+
+- [Cookiecutter Data Science](https://drivendata.github.io/cookiecutter-data-science/)
+- [Python Modules & Packages — Real Python](https://realpython.com/python-modules-packages/)
+- [pytest — documentación oficial](https://docs.pytest.org/)
+- [The Turing Way — Project Structure](https://the-turing-way.netlify.app/project-design/project-repo.html)
+
+# ¿Preguntas? {background-color="#1a1a1a"}

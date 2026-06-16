@@ -1,0 +1,357 @@
+---
+title: "Técnicas de Presentación"
+subtitle: "MDS7201 - Master of Data Science"
+author: "Universidad de Chile"
+format:
+  revealjs:
+    theme: [default, ../custom-slides.scss]
+    slide-number: true
+    chalkboard: true
+    preview-links: auto
+    code-fold: false
+    code-tools: true
+    transition: slide
+    background-transition: fade
+  beamer:
+    theme: Madrid
+    colortheme: default
+    fonttheme: professionalfonts
+    aspectratio: 169
+    navigation: horizontal
+    section-titles: true
+    toc: true
+---
+
+# Las 5 Fundaciones Vocales {background-color="#1a1a1a"}
+
+## Vinh Giang — 5 Vocal Foundations
+
+Toda comunicación oral efectiva se construye sobre cinco fundaciones.
+
+No son técnicas avanzadas: son los elementos básicos que transforman cómo te percibe una audiencia.
+
+::: {.callout-note}
+[The 5 Vocal Foundations — Vinh Giang](https://www.youtube.com/watch?v=CuaY4qe4V34)
+:::
+
+## 1. Rate of Speech — Velocidad
+
+::: {.incremental}
+- La clave no es una velocidad constante — es la **variación**
+- **Rápido**: transiciones, contexto, información conocida
+- **Lento**: ideas nuevas, conclusiones importantes, llamadas a la acción
+- Velocidad constante → el cerebro deja de procesar qué es importante
+:::
+
+## 2. Volume — Volumen
+
+::: {.incremental}
+- Dos funciones: que te escuchen, y crear énfasis
+- Error más común: **bajar el volumen al final de las frases**
+- Hablar siempre al mismo volumen → monótono sin importar el contenido
+:::
+
+::: {.callout-tip}
+Grábate y escucha específicamente el final de tus frases. ¿Terminas con volumen descendente?
+:::
+
+## 3. Pitch / Melody — Tono
+
+::: {.columns}
+::: {.column width="50%"}
+**Pitch descendente al final**
+
+→ Afirmación y confianza ✅
+:::
+::: {.column width="50%"}
+**Pitch ascendente al final**
+
+→ Pregunta o incertidumbre ⚠️
+:::
+:::
+
+::: {.incremental}
+- Error frecuente: terminar **afirmaciones** con pitch ascendente
+- Suena como si el presentador tampoco estuviera seguro
+- Erosiona la credibilidad
+:::
+
+## 4. Tonality / Emotion — Emoción
+
+::: {.incremental}
+- La tonalidad es la coloración emocional de tu voz
+- Muchos presentadores "apagan" su tonalidad para parecer profesionales
+- El resultado: una presentación plana que no genera conexión
+:::
+
+::: {.callout-important}
+Tu audiencia no puede sentir más emoción por tu tema de la que tú demuestras.
+:::
+
+## 5. Pause — Pausa
+
+La herramienta más subutilizada en comunicación oral.
+
+::: {.incremental}
+- Le da tiempo a la audiencia para **procesar**
+- Crea **anticipación** antes de un punto importante
+- Comunica **calma y confianza**
+- Funciona como **puntuación** del discurso oral
+:::
+
+::: {.callout-tip}
+**Regla de oro:** Reemplaza cada "eh" o "mm" por una pausa.
+:::
+
+# Nervios y Ansiedad {background-color="#2a2a2a"}
+
+## Matt Abrahams — Speaking Up Without Freaking Out
+
+::: {.incremental}
+- La ansiedad ante la presentación es una **respuesta evolutiva normal**
+- Ansiedad y excitación producen la **misma respuesta fisiológica**
+- La diferencia es solo la **etiqueta** que les ponemos
+- Objetivo: **reencuadrar los nervios como energía**, no eliminarlos
+:::
+
+::: {.callout-note}
+[Speaking Up Without Freaking Out](https://www.youtube.com/watch?v=XIXvKKEQQJo) · [Think Fast. Talk Smart](https://www.youtube.com/watch?v=HAnw168huqA)
+:::
+
+## Síntomas Comunes
+
+::: {.columns}
+::: {.column width="50%"}
+- Náuseas
+- Boca seca
+- Manos o voz temblorosa
+- Mente en blanco
+- Hablar muy rápido
+- Ruborizarse
+:::
+::: {.column width="50%"}
+- Palpitaciones
+- Sudoración
+- Falta de aire
+- Tartamudeo
+- Hablar muy bajo
+- Hablar demasiado
+:::
+:::
+
+Todos son normales. Todos son manejables.
+
+## ¿Es Tan Terrible Equivocarse?
+
+::: {.incremental}
+- La audiencia raramente nota los errores que tú notas
+- Manejar un error con calma **aumenta la credibilidad**
+- Un error no arruina una presentación — **la forma en que lo manejas**, sí
+:::
+
+**Principio:** Prepárate bien, pero no busques la perfección. Busca la **conexión**.
+
+## Mapa en Lugar de Memorización
+
+Memorizar palabra por palabra es contraproducente:
+
+::: {.incremental}
+- Si olvidas una palabra, pierdes todo el hilo
+- Suena artificial porque lo es
+:::
+
+**Alternativa:** un **mapa estructural**
+
+- Conocer profundamente las ideas clave y su orden
+- Dejar que las palabras sean espontáneas
+- Resultado: discurso natural, adaptable a la audiencia
+:::
+
+## Qué Hacer con los "Eh"
+
+Las muletillas distraen y erosionan la percepción de competencia.
+
+**La solución:** reemplazar cada muletilla por una **pausa**.
+
+::: {.incremental}
+1. Grábate y cuenta tus muletillas
+2. Habla más lento de lo que crees necesario — la velocidad es la causa principal
+3. Permite el silencio conscientemente cuando necesitas pensar
+:::
+
+# Estructura del Mensaje {background-color="#1a1a1a"}
+
+## What / So What / Now What
+
+Matt Abrahams propone una estructura para cualquier comunicación:
+
+::: {.columns}
+::: {.column width="33%"}
+**What**
+
+¿Qué estoy describiendo?
+
+El hecho, la situación, el hallazgo.
+:::
+::: {.column width="33%"}
+**So What**
+
+¿Por qué importa?
+
+La relevancia para esta audiencia. La parte más omitida.
+:::
+::: {.column width="33%"}
+**Now What**
+
+¿Qué hacemos?
+
+La acción, la decisión, el próximo paso.
+:::
+:::
+
+## Ejemplo: Proyecto de Datos
+
+::: {.incremental}
+- **What:** El 40% de los pedidos con retraso se concentran en una sola ruta logística.
+
+- **So What:** Podemos eliminar más de la mitad de los retrasos interviniendo en un solo punto, sin rediseñar toda la operación.
+
+- **Now What:** Recomendamos asignar un analista a monitorear esta ruta y probar rutas alternativas durante 4 semanas.
+:::
+
+## Otras Estructuras Útiles
+
+| Estructura | Cuándo usarla |
+|-----------|---------------|
+| **Problem / Solution / Benefit** | Propuestas y recomendaciones |
+| **Context / Complication / Resolution** | Presentaciones largas |
+| **PREP** (Point / Reason / Example / Point) | Responder preguntas breves |
+| **Plot / Twist / Ending** | Storytelling (ver cap. anterior) |
+
+# Gestos Funcionales {background-color="#2a2a2a"}
+
+## El Rol de los Gestos
+
+Los oradores que usan gestos son percibidos como más **cálidos**, más **competentes** y más **creíbles**.
+
+::: {.incremental}
+- **Gestos de tamaño:** separar/acercar manos para indicar magnitud
+- **Gestos de cantidad:** dedos para enumerar puntos
+- **Gestos de dirección:** señalar, separar el espacio para distinguir conceptos
+- **Gestos de énfasis:** marcar el punto más importante de una idea
+:::
+
+## Qué Evitar
+
+::: {.incremental}
+- ❌ **Cruzar los brazos** — defensividad o incomodidad
+- ❌ **Manos en los bolsillos** — reduce percepción de energía
+- ❌ **Balancearse** — señal de nerviosismo, distrae
+- ❌ **Gesticular constantemente sin significado** — diluye el impacto de los gestos funcionales
+:::
+
+# Las 110 Técnicas {background-color="#1a1a1a"}
+
+## David JP Phillips
+
+Autor y coach de comunicación. Compiló 110 técnicas organizadas en categorías:
+
+![Las 110 técnicas de comunicación y oratoria](../chapter_files/images/comunicacion/tecnicas_de_comunicacion.png){fig-align="center" width="90%"}
+
+## Categorías de las 110 Técnicas
+
+::: {.columns}
+::: {.column width="50%"}
+- Nerviosismo (1–6)
+- Voz (7–33)
+- Lenguaje corporal (34–69)
+:::
+::: {.column width="50%"}
+- Expresiones faciales (70–85)
+- Lenguaje verbal (86–103)
+- Nivel de maestría (104–110)
+:::
+:::
+
+::: {.callout-note}
+[The 110 techniques of communication and public speaking](https://www.youtube.com/watch?v=K0pxo-dS9Hc)
+:::
+
+## Neuroquímica de la Comunicación (Phillips)
+
+Los mejores comunicadores activan en su audiencia tres neuroquímicos:
+
+::: {.incremental}
+- **Dopamina** — anticipación y curiosidad. Se genera con historias en desarrollo, preguntas antes de respuestas, suspenso.
+- **Oxitocina** — confianza y conexión. Se genera con contacto visual, humor auténtico, vulnerabilidad apropiada, historias personales.
+- **Endorfinas** — placer. Se genera principalmente con humor y ligereza.
+:::
+
+Una presentación que activa los tres produce una experiencia **memorable**.
+
+## Cómo Evitar Death by PowerPoint
+
+::: {.incremental}
+- **Una idea por slide** — el cerebro no puede leer y escuchar simultáneamente
+- **Máximo 6 palabras por slide** — suficiente para anclar la idea
+- **Texto mínimo 24pt** — si proyectas, tiene que ser legible
+- **Oscurece el fondo, aclara el texto** — mejor contraste
+- **Una imagen > mil palabras** — reemplaza cinco bullets
+- **No leer las slides** — las slides son para la audiencia, no para el presentador
+:::
+
+::: {.callout-note}
+[How to avoid death by PowerPoint](https://www.youtube.com/watch?v=Iwpi1Lm6dFo)
+:::
+
+# Integrando Todo {background-color="#2a2a2a"}
+
+## Storytelling + Técnicas de Presentación
+
+| Storytelling con Datos | Técnicas de Presentación |
+|----------------------|--------------------------|
+| Plot / Twist / Ending | What / So What / Now What |
+| Eliminar clutter del gráfico | Eliminar texto de las slides |
+| Dirigir atención con color | Dirigir atención con voz y pausa |
+| Un mensaje por visualización | Una idea por slide |
+| Anotar directamente en el gráfico | Gesticular hacia lo que se destaca |
+
+## Lista de Verificación
+
+::: {.incremental}
+**Antes:**
+
+- ¿Conozco mis ideas principales en profundidad?
+- ¿Tengo un mapa estructural claro?
+- ¿Mis slides tienen máximo una idea cada una?
+
+**Durante:**
+
+- ¿Estoy variando velocidad, volumen y pitch?
+- ¿Estoy usando pausas en lugar de muletillas?
+- ¿Mis gestos refuerzan lo que digo?
+- ¿Está claro el What / So What / Now What?
+:::
+
+# Recursos {background-color="#1a1a1a"}
+
+## Videos Recomendados
+
+**Vinh Giang**
+
+- [The 5 Vocal Foundations](https://www.youtube.com/watch?v=CuaY4qe4V34)
+- [Comunicación y presencia](https://www.youtube.com/watch?v=44Q4A3cEzzc)
+
+**Matt Abrahams**
+
+- [Speaking Up Without Freaking Out](https://www.youtube.com/watch?v=XIXvKKEQQJo)
+- [Think Fast. Talk Smart](https://www.youtube.com/watch?v=HAnw168huqA)
+- [Podcast: Think Fast, Talk Smart](https://mattabrahams.com/podcast/)
+
+**David JP Phillips**
+
+- [The magical science of storytelling](https://www.youtube.com/watch?v=Nj-hdQMa3uA)
+- [The 110 techniques](https://www.youtube.com/watch?v=K0pxo-dS9Hc)
+- [How to avoid death by PowerPoint](https://www.youtube.com/watch?v=Iwpi1Lm6dFo)
+
+# ¿Preguntas? {background-color="#2a2a2a"}

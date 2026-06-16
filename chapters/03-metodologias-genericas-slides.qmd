@@ -1,0 +1,554 @@
+---
+title: "Metodologías de Trabajo Genéricas"
+subtitle: "MDS7201 - Master of Data Science"
+author: "Universidad de Chile"
+format:
+  revealjs:
+    theme: [default, ../custom-slides.scss]
+    slide-number: true
+    chalkboard: true
+    preview-links: auto
+    code-fold: false
+    code-tools: true
+    transition: slide
+    background-transition: fade
+  beamer:
+    theme: Madrid
+    colortheme: default
+    fonttheme: professionalfonts
+    aspectratio: 169
+    navigation: horizontal
+    section-titles: true
+    toc: true
+---
+
+# Introducción {background-color="#1a1a1a"}
+
+## Metodologías DS vs. Genéricas
+
+::: {.callout-note}
+## Distinción Importante
+- **Metodologías de DS**: QUÉ hacer (CRISP-DM, TDSP)
+- **Metodologías Genéricas**: CÓMO trabajar en equipo
+:::
+
+Ambas son complementarias y necesarias
+
+# Waterfall {background-color="#2a2a2a"}
+
+## El Modelo en Cascada
+
+**Enfoque secuencial y lineal**
+
+::: {.incremental}
+1. Requerimientos → Documentación completa
+2. Diseño → Arquitectura total
+3. Implementación → Construcción
+4. Verificación → Testing
+5. Mantenimiento → Soporte
+:::
+
+## Características de Waterfall
+
+::: {.columns}
+::: {.column width="50%"}
+**Fortalezas**
+
+- Clara estructura
+- Documentación exhaustiva
+- Fácil de gestionar
+- Predecible
+:::
+
+::: {.column width="50%"}
+**Limitaciones**
+
+- Inflexible
+- Testing tardío
+- Feedback retrasado
+- Alto riesgo
+:::
+:::
+
+## Waterfall en Data Science
+
+::: {.callout-warning}
+## Generalmente Inadecuado
+- Proyectos de DS son exploratorios
+- Requisitos no están claros al inicio
+- Necesitamos iterar y adaptarnos
+:::
+
+**Excepción**: Ingeniería de datos con requisitos muy claros
+
+# Ágil vs. Manifiesto Ágil {background-color="#1a1a1a"}
+
+## Distinción Crítica
+
+::: {.incremental}
+- **Manifiesto Ágil** = Valores y principios
+- **Metodologías Ágiles** = Implementaciones (Scrum, Kanban, XP)
+:::
+
+::: {.fragment}
+Puedes ser ágil sin Scrum
+
+Puedes hacer Scrum sin ser ágil
+:::
+
+## El Manifiesto para Ingenieros
+
+::: {.callout-tip}
+## En Simple
+El Manifiesto Ágil es **cómo trabajar en equipo para ingenieros sin tantas habilidades sociales**
+
+Nos recuerda priorizar:
+- Personas sobre procesos
+- Resultados sobre documentos
+- Colaboración sobre contratos
+- Adaptación sobre planes rígidos
+:::
+
+# El Manifiesto Ágil {background-color="#2a2a2a"}
+
+## Contexto Histórico
+
+**Snowbird, Utah - Febrero 2001**
+
+::: {.incremental}
+- 17 desarrolladores frustrados con procesos pesados
+- Codificaron prácticas de equipos exitosos
+- 4 valores, 12 principios
+- No inventaron nada nuevo, lo articularon claramente
+:::
+
+## Los 4 Valores Fundamentales
+
+::: {.callout-note}
+## Importante
+No dice que lo de la derecha no es valioso
+
+Dice que valora **MÁS** lo de la izquierda
+:::
+
+## Valor 1: Individuos e Interacciones
+
+> Individuos e interacciones **sobre** procesos y herramientas
+
+::: {.incremental}
+- Comunicación humana > procesos rígidos
+- Equipos que colaboran bien se adaptan mejor
+- Herramientas deben servir al equipo
+- 5 min de conversación > 50 emails
+:::
+
+## Aplicación en Data Science
+
+**Individuos e Interacciones:**
+
+::: {.incremental}
+- Hablar directamente con stakeholders
+- Pair programming en análisis complejos
+- Demos informales frecuentes
+- Usar herramientas que el equipo conoce
+:::
+
+## Valor 2: Software Funcionando
+
+> Software funcionando **sobre** documentación extensiva
+
+::: {.incremental}
+- Producto funcional > documentos perfectos
+- Documentación sigue siendo importante
+- Pero debe ser "suficiente", no exhaustiva
+- Código que funciona = verdad última
+:::
+
+## Aplicación en Data Science
+
+**Software Funcionando:**
+
+::: {.incremental}
+- Modelo baseline > semanas de análisis sin resultados
+- Script con análisis > PowerPoint de 50 slides
+- Dashboard funcional > reporte estático de 100 páginas
+- Código comentado > documento separado
+:::
+
+::: {.callout-warning}
+Esto NO significa "no documentar nada"
+:::
+
+## Valor 3: Colaboración con el Cliente
+
+> Colaboración con el cliente **sobre** negociación contractual
+
+::: {.incremental}
+- Trabajar con el cliente durante el proyecto
+- Necesidades emergen durante desarrollo
+- Confianza y comunicación > protección legal
+- Ajustar prioridades basándose en aprendizaje
+:::
+
+## El Problema del Contrato Fijo
+
+::: {.columns}
+::: {.column width="50%"}
+**Enfoque Contractual**
+
+"Necesito 95% accuracy"
+
+→ Datos tienen 60% calidad
+
+→ Proyecto "falla"
+
+→ Todos infelices
+:::
+
+::: {.column width="50%"}
+**Enfoque Colaborativo**
+
+"Necesito 95% accuracy"
+
+→ Datos tienen 60% calidad
+
+→ Pivotean a drivers de churn
+
+→ Generan valor real
+:::
+:::
+
+## Valor 4: Respuesta ante el Cambio
+
+> Respuesta ante el cambio **sobre** seguir un plan
+
+::: {.incremental}
+- Planes son útiles, adaptarse es más valioso
+- Cambio = información nueva, no fracaso
+- Flexibilidad genera mejores resultados
+- Validar supuestos tempranamente
+:::
+
+## Crítico en Data Science
+
+::: {.callout-important}
+Este valor es **FUNDAMENTAL** en DS:
+
+- No sabemos qué contienen los datos hasta explorarlos
+- Modelos que creíamos funcionarían pueden no funcionar
+- Nuevos insights cambian el enfoque
+- Prioridades cambian basándose en hallazgos
+:::
+
+# Los 12 Principios {background-color="#1a1a1a"}
+
+## Principio 1: Satisfacción del Cliente
+
+> "Nuestra mayor prioridad es satisfacer al cliente mediante la entrega temprana y continua de software con valor"
+
+::: {.incremental}
+- No esperar al final para entregar valor
+- Cada iteración produce algo útil
+- En DS: modelos, análisis, insights, dashboards
+:::
+
+## En el Curso
+
+**Entregas de Valor Incremental:**
+
+::: {.incremental}
+- **Hito 1**: Análisis exploratorio con insights
+- **Hito 2**: Modelo baseline funcional
+- **Hito 3**: Modelo mejorado
+- **Hito 4**: Solución completa
+:::
+
+Cada hito aporta valor, no solo progreso
+
+## Principio 2: Aceptar el Cambio
+
+> "Aceptamos que los requisitos cambien, incluso en etapas tardías"
+
+::: {.incremental}
+- Cambio = información valiosa
+- Cambios tardíos = mejor comprensión
+- Flexibilidad = fortaleza
+- Diseñar para facilitar cambios
+:::
+
+::: {.callout-warning}
+Cambio basado en aprendizaje ≠ Caos sin razón
+:::
+
+## Principio 3: Entregas Frecuentes
+
+> "Entregamos software funcional frecuentemente, entre dos semanas y dos meses"
+
+::: {.incremental}
+- Iteraciones cortas mantienen momentum
+- Feedback frecuente previene errores
+- Entregas pequeñas = menos riesgo
+- Ciclo sugerido: 3-4 semanas en el curso
+:::
+
+## Principio 4: Trabajo Conjunto
+
+> "Los responsables de negocio y los desarrolladores trabajamos juntos de forma cotidiana"
+
+::: {.incremental}
+- No es handoff: "vuelve en 3 meses"
+- Colaboración continua
+- Ambos lados aprenden
+:::
+
+::: {.callout-important}
+## Red Flag
+Semanas sin hablar con stakeholder = Problema
+:::
+
+## Principio 5: Individuos Motivados
+
+> "Los proyectos se desarrollan en torno a individuos motivados. Confiarles la ejecución del trabajo"
+
+::: {.incremental}
+- Personas motivadas > procesos perfectos
+- Microgestión mata motivación
+- Dar autonomía y recursos
+- Enfocarse en resultados, no horas
+:::
+
+## Principio 6: Comunicación Cara a Cara
+
+> "El método más eficiente de comunicar es la conversación cara a cara"
+
+**Uso balanceado:**
+
+- **Video**: Discusiones, decisiones, brainstorming
+- **Mensajería**: Coordinación rápida
+- **Email**: Documentar decisiones
+- **Documentos**: Referencias permanentes
+
+## Principio 7: Software Funcionando
+
+> "El software funcionando es la medida principal de progreso"
+
+::: {.incremental}
+- Progreso real = código que funciona
+- "90% completo" sin producto = 0%
+- Demos > PowerPoints
+:::
+
+**En DS:**
+- Script ejecutable con análisis
+- Modelo entrenado con métricas
+- Pipeline funcionando
+- Dashboard deployed
+
+## Trampa Común
+
+::: {.callout-warning}
+## Falso Progreso
+"Experimenté con 50 modelos esta semana" ≠ Progreso
+
+Sin modelo seleccionado, evaluado y documentado = sin progreso
+:::
+
+## Principio 8: Desarrollo Sostenible
+
+> "Debemos ser capaces de mantener un ritmo constante de forma indefinida"
+
+::: {.incremental}
+- Burnout no es sostenible ni productivo
+- 80 horas una semana → productividad negativa
+- Trabajo consistente > crunch time
+- Pedir ayuda tempranamente
+:::
+
+## Señales de Alerta
+
+::: {.callout-important}
+- Trabajar hasta tarde constantemente
+- No tomar fines de semana
+- Estrés crónico
+- Cancelar otros compromisos
+
+**→ Habla con tu tutor inmediatamente**
+:::
+
+## Principio 9: Excelencia Técnica
+
+> "La atención continua a la excelencia técnica mejora la Agilidad"
+
+::: {.incremental}
+- Atajos se cobran con interés
+- Código limpio es más fácil de cambiar
+- "Rápido sin calidad" no es ágil
+- Deuda técnica reduce agilidad
+:::
+
+**Prácticas:** Git, tests, documentación, code reviews
+
+## Principio 10: Simplicidad
+
+> "La simplicidad, o el arte de maximizar el trabajo no realizado, es esencial"
+
+::: {.incremental}
+- Solución más simple que funciona = mejor
+- YAGNI: "You Aren't Gonna Need It"
+- Hacer menos cosas, mejor
+- 80% del problema con 20% del esfuerzo
+:::
+
+## Occam's Razor en DS
+
+::: {.incremental}
+- Modelo simple y explicable > +0.5% accuracy complejo
+- Pipeline de 3 pasos > 15 pasos igual resultado
+- Gráfico claro > Dashboard complejo sin propósito
+:::
+
+## Principio 11: Equipos Auto-organizados
+
+> "Las mejores arquitecturas emergen de equipos auto-organizados"
+
+::: {.incremental}
+- Equipo decide cómo organizarse
+- Micro-gestión mata creatividad
+- Responsabilidad compartida
+:::
+
+::: {.callout-note}
+Auto-organizado ≠ Sin estructura
+
+Significa: el equipo decide su proceso interno
+:::
+
+## Principio 12: Reflexión y Ajuste
+
+> "A intervalos regulares el equipo reflexiona sobre cómo ser más efectivo"
+
+**Preguntas clave:**
+
+::: {.incremental}
+- ¿Qué hicimos bien?
+- ¿Qué debemos mejorar?
+- ¿Qué obstáculos encontramos?
+- ¿Qué haremos diferente?
+:::
+
+**Frecuencia:** Después de cada hito + mini-retros semanales
+
+# Implementación en DS {background-color="#2a2a2a"}
+
+## Adaptaciones Necesarias
+
+::: {.columns}
+::: {.column width="50%"}
+**Exploración vs. Desarrollo**
+
+- DS tiene menos certidumbre
+- "Software funcionando" = insights
+- Entrega de valor diferente
+:::
+
+::: {.column width="50%"}
+**Timeboxes Apropiados**
+
+- Sprints de 2 semanas muy cortos
+- Mejor: 3-4 semanas
+- Checkpoints semanales
+:::
+:::
+
+## Antipatrones a Evitar
+
+::: {.incremental}
+- **Scrum Theater**: Rituales sin valor
+- **Falso Agile**: Llamarlo ágil pero no cambiar
+- **Extremos**: Cero documentación, cambio sin razón
+:::
+
+## Buenas prácticas para el Curso
+
+**Individuos e Interacciones:**
+- Reuniones semanales del equipo
+- Check-ins con tutor cada 1-2 semanas
+- Pair programming cuando necesario
+
+**Software Funcionando:**
+- Código ejecutable en cada hito
+- Scripts reproducibles
+- Modelo baseline en Hito 2
+
+## Buenas prácticas (cont.)
+
+**Colaboración:**
+- Presentar avances regularmente
+- Incorporar feedback
+- Comunicación transparente
+
+**Respuesta al Cambio:**
+- Pivotar si los datos lo requieren
+- Ajustar enfoque si no funciona
+- Priorizar aprendizaje
+
+# Conclusiones {background-color="#1a1a1a"}
+
+## Lecciones Clave
+
+::: {.incremental}
+- Waterfall: Certidumbre y estabilidad
+- Ágil: Exploración e incertidumbre
+- DS casi siempre requiere ágil
+- Manifiesto Ágil: valores, no metodología
+- Enfoque en colaboración humana
+:::
+
+## Reflexión Final
+
+El Manifiesto Ágil es **sentido común aplicado**:
+
+::: {.incremental}
+- Hablar con personas
+- Mostrar resultados reales
+- Trabajar con stakeholders
+- Adaptarse a la realidad
+:::
+
+Especialmente relevante en DS por naturaleza incierta
+
+## Para el Curso
+
+::: {.callout-tip}
+No necesitas Scrum perfecto
+
+Necesitas abrazar valores y principios ágiles en cómo trabajas
+:::
+
+# Próximos Capítulos {background-color="#2a2a2a"}
+
+## Siguientes Temas
+
+::: {.incremental}
+- **Capítulo 4**: Scrum, Kanban, XP en detalle
+- **Capítulo 5**: Herramientas de gestión
+- **Capítulo 6**: Buenas prácticas de programación
+:::
+
+## Recursos
+
+**Lecturas Fundamentales:**
+- [Manifiesto Ágil](https://agilemanifesto.org/iso/es/manifesto.html)
+- [Principios](https://agilemanifesto.org/iso/es/principles.html)
+
+**Libros:**
+- "Agile Data Science 2.0" - Russell Jurney
+- "The Phoenix Project" - Gene Kim
+
+# ¿Preguntas? {background-color="#1a1a1a"}
+
+## Referencias
+
+- Beck, K., et al. (2001). Manifesto for Agile Software Development
+- Schwaber, K., & Sutherland, J. (2020). The Scrum Guide
+- Jurney, R. (2017). Agile Data Science 2.0

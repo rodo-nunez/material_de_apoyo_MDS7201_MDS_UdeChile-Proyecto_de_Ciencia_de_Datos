@@ -1,0 +1,379 @@
+---
+title: "Proyecto de Ciencia de Datos"
+subtitle: "MDS7201 - Master of Data Science"
+author: "Universidad de Chile"
+format:
+  revealjs:
+    theme: [default, ../custom-slides.scss]
+    slide-number: true
+    chalkboard: true
+    preview-links: auto
+    code-fold: false
+    code-tools: true
+    transition: slide
+    background-transition: fade
+  beamer:
+    theme: Madrid
+    colortheme: default
+    fonttheme: professionalfonts
+    aspectratio: 169
+    navigation: horizontal
+    section-titles: true
+    toc: true
+---
+
+# Presentación {background-color="#1a1a1a"}
+
+## Equipo Docente
+
+**Profesores:**
+
+- **Rodolfo Núñez** - rodo.nunez.u@gmail.com
+- **Francisco Förster** – fforster@uchile.cl
+
+**Auxiliares asignados por proyecto**
+
+## Agenda
+
+::: {.incremental}
+
+1. **Presentación**
+
+   - Descripción del curso
+   - Equipo docente
+
+2. **Metodología**
+
+   - Objetivos de aprendizaje
+   - Reglas del curso
+
+3. **Evaluaciones**
+
+   - Hitos, presentaciones, informe
+   - Asistencia
+
+4. **Herramientas**
+
+   - Trabajo en equipo
+:::
+
+# Propósito del Curso {background-color="#2a2a2a"}
+
+## Objetivos Principales
+
+::: {.incremental}
+
+- Aplicar conceptos fundamentales de la Ciencia de Datos
+- Obtener visión general de proyectos de datos completos
+- Resolver problemas mediante herramientas de análisis y visualización
+- Desarrollar un proyecto práctico real con contraparte
+:::
+
+## Competencias Específicas (CE)
+
+::: {.columns}
+::: {.column width="50%"}
+
+- Gestionar proyectos
+- Utilizar modelos y lenguajes de consulta
+:::
+
+::: {.column width="50%"}
+
+- Aplicar políticas de seguridad
+- Extraer información relevante
+:::
+:::
+
+## Competencias Genéricas (CG)
+
+::: {.incremental}
+
+- Comunicación académica y profesional
+- Trabajo en equipo
+- Compromiso ético
+- Innovación
+:::
+
+# Tópicos del Curso {background-color="#1a1a1a"}
+
+## Desarrollo de Proyecto
+
+::: {.incremental}
+
+- Metodologías para proyectos de Ciencia de Datos
+- Herramientas de organización de trabajo
+- Desarrollo en base a hitos de avance
+- Acceso a datos y entendimiento del problema
+- Análisis exploratorio y preprocesamiento
+- Herramientas de exploración y manipulación
+:::
+
+## Análisis y Comunicación
+
+::: {.incremental}
+
+- Visualización de datos efectiva
+- Modelamiento y aprendizaje automático
+- Herramientas especializadas
+- Presentación de proyectos
+- Desarrollo de informes
+- Resultados y recomendaciones
+:::
+
+# Metodología {background-color="#1a1a1a"}
+
+## CRISP-DM Actualizado
+
+Referencia: [*CRISP-DM Twenty Years Later*](https://ieeexplore.ieee.org/abstract/document/8943998)
+
+::: {.incremental}
+
+1. **Comprensión y formulación del problema**
+2. **Adquisición de datos**
+3. **Análisis y modelamiento**
+4. **Comunicación del resultado**
+5. **Demo / MVP**
+6. **Traspaso**
+:::
+
+## Etapa 1: Comprensión del Problema
+
+- Entender el contexto del negocio
+- Definir objetivos claros y medibles
+- Identificar stakeholders
+
+## Etapa 2: Adquisición de Datos
+
+- Identificación de fuentes
+- Extracción y recolección
+- Limpieza y transformación
+
+## Etapa 3: Análisis y Modelamiento
+
+- Técnicas estadísticas
+- Minería de datos
+- Machine learning
+- Evaluación de modelos
+
+## Etapa 4: Comunicación
+
+- Visualización de datos efectiva
+- Presentación de insights
+- Documentación técnica
+
+## Etapa 5: Demo / MVP
+
+- Desarrollo de producto mínimo viable
+- Demostración funcional de la solución
+
+## Etapa 6: Traspaso
+
+::: {.callout-important}
+## Nueva Etapa
+
+- Entrega del proyecto a la contraparte
+- Documentación para continuidad
+- Transferencia de conocimiento para implementación
+:::
+
+# Evaluaciones {background-color="#2a2a2a"}
+
+## Componentes y Ponderación
+
+| Componente | Peso | Descripción |
+|------------|------|-------------|
+| Asistencia / Aprendizaje | 10% | Participación activa |
+| Hito 1 | 15% | Presentación problema |
+| Hito 2 | 15% | Análisis exploratorio |
+| Hito 3 | 15% | Problema + línea base |
+| Hito 4 | 15% | Resultados y traspaso |
+| Presentación Final | 15% | Exposición oral |
+| Informe + Póster | 15% | Documento + póster |
+
+## Hitos del Proyecto
+
+::: {.incremental}
+
+- **Hito 1**: Presentación del problema
+- **Hito 2**: Análisis exploratorio
+- **Hito 3**: Definición del problema + línea base
+- **Hito 4**: Presentación de resultados y traspaso
+:::
+
+## Periodo de Exámenes
+
+**Informe Final y Póster:**
+
+- Grabación en oficinas de contraparte
+- Envío por U-Cursos
+- Formato: Quarto
+
+**Presentación Final:**
+
+- Exposición del proyecto completo
+- Demostración de resultados
+
+## Reglas de Evaluación
+
+::: {.callout-warning}
+**Penalizaciones:**
+
+- NDA no firmado: -1 punto
+- Repositorio no compartido: -1 punto al siguiente hito por semana
+:::
+
+**Co-evaluaciones obligatorias** en todos los hitos y presentación final
+
+# Reglas del Curso {background-color="#1a1a1a"}
+
+## Consideraciones Importantes
+
+::: {.incremental}
+
+- Calendario detallado en U-Cursos
+- Apóyense con los auxiliares
+- Distribuir trabajo de forma justa
+- Commits en repositorio reflejan trabajo
+- **MDS tiene dedicación exclusiva**
+- Trabajar en empresa no es excusa válida
+:::
+
+## Política de Fechas
+
+::: {.callout-important}
+## No se cambian fechas
+
+- Si alguien falta, el grupo debe continuar
+- Evaluar en co-evaluación
+- Reuniones con contrapartes: responsabilidad del grupo
+:::
+
+## Retiro del Curso
+
+::: {.callout-warning}
+Si van a eliminar el ramo, **háganlo al inicio**
+
+Eliminarlo después perjudica a:
+
+- Compañeros de equipo
+- Contrapartes
+- Planificación del curso
+:::
+
+# Herramientas {background-color="#2a2a2a"}
+
+## Herramientas Recomendadas
+
+::: {.columns}
+::: {.column width="50%"}
+**Coordinación**
+
+- When2meet
+- Doodle
+- Google Calendar
+
+**Gestión**
+
+- GitHub Projects
+- Trello
+- Notion
+:::
+
+::: {.column width="50%"}
+**Comunicación**
+
+- Slack
+- Discord
+- Microsoft Teams
+
+**Desarrollo**
+
+- Git
+- Python / R
+- Quarto
+:::
+:::
+
+::: {.callout-tip}
+Git es **obligatorios**
+:::
+
+# Recursos {background-color="#1a1a1a"}
+
+## Bibliografía Principal
+
+1. Baumer, Ben (2015). *A Data Science Course for Undergraduates*
+
+2. Hardt, M., & Recht, B. (2021). *Patterns, predictions, and actions*
+
+3. O'Neil, C. & Schutt, R. (2014). *Doing Data Science*
+
+4. VanderPlas, J. (2016). *Python Data Science Handbook*
+
+## Bibliografía Complementaria
+
+5. Kyrian Dale (2016). *Data Visualization with Python and JavaScript*
+
+6. McKinney, W. (2012). *Python for Data Analysis*
+
+7. Paarsch H., Golyaev K. (2016). *Effective Computing in Quantitative Research*
+
+8. Tufte, E. R. (1985). *The Visual Display of Quantitative Information*
+
+## Recurso Metodológico
+
+**CRISP-DM Twenty Years Later**
+
+Martínez-Plumed et al. (2021)
+
+[📄 Documento disponible online](https://ieeexplore.ieee.org/abstract/document/8943998)
+
+# Equipo Docente {background-color="#2a2a2a"}
+
+## Profesores
+
+- **Francisco Förster** – fforster@uchile.cl [LinkedIn](https://www.linkedin.com/in/franciscoforster/)
+- **Rodolfo Núñez** – rodo.nunez.u@gmail.com [LinkedIn](https://www.linkedin.com/in/rodonunez/)
+
+## Apoyo
+
+- Equipo de tutores asignados por proyecto
+- Horarios de consulta disponibles
+
+::: {.callout-tip}
+## Comunicación
+Mantén comunicación regular con el equipo docente. No esperes hasta tener problemas graves.
+:::
+
+# Próximos Pasos {background-color="#1a1a1a"}
+
+## Esta Semana
+
+::: {.incremental}
+
+1. ✅ Elegir prioridades de proyectos para formar equipos de trabajo
+2. 📋 Conocer tu proyecto asignado
+3. 🤝 Primera reunión con contraparte
+4. 🛠️ Configurar repositorio y herramientas
+5. 📅 Planificar Hito 1
+:::
+
+## ¡Bienvenidos!
+
+¡Te deseamos mucho éxito y que puedas aprender mucho!
+
+Esperamos que este sea un semestre **desafiante** y muy **gratificante**
+
+Aplicarás todo lo aprendido en el MDS en un **proyecto real**
+
+::: {.callout-note}
+## Recuerda
+
+- Trabajo en equipo
+- Comunicación constante
+- Dedicación continua
+- ¡Disfruta el proceso!
+:::
+
+# ¿Preguntas? {background-color="#2a2a2a"}

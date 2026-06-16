@@ -1,0 +1,469 @@
+# Interpretabilidad en Machine Learning
+
+Un aspecto importante y muchas veces ignorado del machine learning es la interpretabilidad. ¿Podemos entender cómo decide un modelo de clasificación o regresión para una muestra dada? ¿Está esa decisión de acuerdo con nuestra intuición?
+
+Es importante que un modelo sea capaz de explicar sus decisiones para comprobar lo siguiente:
+
+- **Sesgos**: ¿están las predicciones sesgadas hacia ciertos grupos o valores?
+- **Privacidad**: ¿se protegen los datos sensibles durante la inferencia?
+- **Robustez**: ¿pequeños cambios en la entrada producen grandes cambios en la predicción?
+- **Debugging**: entender la contribución de cada característica puede ayudar a detectar fallas, como sobreajuste o la presencia de features irrelevantes.
+- **Causalidad**: ¿el modelo recupera relaciones causales o solo correlaciones espurias?
+- **Confiabilidad**: para confiar en un sistema generalmente se necesita entender su funcionamiento.
+
+::: {.callout-note}
+## Referencia Principal
+Este capítulo se basa en [*Interpretable Machine Learning: A Guide for Making Black Box Models Explainable*](https://christophm.github.io/interpretable-ml-book/), de Christoph Molnar. El libro es de acceso abierto y es una referencia indispensable sobre el tema.
+:::
+
+## Clases de Interpretabilidad
+
+Los métodos de interpretabilidad pueden clasificarse a lo largo de dos dimensiones:
+
+**¿Cuándo se aplican?**
+
+Los **métodos intrínsecos** se refieren a modelos que son simples de entender por sí mismos, como un árbol de decisión o una regresión lineal. Los **métodos post hoc** se aplican *después* del entrenamiento, sobre un modelo ya construido.
+
+**¿Cuál es el alcance de la explicación?**
+
+Un método puede ser **local** — explica la predicción de una muestra individual — o **global** — explica el comportamiento del modelo sobre toda la distribución.
+
+### Tipos de Resultados
+
+Los métodos de interpretabilidad pueden producir distintos tipos de salidas:
+
+- **Estadístico resumen por característica**: valor único de importancia por feature (ej: importancia de permutación, SHAP medio).
+- **Visualización resumen**: distribución de propiedades a través de todas las muestras (ej: beeswarm de SHAP, PDP).
+- **Parámetros internos del modelo**: cuando el modelo mismo contiene parámetros interpretables, como los coeficientes de una regresión lineal.
+- **Muestras explicativas**: contraejemplos contrafactuales ("¿qué cambio mínimo habría modificado la predicción?") o prototipos de clase.
+- **Modelos intrínsecamente interpretables**: el árbol de decisión mismo es su propia explicación.
+
+### Ejemplo Motivacional: Estrellas Pulsantes
+
+Si tenemos un modelo de clasificación de estrellas pulsantes, ¿cuál es la contribución del período y la amplitud de las variaciones en la clasificación?
+
+![Ejemplo de clasificación de estrellas pulsantes con contribución de features](images/pulsating_stars.png)
+
+## Métodos Agnósticos al Modelo
+
+No siempre es posible construir modelos interpretables con el mismo poder predictivo que los modelos de caja negra. Por eso son útiles los métodos **agnósticos al modelo**: se aplican sobre cualquier modelo entrenado, sin requerir acceso a sus internos.
+
+Algunos aspectos deseables de un buen método agnóstico al modelo son:
+
+- **Flexibilidad de modelo**: funciona con cualquier tipo de modelo (random forest, red neuronal profunda, etc.)
+- **Flexibilidad de explicabilidad**: no está limitado a un tipo de explicación — puede generar estadísticos, visualizaciones o muestras.
+- **Flexibilidad de representación**: puede usar distintas representaciones de la entrada (palabras vs. embeddings, regiones vs. píxeles).
+
+## Partial Dependence Plots (PDP)
+
+Entre los métodos globalmente agnósticos, el más conocido es el **Partial Dependence Plot (PDP)**. Muestra el efecto marginal que una o más características tienen sobre la predicción, promediando sobre la distribución de las demás.
+
+La función de dependencia parcial se define como:
+
+$$\hat{f}_S(x_S) = \mathbb{E}_{X_C}\left[\hat{f}(x_S, X_C)\right] = \int \hat{f}(x_S, X_C) \, dP(X_C)$$
+
+donde $x_S$ son las características de interés y $X_C$ son las demás características. La predicción del modelo se **marginaliza** sobre la distribución de $X_C$.
+
+### Dataset: Demanda de Bicicletas Compartidas
+
+Usaremos el dataset de bicicletas compartidas de OpenML. El objetivo es predecir el número de usuarios en función de condiciones climáticas y temporales. Referencia: [sklearn.inspection.PartialDependenceDisplay](https://scikit-learn.org/stable/auto_examples/inspection/plot_partial_dependence.html).
+
+```{python}
+from sklearn.datasets import fetch_openml
+import pandas as pd
+
+bikes = fetch_openml("Bike_Sharing_Demand", version=2, as_frame=True, parser="pandas")
+X, y = bikes.data.copy(), bikes.target
+```
+
+Matriz de diseño (primeras filas):
+
+```{python}
+X.head()
+```
+
+Número de usuarios (primeras filas):
+
+```{python}
+y.head()
+```
+
+Distribución de condiciones atmosféricas:
+
+```{python}
+X["weather"].value_counts()
+```
+
+La categoría `heavy_rain` tiene muy pocas observaciones. La combinamos con `rain` para balancear:
+
+```{python}
+X["weather"] = X["weather"].cat.remove_categories("heavy_rain").fillna("rain")
+X["weather"].value_counts()
+```
+
+Distribución de años en los datos:
+
+```{python}
+X["year"].value_counts()
+```
+
+Usaremos el año 0 (2010) para entrenar y el año 1 (2011) para testear — un split temporal natural:
+
+```{python}
+mask_training = X["year"] == 0.0
+X = X.drop(columns=["year"])
+X_train, y_train = X[mask_training], y[mask_training]
+X_test, y_test = X[~mask_training], y[~mask_training]
+```
+
+```{python}
+X_train.info()
+```
+
+Visualización del promedio de arriendos por año, estación y hora del día durante la semana:
+
+```{python}
+from itertools import product
+import numpy as np
+import matplotlib.pyplot as plt
+
+days = ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+hours = tuple(range(24))
+xticklabels = [f"{day}\n{hour}:00" for day, hour in product(days, hours)]
+xtick_start, xtick_period = 6, 12
+
+fig, axs = plt.subplots(nrows=2, figsize=(8, 6), sharey=True, sharex=True)
+average_bike_rentals = bikes.frame.groupby(["year", "season", "weekday", "hour"]).mean(
+    numeric_only=True
+)["count"]
+for ax, (idx, df_grp) in zip(axs, average_bike_rentals.groupby("year")):
+    df_grp.groupby("season").plot(ax=ax, legend=True)
+    ax.set_xticks(np.linspace(start=xtick_start, stop=len(xticklabels),
+                              num=len(xticklabels) // xtick_period))
+    ax.set_xticklabels(xticklabels[xtick_start::xtick_period])
+    ax.set_xlabel("")
+    ax.set_ylabel("Promedio de arriendos")
+    ax.set_title(f"Arriendos en {'2010 (train)' if idx == 0.0 else '2011 (test)'}")
+    ax.set_ylim(0, 1_000)
+    ax.set_xlim(0, len(xticklabels))
+    ax.legend(loc=2)
+plt.tight_layout()
+```
+
+Variables numéricas y categóricas:
+
+```{python}
+numerical_features = ["temp", "feel_temp", "humidity", "windspeed"]
+categorical_features = list(X_train.columns.drop(numerical_features))
+categorical_features
+```
+
+### Entrenamiento del Modelo
+
+Usamos un `HistGradientBoostingRegressor` con preprocesamiento por `ColumnTransformer`:
+
+```{python}
+from time import time
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OrdinalEncoder
+from sklearn.pipeline import make_pipeline
+from sklearn.ensemble import HistGradientBoostingRegressor
+
+hgbdt_preprocessor = ColumnTransformer(
+    transformers=[
+        ("cat", OrdinalEncoder(), categorical_features),
+        ("num", "passthrough", numerical_features),
+    ],
+    sparse_threshold=1,
+    verbose_feature_names_out=False,
+).set_output(transform="pandas")
+
+print("Entrenando HistGradientBoostingRegressor...")
+tic = time()
+hgbdt_model = make_pipeline(
+    hgbdt_preprocessor,
+    HistGradientBoostingRegressor(
+        categorical_features=categorical_features, random_state=0
+    ),
+)
+hgbdt_model.fit(X_train, y_train)
+print(f"listo en {time() - tic:.3f}s")
+print(f"R² en test: {hgbdt_model.score(X_test, y_test):.2f}")
+```
+
+### PDP Univariado
+
+Calculamos PDPs para temperatura, humedad, velocidad del viento, estación, clima y hora del día:
+
+```{python}
+from sklearn.inspection import PartialDependenceDisplay
+
+common_params = {
+    "subsample": 50,
+    "n_jobs": 2,
+    "grid_resolution": 20,
+    "random_state": 0,
+}
+
+features_info = {
+    "features": ["temp", "humidity", "windspeed", "season", "weather", "hour"],
+    "kind": "average",
+    "categorical_features": categorical_features,
+}
+
+print("Calculando PDPs...")
+tic = time()
+_, ax = plt.subplots(ncols=3, nrows=2, figsize=(9, 8), constrained_layout=True)
+display = PartialDependenceDisplay.from_estimator(
+    hgbdt_model, X_train, **features_info, ax=ax, **common_params,
+)
+print(f"listo en {time() - tic:.3f}s")
+_ = display.figure_.suptitle(
+    "Dependencia parcial del número de arriendos\n(gradient boosting)", fontsize=14
+)
+```
+
+Se observa no linealidad en la dependencia con la temperatura entre 15 y 25 °C, y en la humedad por encima del 70%.
+
+### PDP Bivariado: Temperatura y Humedad
+
+El PDP puede extenderse a pares de variables para visualizar interacciones:
+
+```{python}
+print("Calculando PDPs bivariados...")
+features_info = {
+    "features": ["temp", "humidity", ("temp", "humidity")],
+    "kind": "average",
+}
+_, ax = plt.subplots(ncols=3, figsize=(10, 4), constrained_layout=True)
+tic = time()
+display = PartialDependenceDisplay.from_estimator(
+    hgbdt_model, X_train, **features_info, ax=ax, **common_params,
+)
+print(f"listo en {time() - tic:.3f}s")
+_ = display.figure_.suptitle(
+    "PDP 1-variable vs 2-variables (temperatura y humedad)", fontsize=14
+)
+```
+
+A temperaturas mayores a 20 °C, el efecto dominante es la humedad. A temperaturas menores a 20 °C y humedades bajo el 70%, la temperatura parece ser más importante; mientras que con humedades sobre el 70%, la humedad siempre domina.
+
+### PDP Bivariado: Estación y Clima
+
+```{python}
+print("Calculando PDPs para variables categóricas...")
+features_info = {
+    "features": ["season", "weather", ("season", "weather")],
+    "kind": "average",
+    "categorical_features": categorical_features,
+}
+_, ax = plt.subplots(ncols=3, figsize=(14, 6), constrained_layout=True)
+tic = time()
+display = PartialDependenceDisplay.from_estimator(
+    hgbdt_model, X_train, **features_info, ax=ax, **common_params,
+)
+print(f"listo en {time() - tic:.3f}s")
+_ = display.figure_.suptitle(
+    "PDP 1-variable vs 2-variables (variables categóricas)", fontsize=14
+)
+```
+
+La mayor dependencia positiva ocurre en verano con cielo despejado, mientras que la mayor dependencia negativa es en primavera con lluvia.
+
+## Valores de Shapley
+
+Los valores de Shapley son un concepto proveniente de la teoría de juegos cooperativos: ¿cómo distribuir equitativamente las ganancias entre los jugadores que contribuyeron a obtenerlas?
+
+En el contexto de ML, las *características* son los jugadores y las *ganancias* son la diferencia entre la predicción del modelo para una muestra dada y la predicción promedio del modelo.
+
+### Cómputo
+
+La idea central es asignar a cada característica su **contribución marginal promedio** considerando **todas las posibles coaliciones** (subconjuntos de características). ¿Cuánto cambia la predicción cuando agregamos la característica $i$ a cada subconjunto posible?
+
+$$\phi_i(v) = \sum_{S \subseteq N \setminus \{i\}} \binom{n}{1,|S|,n-|S|-1}^{-1} \left(v(S \cup \{i\}) - v(S)\right)$$
+
+donde $\phi_i(v)$ es el valor de Shapley de la característica $i$, $n$ es el número total de características, y la suma recorre todos los subconjuntos $S$ que no incluyen a $i$.
+
+En la práctica, para simular la ausencia de una característica en una coalición sin reentrenar un modelo, se samplea aleatoriamente de la distribución marginal de esa característica.
+
+### Propiedades que Hacen Único al Valor de Shapley
+
+Se puede demostrar que el valor de Shapley es el **único** método de atribución que satisface simultáneamente las cuatro propiedades siguientes:
+
+- **Eficiencia**: las contribuciones de todas las características suman exactamente la diferencia entre el valor predicho y la predicción promedio.
+- **Simetría**: si dos características $j$ y $k$ contribuyen de igual manera a todas las coaliciones, deben tener el mismo valor de Shapley.
+- **Valor Dummy**: una característica que no cambia ninguna predicción tiene valor de Shapley cero.
+- **Aditividad**: en un juego de contribuciones combinadas, los valores de Shapley se suman linealmente.
+
+::: {.callout-warning}
+## Qué NO es el Valor de Shapley
+
+El valor de Shapley **no** es la diferencia en la predicción al remover una característica del entrenamiento. Es la contribución marginal promedio de la característica sobre todas las coaliciones posibles, estimada en inferencia.
+:::
+
+## SHAP (SHapley Additive exPlanations)
+
+SHAP es un framework que aproxima los valores de Shapley representándolos como un **modelo lineal** sobre un espacio de coaliciones:
+
+$$g(z') = \phi_0 + \sum_{j=1}^{M} \phi_j z'_j$$
+
+donde $g$ es el modelo explicativo, $z' \in \{0,1\}^M$ es un vector de coalición (0 = característica ausente, 1 = presente), $M$ es el número de características, y $\phi_j \in \mathbb{R}$ es el valor SHAP de la característica $j$.
+
+Para estimar los $\phi_j$, se muestrean $K$ coaliciones distintas y se ajusta el modelo lineal $g$ con una función de pérdida ponderada por el **kernel SHAP**:
+
+$$\pi_x(z') = \frac{(M-1)}{\binom{M}{|z'|} |z'| (M - |z'|)}$$
+
+$$L(\hat{f}, g, \pi_x) = \sum_{z' \in Z} \left[\hat{f}(h_x(z')) - g(z')\right]^2 \pi_x(z')$$
+
+Este kernel asigna mayor peso a las coaliciones muy pequeñas o muy grandes (donde una sola característica hace mucha diferencia), lo que permite recuperar las propiedades axiomáticas de los valores de Shapley.
+
+### Valores SHAP en el Dataset Iris
+
+Cargamos el dataset Iris y entrenamos un modelo XGBoost para ilustrar los distintos tipos de visualizaciones SHAP:
+
+```{python}
+import numpy as np
+import pandas as pd
+import shap
+import xgboost
+import seaborn as sn
+
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+
+shap.initjs()
+
+iris = load_iris()
+X = pd.DataFrame(iris.data, columns=iris.feature_names)
+y = iris.target
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+```
+
+Vista de los datos:
+
+```{python}
+df = pd.DataFrame(iris.data, columns=iris.feature_names)
+df['species'] = iris.target
+df.head()
+```
+
+```{python}
+sn.pairplot(df, hue='species')
+```
+
+Entrenamiento del modelo XGBoost:
+
+```{python}
+model = xgboost.train(
+    {"learning_rate": 0.01},
+    xgboost.DMatrix(X_train, label=y_train),
+    100
+)
+```
+
+### Explicación Local: Una Muestra
+
+```{python}
+explainer = shap.Explainer(model)
+
+# Seleccionar una instancia del test set
+instance_idx = 10
+instance = X_test.iloc[[instance_idx]]
+print(instance)
+print("Etiqueta real:", y_test[instance_idx])
+print("Predicción del modelo:", model.predict(xgboost.DMatrix(instance)))
+```
+
+```{python}
+# Calcular valores SHAP para la instancia
+shap_values = explainer(instance)
+```
+
+**Force plot**: muestra las features que empujan la predicción hacia arriba (rojo) o hacia abajo (azul) respecto al valor base:
+
+```{python}
+shap.plots.force(shap_values)
+```
+
+**Waterfall plot**: descompone la predicción en contribuciones de cada feature, de mayor a menor magnitud:
+
+```{python}
+shap.plots.waterfall(shap_values[0])
+```
+
+En este caso, `petal length` explica en gran parte la clasificación del objeto.
+
+### Explicación Global: Toda la Distribución
+
+Calculamos valores SHAP para todo el set de test:
+
+```{python}
+shap_values_test = explainer(X_test)
+```
+
+**Bar plot — importancia media absoluta**: resume cuánto contribuye en promedio cada feature, en valor absoluto:
+
+```{python}
+shap.plots.bar(shap_values_test.abs.mean(0))
+```
+
+**Bar plot — importancia media con signo**: muestra la dirección dominante del efecto (positivo o negativo):
+
+```{python}
+shap.plots.bar(shap_values_test.mean(0))
+```
+
+`petal length` tiene el efecto más grande, seguido de `petal width`. Las otras variables prácticamente no contribuyen.
+
+**Beeswarm plot**: muestra el tamaño *y* el signo del efecto para **todas** las muestras. Cada punto es una observación, coloreado por el valor de la feature:
+
+```{python}
+shap.plots.beeswarm(shap_values_test)
+```
+
+Se observa que en algunos casos `petal width` puede ser tan buen discriminador como `petal length`.
+
+**Heatmap**: visualiza los valores SHAP de todas las muestras simultáneamente, revelando grupos con patrones de atribución similares:
+
+```{python}
+shap.plots.heatmap(shap_values_test)
+```
+
+**Scatter plot**: muestra la relación entre el valor de la feature y su valor SHAP, para cada feature individualmente:
+
+```{python}
+shap.plots.scatter(shap_values_test)
+```
+
+## Más Allá de Datos Tabulares
+
+Los mismos principios se extienden a otros tipos de datos:
+
+- **Imágenes**: `DeepSHAP` y `GradientSHAP` aproximan valores de Shapley en redes profundas, atribuyendo importancia a cada píxel.
+- **Texto**: explicadores basados en perturbaciones (LIME, SHAP) atribuyen importancia a tokens individuales.
+- **Atención**: en modelos basados en *transformers*, los pesos de atención son a veces usados como una forma de interpretabilidad. Hay que tener cuidado: alta atención no implica importancia causal — es una correlación interna del mecanismo de atención, no una atribución de causalidad sobre la entrada.
+
+Una aplicación astronómica reciente: clasificación de curvas de luz con mecanismos de atención en [Rojas et al. 2024](https://ui.adsabs.harvard.edu/abs/2024arXiv240705751R/abstract).
+
+![Pesos de atención en clasificación de curvas de luz astronómicas (Rojas et al. 2024)](images/attention.png)
+
+## Resumen
+
+| Dimensión | Opciones |
+|---|---|
+| **Cuándo** | Intrínseco (modelo simple) vs. Post hoc (después del entrenamiento) |
+| **Alcance** | Local (una muestra) vs. Global (toda la distribución) |
+| **Salida** | Estadístico, visualización, muestra, parámetros internos |
+| **Métodos globales** | PDP, Importancia de Permutación, SHAP medio |
+| **Métodos locales** | SHAP (force, waterfall), LIME, contraejemplos |
+
+Los valores de Shapley son el único método que satisface simultáneamente eficiencia, simetría, valor dummy y aditividad — lo que los hace la base teórica más sólida para la atribución de importancia en ML.
+
+## Referencias
+
+- Molnar, C. (2022). *Interpretable Machine Learning: A Guide for Making Black Box Models Explainable* (2nd ed.). [christophm.github.io/interpretable-ml-book](https://christophm.github.io/interpretable-ml-book/)
+- Lundberg, S. M., & Lee, S.-I. (2017). A Unified Approach to Interpreting Model Predictions. *NeurIPS*.
+- Shapley, L. S. (1953). A value for n-person games. *Contributions to the Theory of Games*, 2, 307–317.
+- Rojas et al. (2024). Clasificación de curvas de luz con atención. [arXiv:2407.05751](https://ui.adsabs.harvard.edu/abs/2024arXiv240705751R/abstract)
+- Scikit-learn: [Partial Dependence Plots](https://scikit-learn.org/stable/auto_examples/inspection/plot_partial_dependence.html)

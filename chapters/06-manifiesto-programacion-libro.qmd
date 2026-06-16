@@ -1,0 +1,1890 @@
+# Manifiesto de Programación para Data Science
+
+## Introducción
+
+La calidad del código es fundamental en proyectos de Data Science. Un buen código no solo funciona correctamente, sino que es fácil de entender, mantener y modificar. En este capítulo exploraremos los principios y prácticas de programación que todo científico de datos debería dominar.
+
+A diferencia del desarrollo de software tradicional, el código en Data Science tiene características especiales:
+
+- A menudo comienza como exploración en notebooks (que no es necesario y no es recomendable)
+- Debe balancear experimentación con producción
+- Requiere reproducibilidad rigurosa
+- Combina análisis estadístico, visualización y machine learning
+- Evoluciona rápidamente durante la investigación
+
+::: {.callout-note}
+## Código es Comunicación
+El código se lee muchas más veces de las que se escribe. Un buen código comunica claramente su intención tanto a la computadora como a otros humanos (incluido tu yo del futuro).
+:::
+
+## Principios del Buen Código
+
+### 🦾 Un buen código es resiliente y robusto
+
+**Qué significa:**
+El código debe manejar casos edge, errores inesperados y situaciones no ideales sin fallar catastróficamente.
+
+**En Data Science:**
+
+- Datos pueden tener valores nulos, outliers extremos, tipos incorrectos
+- Los modelos pueden fallar durante entrenamiento
+- Las APIs externas pueden no responder
+- Los archivos pueden no existir o estar corruptos
+
+**Principios de resiliencia:**
+
+**1. Validación de inputs**
+```python
+def calculate_churn_probability(customer_data: pd.DataFrame) -> np.ndarray:
+    """Calcula probabilidad de churn para clientes."""
+    
+    # Validar que el DataFrame no está vacío
+    if customer_data.empty:
+        raise ValueError("customer_data no puede estar vacío")
+    
+    # Validar que las columnas necesarias existen
+    required_columns = ['tenure', 'monthly_charges', 'total_charges']
+    missing_columns = set(required_columns) - set(customer_data.columns)
+    if missing_columns:
+        raise ValueError(f"Faltan columnas: {missing_columns}")
+    
+    # Validar tipos de datos
+    for col in required_columns:
+        if not pd.api.types.is_numeric_dtype(customer_data[col]):
+            raise TypeError(f"Columna {col} debe ser numérica")
+    
+    # Procesar...
+    return predictions
+```
+
+**2. Manejo de errores explícito**
+```python
+def load_data(filepath: str) -> pd.DataFrame:
+    """Carga datos con manejo robusto de errores."""
+    
+    if not os.path.exists(filepath):
+        raise FileNotFoundError(f"Archivo no encontrado: {filepath}")
+    
+    try:
+        df = pd.read_csv(filepath)
+    except pd.errors.EmptyDataError:
+        raise ValueError(f"Archivo está vacío: {filepath}")
+    except pd.errors.ParserError as e:
+        raise ValueError(f"Error parseando CSV: {e}")
+    
+    # Validar que tiene datos
+    if len(df) == 0:
+        raise ValueError(f"DataFrame cargado está vacío: {filepath}")
+    
+    return df
+```
+
+**3. Defaults sensatos**
+```python
+def train_model(
+    X: pd.DataFrame,
+    y: pd.Series,
+    model_type: str = 'random_forest',
+    random_state: int = 42,
+    **kwargs
+) -> Any:
+    """Entrena modelo con defaults robustos."""
+    
+    # Siempre usar random_state para reproducibilidad
+    if 'random_state' not in kwargs:
+        kwargs['random_state'] = random_state
+    
+    # Defaults según tipo de modelo
+    if model_type == 'random_forest' and 'n_estimators' not in kwargs:
+        kwargs['n_estimators'] = 100  # Mejor que default de 10
+    
+    # Procesar...
+```
+
+### ⏭️ Un buen código facilita el traspaso y la continuidad
+
+**Qué significa:**
+Otro miembro del equipo (o tú en 6 meses) debe poder entender y modificar el código sin esfuerzo heroico.
+
+**Prácticas clave:**
+
+**1. Nombres descriptivos**
+```python
+# ❌ Malo
+def f(x, y, z):
+    return x * y + z
+
+# ✅ Bueno
+def calculate_total_price(base_price: float, quantity: int, tax: float) -> float:
+    """Calcula precio total incluyendo impuestos."""
+    subtotal = base_price * quantity
+    total = subtotal + tax
+    return total
+```
+
+**2. Documentación clara**
+```python
+def preprocess_customer_data(
+    df: pd.DataFrame,
+    remove_outliers: bool = True,
+    impute_strategy: str = 'median'
+) -> pd.DataFrame:
+    """
+    Preprocesa datos de clientes para modelamiento.
+    
+    Args:
+        df: DataFrame con datos de clientes
+        remove_outliers: Si True, remueve outliers usando IQR
+        impute_strategy: Estrategia de imputación ('mean', 'median', 'mode')
+    
+    Returns:
+        DataFrame preprocesado
+    
+    Raises:
+        ValueError: Si impute_strategy no es válido
+        
+    Example:
+        >>> df = pd.DataFrame({'age': [25, 30, None, 45]})
+        >>> df_clean = preprocess_customer_data(df, impute_strategy='median')
+    """
+    # Implementación...
+```
+
+**3. README comprehensivo**
+
+- Especificar cómo setear el ambiente de desarrollo
+
+```markdown
+# Proyecto Churn Prediction
+
+## Setup
+```bash
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+- Explicitar la estructura de carpetas del proyecto
+
+```
+├── data/
+│   ├── raw/          # Datos originales
+│   └── processed/    # Datos preprocesados
+├── src/
+│   ├── data/        # Scripts de datos
+│   ├── models/      # Modelos
+│   └── visualization/ # Visualizaciones
+└── tests/           # Tests unitarios
+```
+
+- Explicitar cómo se usa la solución
+
+```python
+from src.models.train import train_churn_model
+model = train_churn_model('data/processed/train.csv')
+```
+
+
+### 👟 Un buen código es eficiente
+
+**Qué significa:**
+Usa recursos computacionales de manera inteligente, pero sin sacrificar legibilidad prematuramente.
+
+**Principio:** "Premature optimization is the root of all evil" - Donald Knuth
+
+**Prioridades:**
+1. Primero: Código correcto y claro
+2. Segundo: Código eficiente donde importa
+3. Profile antes de optimizar
+
+**Optimizaciones comunes en DS:**
+
+**1. Vectorización con NumPy/Pandas**
+```python
+# ❌ Lento: Loop sobre DataFrame
+result = []
+for idx, row in df.iterrows():
+    result.append(row['a'] * row['b'])
+df['c'] = result
+
+# ✅ Rápido: Operaciones vectorizadas
+df['c'] = df['a'] * df['b']
+```
+
+**2. Usar dtypes apropiados**
+```python
+# ❌ Desperdicio de memoria
+df = pd.read_csv('data.csv')  # Todo como float64
+
+# ✅ Tipos optimizados
+df = pd.read_csv(
+    'data.csv',
+    dtype={
+        'customer_id': 'int32',      # No necesita int64
+        'category': 'category',       # Mucho más eficiente
+        'amount': 'float32'          # Suficiente precisión
+    }
+)
+```
+
+**3. Lazy loading y chunking**
+```python
+# ❌ Cargar todo en memoria
+df = pd.read_csv('huge_file.csv')  # 10GB
+
+# ✅ Procesar en chunks
+chunk_size = 100000
+for chunk in pd.read_csv('huge_file.csv', chunksize=chunk_size):
+    process(chunk)
+```
+
+**4. Cachear resultados costosos**
+```python
+from functools import lru_cache
+
+@lru_cache(maxsize=128)
+def expensive_calculation(x: int) -> int:
+    """Cálculo costoso que se cachea."""
+    # Operación costosa...
+    return result
+```
+
+### 🛠️ Un buen código permite usar distintas herramientas
+
+**Qué significa:**
+El código no debe estar acoplado a herramientas específicas innecesariamente. Debe ser modular y adaptable.
+
+**Ejemplos:**
+
+**1. Abstracción de modelos**
+```python
+from abc import ABC, abstractmethod
+
+class BaseModel(ABC):
+    """Interfaz común para todos los modelos."""
+    
+    @abstractmethod
+    def train(self, X, y):
+        pass
+    
+    @abstractmethod
+    def predict(self, X):
+        pass
+    
+    @abstractmethod
+    def evaluate(self, X, y):
+        pass
+
+class RandomForestModel(BaseModel):
+    def train(self, X, y):
+        # Implementación específica
+        pass
+
+class XGBoostModel(BaseModel):
+    def train(self, X, y):
+        # Implementación específica
+        pass
+
+# Usar cualquier modelo con misma interfaz
+def train_and_evaluate(model: BaseModel, X, y):
+    model.train(X, y)
+    return model.evaluate(X, y)
+```
+
+**2. Configuración externa**
+```python
+# config.yaml
+model:
+  type: random_forest
+  n_estimators: 100
+  max_depth: 10
+
+data:
+  train_path: data/processed/train.csv
+  test_path: data/processed/test.csv
+
+# main.py
+import yaml
+
+with open('config.yaml') as f:
+    config = yaml.safe_load(f)
+
+# Fácil cambiar configuración sin cambiar código
+model_type = config['model']['type']
+```
+
+### 🤖 Un buen código permite un sencillo paso a producción
+
+**Qué significa:**
+El código debe estar estructurado para facilitar deployment, no solo para análisis exploratorio.
+
+**Prácticas:**
+
+**1. Separar lógica de exploración**
+```python
+# ❌ Todo mezclado en notebook
+# [Celda 1] import pandas...
+# [Celda 2] df = pd.read_csv...
+# [Celda 3] df['new_col'] = df['old_col'] * 2
+# [Celda 50] model = RandomForest...
+
+# ✅ Separar en módulos
+# src/data/preprocessing.py
+def preprocess_features(df):
+    """Lógica reutilizable."""
+    df = df.copy()
+    df['new_col'] = df['old_col'] * 2
+    return df
+
+# src/models/train.py
+def train_model(X, y):
+    """Lógica reutilizable."""
+    model = RandomForestClassifier()
+    model.fit(X, y)
+    return model
+
+# notebooks/exploration.py - usa las funciones
+from src.data.preprocessing import preprocess_features
+from src.models.train import train_model
+```
+
+**2. API clara para predicción**
+```python
+# src/models/predict.py
+class ChurnPredictor:
+    """Predictor listo para producción."""
+    
+    def __init__(self, model_path: str):
+        self.model = joblib.load(model_path)
+        self.feature_names = self.model.feature_names_in_
+    
+    def predict(self, customer_data: dict) -> float:
+        """
+        Predice probabilidad de churn para un cliente.
+        
+        Args:
+            customer_data: Dict con features del cliente
+            
+        Returns:
+            Probabilidad de churn (0-1)
+        """
+        # Validar inputs
+        # Transformar a formato esperado
+        # Predecir
+        # Retornar
+        pass
+    
+    def predict_batch(self, customers: List[dict]) -> List[float]:
+        """Predicción batch."""
+        return [self.predict(c) for c in customers]
+
+# Usar en API
+from fastapi import FastAPI
+app = FastAPI()
+predictor = ChurnPredictor('models/model.pkl')
+
+@app.post("/predict")
+def predict_churn(customer: dict):
+    prob = predictor.predict(customer)
+    return {"churn_probability": prob}
+```
+
+### 🏛️ Un buen código pertenece a una cultura en común
+
+**Qué significa:**
+El equipo debe tener estándares compartidos y consistentes. Todos escriben código similar.
+
+**Elementos de cultura de código:**
+
+**1. Style guide del equipo**
+```python
+# Acordar convenciones
+# - PEP 8 como base
+# - Black para formateo automático
+# - Docstrings estilo Google o NumPy
+# - Type hints obligatorios en funciones públicas
+# - Max line length: 88 (Black default) o 100
+```
+
+**2. Code reviews obligatorias**
+```markdown
+## Checklist de Code Review
+
+- [ ] Código es claro y autodocumentado
+- [ ] Tiene docstrings apropiados
+- [ ] Tests pasan
+- [ ] No hay código comentado innecesario
+- [ ] Variables tienen nombres descriptivos
+- [ ] Lógica compleja está explicada
+- [ ] Sin código duplicado
+```
+
+**3. Templates y ejemplos**
+```python
+# template_function.py
+def function_template(
+    arg1: Type1,
+    arg2: Type2 = default_value
+) -> ReturnType:
+    """
+    Una línea describiendo qué hace.
+    
+    Descripción más detallada si es necesario, explicando
+    el contexto, casos de uso, o consideraciones importantes.
+    
+    Args:
+        arg1: Descripción del argumento
+        arg2: Descripción del argumento opcional
+        
+    Returns:
+        Descripción del valor retornado
+        
+    Raises:
+        ErrorType: Cuándo se lanza este error
+        
+    Example:
+        >>> result = function_template(value1, value2)
+        >>> print(result)
+        expected_output
+    """
+    # Validación de inputs
+    if not validate(arg1):
+        raise ValueError(f"arg1 inválido: {arg1}")
+    
+    # Lógica principal
+    result = process(arg1, arg2)
+    
+    # Retornar
+    return result
+```
+
+### 💪 Un buen código sigue una estructura que, a la vez, es flexible
+
+**Qué significa:**
+Tener una estructura de proyecto estándar, pero adaptable según necesidades.
+
+**Estructura recomendada para DS:**
+
+```
+project_name/
+│
+├── README.md                 # Descripción del proyecto
+├── requirements.txt          # Dependencias pip
+├── environment.yml           # Dependencias conda (opcional)
+├── setup.py                  # Para instalar como paquete
+├── .gitignore               # Qué no versionar
+│
+├── data/
+│   ├── raw/                 # Datos originales (nunca modificar)
+│   ├── interim/             # Datos intermedios
+│   ├── processed/           # Datos finales para modelar
+│   └── external/            # Datos de fuentes externas
+│
+├── notebooks/              # Notebooks de Quarto
+│   ├── 01_exploratory/     # EDA inicial
+│   ├── 02_preprocessing/   # Limpieza y transformación
+│   ├── 03_modeling/        # Experimentación de modelos
+│   └── 04_evaluation/      # Análisis de resultados
+│
+├── src/                     # Código fuente (importable)
+│   ├── __init__.py
+│   ├── data/
+│   │   ├── __init__.py
+│   │   ├── load.py         # Cargar datos
+│   │   └── preprocess.py   # Preprocesar datos
+│   ├── features/
+│   │   ├── __init__.py
+│   │   └── build.py        # Feature engineering
+│   ├── models/
+│   │   ├── __init__.py
+│   │   ├── train.py        # Entrenar modelos
+│   │   ├── predict.py      # Hacer predicciones
+│   │   └── evaluate.py     # Evaluar modelos
+│   └── visualization/
+│       ├── __init__.py
+│       └── visualize.py    # Crear visualizaciones
+│
+├── models/                  # Modelos entrenados
+│   ├── model_v1.pkl
+│   └── model_v2.pkl
+│
+├── reports/                 # Análisis e informes
+│   ├── figures/            # Gráficos para informes
+│   └── final_report.pdf
+│
+├── tests/                   # Tests unitarios
+│   ├── test_data.py
+│   ├── test_features.py
+│   └── test_models.py
+│
+└── config/                  # Archivos de configuración
+    ├── config.yaml
+    └── logging.yaml
+```
+
+**Flexibilidad:**
+
+- Agregar carpetas según necesidad (ej: `api/` para API, `deployment/` para deployment)
+- No todas las carpetas son necesarias desde el inicio
+- Adaptar a la naturaleza del proyecto
+
+### 💰 Un buen código genera valor a la empresa
+
+**Qué significa:**
+El código no solo funciona técnicamente, sino que resuelve problemas de negocio efectivamente.
+
+**Consideraciones:**
+
+**1. Enfocarse en el problema real**
+```python
+# ❌ Optimizar métrica técnica sin considerar negocio
+model = optimize_for_accuracy(X, y)  # 95% accuracy!
+
+# ✅ Optimizar para valor de negocio
+model = optimize_for_business_value(
+    X, y,
+    cost_false_positive=50,   # Costo de molestar cliente innecesariamente
+    cost_false_negative=500,  # Costo de perder cliente que se va
+)
+```
+
+**2. Interpretabilidad cuando importa**
+```python
+# A veces modelo simple > modelo complejo
+# Si stakeholders necesitan entender decisiones
+
+# Modelo complejo: 92% accuracy, caja negra
+xgb_model = XGBoostClassifier(...)
+
+# Modelo simple: 88% accuracy, interpretable
+logreg_model = LogisticRegression(...)
+
+# Si la diferencia no justifica la pérdida de interpretabilidad,
+# elegir el modelo simple
+```
+
+**3. Monitoreo de impacto**
+```python
+def track_model_impact(predictions, actual_outcomes, business_metrics):
+    """
+    Trackea no solo accuracy, sino impacto en negocio.
+    
+    Args:
+        predictions: Predicciones del modelo
+        actual_outcomes: Outcomes reales
+        business_metrics: Métricas de negocio (revenue, churn rate, etc.)
+    """
+    # Accuracy técnico
+    accuracy = calculate_accuracy(predictions, actual_outcomes)
+    
+    # Impacto en negocio
+    revenue_impact = calculate_revenue_impact(predictions, actual_outcomes)
+    customers_saved = calculate_customers_saved(predictions, actual_outcomes)
+    
+    # Reportar ambos
+    return {
+        'accuracy': accuracy,
+        'revenue_impact': revenue_impact,
+        'customers_saved': customers_saved
+    }
+```
+
+### ⏲️ Un buen código toma tiempo
+
+**Qué significa:**
+Código de calidad requiere inversión de tiempo inicial, pero se paga multiplicado a largo plazo.
+
+**Realidad:**
+
+- Escribir código limpio toma 20-30% más tiempo inicialmente
+- Pero ahorra 5-10x ese tiempo en mantenimiento y debugging
+- Es una inversión, no un costo
+
+
+Exploración inicial: OK ser rápido y sucio
+notebook_exploracion.ipynb - puede ser desordenado. No es necesario usar Jupyter Notebook para explorar. Es mejor explorar usando scripts o si de verdad quieren usar notebooks, usen notebooks de Quarto.
+
+## Técnicas Esenciales
+
+Estas son técnicas que **TODO** científico de datos debe dominar desde el inicio.
+
+### 1. Usar una Estructura de Carpetas y Scripts
+
+Ya cubierto en el principio de estructura. **Siempre** usar una estructura consistente.
+
+**Mínimo viable:**
+```
+proyecto/
+├── README.md
+├── requirements.txt
+├── data/
+├── src/
+└── tests/
+```
+
+### 2. Usar Nombres Descriptivos para Variables
+
+**Principio:** El nombre debe revelar la intención.
+
+**Reglas:**
+
+**Variables:**
+```python
+# ❌ Malo
+x = 42
+data = load_data()
+df2 = df.copy()
+temp = calculate(value)
+
+# ✅ Bueno
+customer_age = 42
+customer_transactions = load_customer_data()
+customers_with_high_churn = customers.copy()
+monthly_revenue = calculate_revenue(transactions)
+```
+
+**Funciones:**
+```python
+# ❌ Malo
+def proc(d):
+    pass
+
+def f2(x, y):
+    pass
+
+# ✅ Bueno
+def preprocess_customer_data(customer_dataframe):
+    pass
+
+def calculate_customer_lifetime_value(monthly_revenue, retention_months):
+    pass
+```
+
+**Clases:**
+```python
+# ❌ Malo
+class DM:
+    pass
+
+# ✅ Bueno
+class ChurnPredictionModel:
+    pass
+
+class CustomerSegmentationPipeline:
+    pass
+```
+
+**Constantes:**
+```python
+# ✅ MAYÚSCULAS para constantes
+MAX_ITERATIONS = 1000
+RANDOM_SEED = 42
+DEFAULT_MODEL_PATH = 'models/default.pkl'
+FEATURE_COLUMNS = ['age', 'tenure', 'monthly_charges']
+```
+
+**Loops:**
+```python
+# ❌ Críptico
+for i in range(len(customers)):
+    process(customers[i])
+
+# ✅ Descriptivo
+for customer in customers:
+    process(customer)
+
+# ✅ Con índice si es necesario
+for customer_index, customer in enumerate(customers):
+    print(f"Processing customer {customer_index}: {customer.name}")
+```
+
+### 3. Comentar los Códigos
+
+**Principio:** Los comentarios explican **POR QUÉ**, no **QUÉ**.
+
+**❌ Comentarios malos:**
+```python
+# Incrementar i en 1
+i = i + 1
+
+# Crear DataFrame
+df = pd.DataFrame(data)
+
+# Loop sobre filas
+for row in df.iterrows():
+    pass
+```
+
+**✅ Comentarios buenos:**
+```python
+# Incrementar por 1 porque el índice de dataset empieza en 1, no 0
+i = i + 1
+
+# Convertir a DataFrame para facilitar operaciones vectorizadas
+# y mejorar performance en 10x comparado con listas
+df = pd.DataFrame(data)
+
+# WARNING: iterrows() es lento, pero necesario aquí porque cada
+# fila requiere una llamada API individual que no puede vectorizarse
+for row in df.iterrows():
+    api_call(row)
+```
+
+**Comentarios útiles:**
+
+**1. Explicar decisiones no obvias**
+```python
+# Usamos MedianImputer en lugar de MeanImputer porque
+# los datos tienen outliers extremos que sesgarían la media
+imputer = MedianImputer()
+```
+
+**2. Advertencias importantes**
+```python
+# WARNING: Esta operación carga todos los datos en memoria.
+# No usar con datasets > 10GB
+df = pd.read_csv('data.csv')
+```
+
+**3. TODOs y FIXMEs**
+```python
+# TODO: Optimizar este loop, actualmente toma 2 horas
+# FIXME: Maneja incorrectamente valores NaN negativos
+# HACK: Workaround temporal hasta que se arregle bug en librería
+```
+
+**4. Referencias y contexto**
+```python
+# Implementación basada en paper:
+# "Deep Learning for Churn Prediction" (Smith et al., 2023)
+# https://arxiv.org/abs/2023.12345
+
+# Threshold seleccionado en base a análisis de negocio
+# Ver notebook: notebooks/03_threshold_analysis.qmd
+CHURN_THRESHOLD = 0.65
+```
+
+### 4. Hacer Buen Uso de las Funciones
+
+**Principios:**
+
+**Una función hace una cosa**
+```python
+# ❌ Función que hace demasiado
+def process_and_train_and_evaluate(data):
+    # Limpia datos
+    data_clean = clean(data)
+    # Crea features
+    features = create_features(data_clean)
+    # Entrena modelo
+    model = train(features)
+    # Evalúa modelo
+    metrics = evaluate(model)
+    # Guarda modelo
+    save(model)
+    return metrics
+
+# ✅ Funciones enfocadas
+def clean_data(data):
+    """Limpia datos."""
+    pass
+
+def create_features(data):
+    """Crea features para modelar."""
+    pass
+
+def train_model(features):
+    """Entrena modelo."""
+    pass
+
+def evaluate_model(model, test_data):
+    """Evalúa modelo."""
+    pass
+```
+
+**Funciones cortas**
+```python
+# Regla general: < 50 líneas
+# Si es más largo, probablemente hace demasiadas cosas
+```
+
+**Niveles de abstracción consistentes**
+```python
+def process_customers(customers):
+    """Procesa lista de clientes."""
+    # Todas estas operaciones están al mismo nivel de abstracción
+    validated_customers = validate_customers(customers)
+    enriched_customers = enrich_with_external_data(validated_customers)
+    segmented_customers = segment_customers(enriched_customers)
+    return segmented_customers
+
+# No mezclar niveles:
+def process_customers_bad(customers):
+    """Procesa clientes - mezcla niveles."""
+    validated = validate_customers(customers)
+    
+    # ❌ Aquí de repente bajamos a nivel de implementación
+    for c in validated:
+        c['segment'] = 'high' if c['value'] > 1000 else 'low'
+    
+    return validated
+```
+
+**Parámetros con defaults sensatos**
+```python
+def train_random_forest(
+    X,
+    y,
+    n_estimators: int = 100,  # Mejor default que 10
+    max_depth: Optional[int] = None,
+    random_state: int = 42,   # Siempre default para reproducibilidad
+    min_samples_split: int = 2,
+    **kwargs
+):
+    """Entrena Random Forest con buenos defaults."""
+    pass
+```
+
+### 5. Modularizar los Proyectos
+
+**Qué significa:**
+Dividir el código en módulos independientes y reutilizables.
+
+**Estructura modular:**
+```
+src/
+├── __init__.py
+├── data/
+│   ├── __init__.py
+│   ├── loaders.py        # Funciones para cargar datos
+│   ├── validators.py     # Validación de datos
+│   └── preprocessors.py  # Preprocesamiento
+├── features/
+│   ├── __init__.py
+│   ├── engineering.py    # Feature engineering
+│   └── selection.py      # Feature selection
+├── models/
+│   ├── __init__.py
+│   ├── base.py          # Clase base para modelos
+│   ├── classifiers.py   # Modelos de clasificación
+│   └── regressors.py    # Modelos de regresión
+└── utils/
+    ├── __init__.py
+    ├── metrics.py       # Métricas custom
+    └── plotting.py      # Funciones de visualización
+```
+
+**Cada módulo es importable:**
+```python
+# En notebook o script
+from src.data.loaders import load_customer_data
+from src.features.engineering import create_time_features
+from src.models.classifiers import train_churn_model
+
+# Usar
+data = load_customer_data('data/raw/customers.csv')
+features = create_time_features(data)
+model = train_churn_model(features, labels)
+```
+
+**Ventajas:**
+
+- Código reutilizable
+- Fácil de testear
+- Fácil de mantener
+- Separación de responsabilidades
+
+### 6. Saber Cuándo Ocupar Scripts o Notebooks
+
+No es necesario usar Notebooks a menos de que en verdad quieras mezclar markdown con código para algún reporte. Cuando quieren hacer un reporte, algo usual es:
+
+**Notebooks para:**
+
+- Exploración inicial de datos
+- Prototipado rápido
+- Visualizaciones interactivas
+- Comunicar análisis (con narrativa)
+- Enseñar o documentar proceso
+
+**Scripts (.py) para:**
+
+- Código de producción
+- Pipelines automatizados
+- Funciones reutilizables
+- Testing
+- Deployment
+
+**Flujo típico:**
+```
+1. Explorar en notebook (exploracion.qmd)
+2. Identificar qué funciona
+3. Refactorizar a scripts (src/models/model.py)
+4. Importar en notebook limpio (analisis_final.qmd)
+5. Desplegar scripts (no notebooks)
+```
+
+**Notebook limpio:**
+```python
+# analisis_final.qmd
+
+# Imports de módulos propios
+from src.data.loaders import load_data
+from src.features.engineering import create_features
+from src.models.train import train_model
+from src.models.evaluate import evaluate_model
+
+# Pipeline claro y conciso
+data = load_data('data/raw/customers.csv')
+features = create_features(data)
+model = train_model(features['X'], features['y'])
+results = evaluate_model(model, test_data)
+
+# Visualización y narrativa
+plot_results(results)
+```
+
+### 7. Conocer los Distintos Usos de los IDEs
+
+**IDE** = Integrated Development Environment
+
+**Opciones populares para DS:**
+
+**Jupyter Lab/Notebook:**
+
+- Exploración interactiva
+- Visualizaciones inline
+- Narrativa con Markdown
+
+**VS Code:**
+
+- Editor general purpose
+- Excelente para scripts Python
+- Debugging potente
+- Extensions para todo
+
+**PyCharm:**
+
+- IDE completo para Python
+- Refactoring tools potentes
+- Debugging avanzado
+- Más pesado que VS Code
+
+**Google Colab:**
+
+- Jupyter en la nube
+- GPUs gratis
+- Colaboración fácil
+
+**Recomendación para el curso:**
+
+- **Exploración**: Jupyter Lab o Google Colab
+- **Código de producción**: VS Code
+- Aprender ambos entornos
+
+## Técnicas Básicas
+
+Estas técnicas no son obligatorias desde el inicio, pero deberían incorporarse progresivamente.
+
+### Type Hints
+
+**Qué son:**
+Anotaciones de tipo que indican qué tipos de datos se esperan y retornan.
+
+**Ventajas:**
+
+- Código más claro y autodocumentado
+- IDEs pueden dar mejor autocompletado
+- Detectar errores antes de ejecutar (con mypy)
+- Facilita refactoring
+
+**Ejemplos:**
+```python
+# Sin type hints
+def calculate_total(prices, tax_rate):
+    return sum(prices) * (1 + tax_rate)
+
+# Con type hints
+from typing import List
+
+def calculate_total(prices: List[float], tax_rate: float) -> float:
+    """Calcula total con impuestos."""
+    return sum(prices) * (1 + tax_rate)
+```
+
+**Types comunes en DS:**
+```python
+from typing import List, Dict, Tuple, Optional, Union, Any
+import pandas as pd
+import numpy as np
+
+def process_data(
+    df: pd.DataFrame,
+    columns: List[str],
+    threshold: Optional[float] = None
+) -> Tuple[pd.DataFrame, Dict[str, float]]:
+    """
+    Procesa DataFrame y retorna resultado y métricas.
+    
+    Args:
+        df: DataFrame a procesar
+        columns: Columnas a incluir
+        threshold: Threshold opcional para filtrado
+        
+    Returns:
+        Tuple de (DataFrame procesado, dict de métricas)
+    """
+    pass
+
+def train_model(
+    X: Union[pd.DataFrame, np.ndarray],
+    y: Union[pd.Series, np.ndarray]
+) -> Any:
+    """Union permite múltiples tipos."""
+    pass
+```
+
+**No abusar:**
+```python
+# ❌ Demasiado complejo
+from typing import Dict, List, Tuple, Optional, Union, Callable
+
+def complex_function(
+    data: Dict[str, List[Tuple[int, Optional[float]]]],
+    processor: Callable[[Union[int, float]], str]
+) -> List[Dict[str, Union[str, int, float]]]:
+    pass
+
+# ✅ Simplificar o usar TypeAlias
+from typing import TypeAlias
+
+ProcessedRow: TypeAlias = Dict[str, Union[str, int, float]]
+
+def simpler_function(
+    data: Dict[str, List],
+    processor: Callable
+) -> List[ProcessedRow]:
+    pass
+```
+
+### Docstrings
+
+**Formatos populares:**
+
+**Google Style (recomendado para simplicidad):**
+```python
+def calculate_churn_probability(
+    customer_features: pd.DataFrame,
+    model_path: str = 'models/default.pkl'
+) -> np.ndarray:
+    """
+    Calcula probabilidad de churn para clientes.
+    
+    Esta función carga un modelo entrenado y lo usa para predecir
+    la probabilidad de que cada cliente abandone el servicio.
+    
+    Args:
+        customer_features: DataFrame con features de clientes.
+            Debe contener columnas: ['tenure', 'monthly_charges', 'total_charges']
+        model_path: Path al modelo serializado. Default es modelo production.
+        
+    Returns:
+        Array numpy con probabilidades de churn (0-1) para cada cliente.
+        
+    Raises:
+        FileNotFoundError: Si model_path no existe.
+        ValueError: Si faltan columnas requeridas en customer_features.
+        
+    Example:
+        >>> features = pd.DataFrame({
+        ...     'tenure': [12, 24],
+        ...     'monthly_charges': [50.0, 80.0],
+        ...     'total_charges': [600.0, 1920.0]
+        ... })
+        >>> probs = calculate_churn_probability(features)
+        >>> print(probs)
+        array([0.23, 0.15])
+    """
+    pass
+```
+
+**NumPy Style (común en código científico):**
+```python
+def preprocess_timeseries(
+    data: pd.DataFrame,
+    window_size: int = 7,
+    method: str = 'rolling_mean'
+) -> pd.DataFrame:
+    """
+    Preprocesa series de tiempo con ventanas móviles.
+    
+    Aplica transformaciones de ventanas móviles para suavizar
+    series de tiempo y extraer features temporales.
+    
+    Parameters
+    ----------
+    data : pd.DataFrame
+        DataFrame con series de tiempo. Debe tener DatetimeIndex.
+    window_size : int, optional
+        Tamaño de ventana en días (default: 7)
+    method : {'rolling_mean', 'rolling_std', 'ewma'}, optional
+        Método de agregación (default: 'rolling_mean')
+        
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame con features agregadas añadidas.
+        
+    Raises
+    ------
+    ValueError
+        Si method no es válido o data no tiene DatetimeIndex.
+        
+    See Also
+    --------
+    pandas.DataFrame.rolling : Documentación de rolling windows
+    
+    Examples
+    --------
+    >>> dates = pd.date_range('2023-01-01', periods=10)
+    >>> df = pd.DataFrame({'value': range(10)}, index=dates)
+    >>> result = preprocess_timeseries(df, window_size=3)
+    """
+    pass
+```
+
+**Cuándo documentar:**
+
+- **Siempre**: Funciones públicas (las que se importan)
+- **Usualmente**: Funciones privadas complejas
+- **Opcional**: Funciones privadas simples y obvias
+
+### Logging
+
+**Por qué no usar `print()`:**
+```python
+# ❌ Print para debugging
+def train_model(X, y):
+    print("Starting training...")
+    print(f"X shape: {X.shape}")
+    model = RandomForestClassifier()
+    model.fit(X, y)
+    print("Training complete!")
+    return model
+
+# Problemas:
+# - No puedes desactivarlo sin modificar código
+# - No puedes controlar nivel de detalle
+# - No puedes redirigir a archivo
+# - Mezcla info con output real del programa
+```
+
+**✅ Usar logging:**
+```python
+import logging
+
+# Configurar logger
+logger = logging.getLogger(__name__)
+
+def train_model(X, y):
+    logger.info("Starting model training")
+    logger.debug(f"X shape: {X.shape}, y shape: {y.shape}")
+    
+    model = RandomForestClassifier()
+    
+    try:
+        model.fit(X, y)
+        logger.info("Training completed successfully")
+    except Exception as e:
+        logger.error(f"Training failed: {e}")
+        raise
+    
+    return model
+```
+
+**Configuración típica:**
+```python
+# config/logging_config.py
+import logging
+
+def setup_logging(level=logging.INFO):
+    """Configura logging para el proyecto."""
+    
+    # Formato
+    formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
+    
+    # Console handler
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(formatter)
+    
+    # File handler
+    file_handler = logging.FileHandler('logs/application.log')
+    file_handler.setFormatter(formatter)
+    
+    # Root logger
+    root_logger = logging.getLogger()
+    root_logger.setLevel(level)
+    root_logger.addHandler(console_handler)
+    root_logger.addHandler(file_handler)
+
+# En main script
+from config.logging_config import setup_logging
+setup_logging(level=logging.INFO)
+```
+
+**Niveles de logging:**
+```python
+# DEBUG: Información detallada para diagnóstico
+logger.debug(f"Processing customer_id: {customer_id}")
+
+# INFO: Confirmación que cosas funcionan como esperado
+logger.info("Model training completed successfully")
+
+# WARNING: Algo inesperado pero no crítico
+logger.warning(f"Missing data for customer {customer_id}, using default")
+
+# ERROR: Error serio, función no se completó
+logger.error(f"Failed to load model from {model_path}")
+
+# CRITICAL: Error muy serio, programa podría no continuar
+logger.critical("Database connection failed, cannot proceed")
+```
+
+### Testing Básico
+
+**Por qué testear:**
+
+- Verificar que el código hace lo que debe
+- Detectar bugs tempranamente
+- Facilitar refactoring con confianza
+- Documentar comportamiento esperado
+
+**Estructura de tests:**
+```
+tests/
+├── __init__.py
+├── test_data.py          # Tests para módulo data
+├── test_features.py      # Tests para features
+└── test_models.py        # Tests para models
+```
+
+**Ejemplo con pytest:**
+```python
+# src/features/engineering.py
+def create_age_groups(ages: pd.Series) -> pd.Series:
+    """Crea grupos de edad."""
+    return pd.cut(
+        ages,
+        bins=[0, 18, 35, 50, 65, 100],
+        labels=['<18', '18-35', '36-50', '51-65', '65+']
+    )
+
+# tests/test_features.py
+import pytest
+import pandas as pd
+from src.features.engineering import create_age_groups
+
+def test_create_age_groups_basic():
+    """Test caso básico."""
+    ages = pd.Series([10, 25, 40, 55, 70])
+    result = create_age_groups(ages)
+    expected = pd.Categorical(
+        ['<18', '18-35', '36-50', '51-65', '65+'],
+        categories=['<18', '18-35', '36-50', '51-65', '65+'],
+        ordered=False
+    )
+    pd.testing.assert_series_equal(result, expected)
+
+def test_create_age_groups_edge_cases():
+    """Test casos límite."""
+    ages = pd.Series([0, 18, 35, 50, 65, 100])
+    result = create_age_groups(ages)
+    # Verificar que maneja límites correctamente
+    assert result[0] == '<18'
+    assert result[1] == '18-35'
+
+def test_create_age_groups_with_nulls():
+    """Test con valores nulos."""
+    ages = pd.Series([25, None, 40])
+    result = create_age_groups(ages)
+    assert pd.isna(result[1])
+    assert result[0] == '18-35'
+```
+
+**Ejecutar tests:**
+```bash
+# Instalar pytest
+pip install pytest
+
+# Correr todos los tests
+pytest
+
+# Correr tests específicos
+pytest tests/test_features.py
+
+# Con coverage
+pip install pytest-cov
+pytest --cov=src tests/
+```
+
+**Tipos de tests en DS:**
+
+**1. Tests de funciones utilitarias:**
+```python
+def test_remove_outliers():
+    data = pd.Series([1, 2, 3, 100, 4, 5])
+    result = remove_outliers(data, method='iqr')
+    assert 100 not in result.values
+```
+
+**2. Tests de transformaciones de datos:**
+```python
+def test_preprocess_text():
+    text = "Hello, World! 123"
+    result = preprocess_text(text)
+    assert result == "hello world"
+```
+
+**3. Tests de validación:**
+```python
+def test_validate_dataframe_raises_on_missing_columns():
+    df = pd.DataFrame({'a': [1, 2]})
+    required = ['a', 'b']
+    with pytest.raises(ValueError):
+        validate_dataframe(df, required)
+```
+
+**4. Tests de modelos (smoke tests):**
+```python
+def test_model_can_train():
+    """Verifica que modelo puede entrenar sin errores."""
+    X = np.random.rand(100, 10)
+    y = np.random.randint(0, 2, 100)
+    
+    model = train_churn_model(X, y)
+    
+    assert model is not None
+    assert hasattr(model, 'predict')
+```
+
+### Linting y Formateo
+
+**Herramientas:**
+
+**Black - Formateo automático:**
+```bash
+# Instalar
+pip install black
+
+# Formatear archivo
+black src/models/train.py
+
+# Formatear todo el proyecto
+black src/
+
+# Check sin modificar
+black --check src/
+```
+
+**Flake8 - Linting:**
+```bash
+# Instalar
+pip install flake8
+
+# Lint archivo
+flake8 src/models/train.py
+
+# Configuración en setup.cfg
+[flake8]
+max-line-length = 88
+extend-ignore = E203, W503
+exclude = .git,__pycache__,venv
+```
+
+**Pylint - Linting avanzado:**
+```bash
+# Instalar
+pip install pylint
+
+# Lint con score
+pylint src/models/train.py
+
+# Menos estricto
+pylint --disable=C0111,R0913 src/
+```
+
+**isort - Ordenar imports:**
+```bash
+# Instalar
+pip install isort
+
+# Ordenar imports
+isort src/
+
+# Configuración compatible con Black
+[tool.isort]
+profile = "black"
+```
+
+**Pre-commit hooks (automatizar):**
+```yaml
+# .pre-commit-config.yaml
+repos:
+
+  - repo: https://github.com/psf/black
+    rev: 23.3.0
+    hooks:
+
+      - id: black
+        language_version: python3.10
+
+  - repo: https://github.com/pycqa/flake8
+    rev: 6.0.0
+    hooks:
+
+      - id: flake8
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+
+      - id: isort
+```
+
+```bash
+# Instalar pre-commit
+pip install pre-commit
+
+# Setup hooks
+pre-commit install
+
+# Ahora se ejecuta automáticamente antes de cada commit
+```
+
+## Técnicas Avanzadas
+
+Estas técnicas son opcionales pero muy valiosas para proyectos más complejos.
+
+### Design Patterns
+
+**1. Factory Pattern**
+```python
+# Crear objetos sin especificar clase exacta
+class ModelFactory:
+    """Factory para crear modelos."""
+    
+    @staticmethod
+    def create_model(model_type: str, **kwargs):
+        if model_type == 'random_forest':
+            return RandomForestClassifier(**kwargs)
+        elif model_type == 'xgboost':
+            return XGBClassifier(**kwargs)
+        elif model_type == 'logistic':
+            return LogisticRegression(**kwargs)
+        else:
+            raise ValueError(f"Unknown model type: {model_type}")
+
+# Uso
+model = ModelFactory.create_model('random_forest', n_estimators=100)
+```
+
+**2. Strategy Pattern**
+```python
+# Algoritmos intercambiables
+from abc import ABC, abstractmethod
+
+class ImputationStrategy(ABC):
+    """Estrategia base para imputación."""
+    
+    @abstractmethod
+    def impute(self, data: pd.Series) -> pd.Series:
+        pass
+
+class MeanImputation(ImputationStrategy):
+    def impute(self, data: pd.Series) -> pd.Series:
+        return data.fillna(data.mean())
+
+class MedianImputation(ImputationStrategy):
+    def impute(self, data: pd.Series) -> pd.Series:
+        return data.fillna(data.median())
+
+class Imputer:
+    """Contexto que usa estrategia."""
+    
+    def __init__(self, strategy: ImputationStrategy):
+        self.strategy = strategy
+    
+    def impute_column(self, data: pd.Series) -> pd.Series:
+        return self.strategy.impute(data)
+
+# Uso
+imputer = Imputer(MedianImputation())
+clean_data = imputer.impute_column(dirty_data)
+```
+
+**3. Pipeline Pattern**
+```python
+# Encadenar transformaciones
+class TransformationPipeline:
+    """Pipeline de transformaciones."""
+    
+    def __init__(self):
+        self.steps = []
+    
+    def add_step(self, name: str, transform_func):
+        self.steps.append((name, transform_func))
+        return self  # Para chaining
+    
+    def fit_transform(self, data):
+        result = data
+        for name, func in self.steps:
+            print(f"Executing step: {name}")
+            result = func(result)
+        return result
+
+# Uso
+pipeline = (TransformationPipeline()
+    .add_step('remove_nulls', lambda df: df.dropna())
+    .add_step('normalize', lambda df: (df - df.mean()) / df.std())
+    .add_step('filter_outliers', remove_outliers)
+)
+
+processed_data = pipeline.fit_transform(raw_data)
+```
+
+### Context Managers
+
+**Para gestión de recursos:**
+```python
+from contextlib import contextmanager
+import time
+
+@contextmanager
+def timer(name: str):
+    """Context manager para medir tiempo."""
+    start = time.time()
+    print(f"Starting {name}...")
+    try:
+        yield
+    finally:
+        elapsed = time.time() - start
+        print(f"{name} took {elapsed:.2f} seconds")
+
+# Uso
+with timer("model training"):
+    model.fit(X, y)
+
+with timer("data loading"):
+    df = pd.read_csv('large_file.csv')
+```
+
+**Para logging temporal:**
+```python
+@contextmanager
+def temporary_log_level(level):
+    """Cambia nivel de logging temporalmente."""
+    logger = logging.getLogger()
+    old_level = logger.level
+    logger.setLevel(level)
+    try:
+        yield
+    finally:
+        logger.setLevel(old_level)
+
+# Uso
+with temporary_log_level(logging.DEBUG):
+    # Aquí se loggea con DEBUG
+    debug_complex_function()
+# Afuera vuelve al nivel anterior
+```
+
+### Decorators
+
+**Para funcionalidad repetitiva:**
+```python
+from functools import wraps
+import time
+
+def timing_decorator(func):
+    """Decorator para medir tiempo de ejecución."""
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        result = func(*args, **kwargs)
+        elapsed = time.time() - start
+        print(f"{func.__name__} took {elapsed:.2f} seconds")
+        return result
+    return wrapper
+
+@timing_decorator
+def train_model(X, y):
+    model = RandomForestClassifier()
+    model.fit(X, y)
+    return model
+
+# Automáticamente mide tiempo cuando se llama
+model = train_model(X, y)
+```
+
+**Para memoization:**
+```python
+from functools import lru_cache
+
+@lru_cache(maxsize=128)
+def expensive_feature_calculation(customer_id: int) -> float:
+    """Calcula feature costoso, cachea resultado."""
+    # Operación costosa...
+    return result
+
+# Primera llamada: ejecuta y cachea
+result1 = expensive_feature_calculation(123)
+
+# Segunda llamada: retorna desde cache
+result2 = expensive_feature_calculation(123)  # Instantáneo
+```
+
+### Configuration Management
+
+**Usando archivos YAML:**
+```yaml
+# config/config.yaml
+data:
+  train_path: data/processed/train.csv
+  test_path: data/processed/test.csv
+  features:
+
+    - age
+    - tenure
+    - monthly_charges
+
+model:
+  type: random_forest
+  params:
+    n_estimators: 100
+    max_depth: 10
+    random_state: 42
+
+training:
+  test_size: 0.2
+  cv_folds: 5
+  
+logging:
+  level: INFO
+  file: logs/training.log
+```
+
+```python
+# src/utils/config.py
+import yaml
+from pathlib import Path
+
+class Config:
+    """Configuración del proyecto."""
+    
+    def __init__(self, config_path: str = 'config/config.yaml'):
+        self.config_path = Path(config_path)
+        self._config = self._load_config()
+    
+    def _load_config(self) -> dict:
+        with open(self.config_path) as f:
+            return yaml.safe_load(f)
+    
+    def get(self, key_path: str, default=None):
+        """
+        Obtiene valor usando dot notation.
+        
+        Example:
+            >>> config = Config()
+            >>> config.get('model.params.n_estimators')
+            100
+        """
+        keys = key_path.split('.')
+        value = self._config
+        for key in keys:
+            if isinstance(value, dict):
+                value = value.get(key, default)
+            else:
+                return default
+        return value
+
+# Uso
+config = Config()
+train_path = config.get('data.train_path')
+n_estimators = config.get('model.params.n_estimators')
+```
+
+### Property-based Testing
+
+**Con hypothesis:**
+```python
+from hypothesis import given, strategies as st
+import pandas as pd
+
+@given(st.lists(st.integers(min_value=0, max_value=100), min_size=1))
+def test_remove_duplicates_preserves_order(values):
+    """Test que remove_duplicates mantiene orden."""
+    series = pd.Series(values)
+    result = remove_duplicates(series)
+    
+    # Property: orden relativo se mantiene
+    seen = set()
+    for val in result:
+        if val in seen:
+            assert False, "Duplicate found"
+        seen.add(val)
+    
+    # Property: todos los valores únicos están presentes
+    assert set(result) == set(values)
+```
+
+## Conclusiones
+
+### Lecciones Clave
+
+**Principios fundamentales:**
+1. El código comunica intención
+2. Simple > Complejo
+3. Consistencia > Perfección individual
+4. La calidad se paga con creces a largo plazo
+
+**Técnicas esenciales (dominar YA):**
+
+- Estructura de proyecto clara
+- Nombres descriptivos
+- Comentarios útiles
+- Funciones enfocadas
+- Modularización
+- Git obligatorio
+
+**Técnicas básicas (incorporar gradualmente):**
+
+- Type hints
+- Docstrings
+- Logging
+- Testing básico
+- Linting/formateo
+
+**Técnicas avanzadas (cuando sea necesario):**
+
+- Design patterns
+- Context managers
+- Decorators
+- Config management
+- Property testing
+
+### Para el Curso
+
+::: {.callout-tip}
+## Enfoque Pragmático
+
+**Hito 1-2: Exploración**
+
+- Notebooks pueden ser desordenados
+- Enfoque en descubrimiento
+
+**Hito 3: Refactorización**
+
+- Convertir código a módulos
+- Agregar estructura
+- Tests básicos
+
+**Hito 4: Calidad**
+
+- Código limpio y documentado
+- Notebooks pulidos
+- Listo para evaluación y demo
+:::
+
+### Balance Calidad vs. Velocidad
+
+```
+Fase de Exploración:
+└─ Velocidad > Calidad (pero no código basura)
+
+Fase de Implementación:
+└─ Balance Velocidad ≈ Calidad
+
+Fase de Entrega:
+└─ Calidad > Velocidad
+```
+
+### Cultura de Código en el Equipo
+
+**Establecer desde el inicio:**
+1. Style guide acordado (ej: seguir Black)
+2. Estructura de proyecto estándar
+3. Git workflow (branches, PRs, reviews)
+4. Definition of Done para código
+5. Tiempo para refactoring en planning
+
+**Mantener durante el proyecto:**
+
+- Code reviews constructivas
+- Pair programming cuando apropiado
+- Refactoring continuo
+- Retrospectivas de código
+
+## Recursos Adicionales
+
+### Libros
+
+1. **"Clean Code"** - Robert C. Martin
+
+   - Biblia del código limpio
+   
+2. **"The Pragmatic Programmer"** - Hunt & Thomas
+
+   - Prácticas de desarrollo profesional
+
+3. **"Refactoring"** - Martin Fowler
+
+   - Cómo mejorar código existente
+
+4. **"Python for Data Analysis"** - Wes McKinney
+
+   - Best practices para análisis de datos
+
+### Online
+
+- [PEP 8 - Style Guide for Python Code](https://pep8.org/)
+- [Google Python Style Guide](https://google.github.io/styleguide/pyguide.html)
+- [Real Python](https://realpython.com/) - Tutoriales excelentes
+- [Python Testing with pytest](https://pragprog.com/titles/bopytest/)
+
+### Tools Documentation
+
+- [Black Documentation](https://black.readthedocs.io/)
+- [pytest Documentation](https://docs.pytest.org/)
+- [mypy Documentation](https://mypy.readthedocs.io/)
+- [pre-commit](https://pre-commit.com/)
+
+## Ejercicios Prácticos
+
+**Para practicar estas técnicas:**
+
+1. **Refactoring exercise**: Toma un notebook desordenado y conviértelo a módulos limpios
+
+2. **Testing exercise**: Escribe tests para funciones de preprocesamiento
+
+3. **Code review**: Revisa código de compañeros con checklist
+
+4. **Style consistency**: Setup Black + Flake8 + pre-commit en tu proyecto
+
+5. **Documentation**: Escribe docstrings para módulo completo
+
+## Próximos Pasos
+
+Con estos capítulos completos, tienes las bases para:
+
+- Gestionar proyectos de DS efectivamente (metodologías)
+- Coordinar el equipo (herramientas)
+- Escribir código de calidad (programación)
+
+En tu proyecto del curso:
+1. Establecer estructura y herramientas (Semana 1)
+2. Explorar con libertad pero documentando (Hitos 1-2)
+3. Refactorizar y limpiar (Hito 3)
+4. Entregar código de calidad (Hito 4)
+
+¡Éxito en tu proyecto!

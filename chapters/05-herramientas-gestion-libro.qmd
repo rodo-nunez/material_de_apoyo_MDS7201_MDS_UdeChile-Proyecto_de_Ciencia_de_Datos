@@ -1,0 +1,1038 @@
+# Herramientas de Gestión de Proyectos
+
+## Introducción
+
+Las metodologías ágiles proveen el marco conceptual para trabajar efectivamente en equipo. Pero para implementar estas metodologías en la práctica, necesitamos **herramientas** que faciliten la coordinación, comunicación y seguimiento del trabajo.
+
+En este capítulo exploraremos las principales herramientas para gestión de proyectos de Data Science, desde tableros Kanban simples hasta sistemas complejos de gestión, pasando por herramientas esenciales como control de versiones.
+
+::: {.callout-note}
+## Principio Fundamental
+Las herramientas deben **servir al equipo**, no al revés. Una herramienta compleja que nadie usa es peor que un simple documento compartido que todos mantienen actualizado.
+:::
+
+## Tipos de Herramientas
+
+Las herramientas para proyectos de DS se pueden categorizar en:
+
+1. **Gestión de tareas**: Kanban boards, listas de pendientes
+2. **Comunicación**: Mensajería, videollamadas
+3. **Documentación**: Wikis, documentos compartidos
+4. **Control de versiones**: Git, DVC
+5. **Coordinación**: Calendarios, scheduling
+6. **Especializadas para DS**: Experiment tracking, MLOps
+
+## Herramientas de Gestión de Tareas
+
+### Carta Gantt (Waterfall)
+
+**Qué es:**
+Diagrama de barras que muestra el cronograma del proyecto, con tareas representadas como barras horizontales a lo largo del tiempo.
+
+**Características:**
+
+- Visualiza dependencias entre tareas
+- Muestra ruta crítica
+- Calendario específico con fechas
+- Típicamente usado en Waterfall
+
+**Ejemplo de Carta Gantt:**
+```
+Tarea                    Sem1  Sem2  Sem3  Sem4  Sem5  Sem6
+├─ Análisis Exploratorio [████]
+├─ Limpieza de Datos           [████]
+├─ Feature Engineering               [████]
+├─ Modelo Baseline                         [████]
+├─ Modelo Avanzado                               [████]
+└─ Documentación                                       [████]
+```
+
+**Ventajas:**
+
+- Visualización clara del timeline
+- Útil para proyectos con dependencias complejas
+- Bueno para comunicar a management
+- Identifica recursos sobreasignados
+
+**Desventajas:**
+
+- Muy rígido para DS exploratorio
+- Difícil de mantener actualizado
+- Asume que se conocen todas las tareas desde el inicio
+- No refleja naturaleza iterativa de DS
+
+**Cuándo usar en DS:**
+
+- Proyectos de ingeniería de datos muy estructurados
+- Cuando stakeholders requieren timeline fijo
+- Para visualizar hitos principales (no tareas detalladas)
+
+**Herramientas:**
+
+- Microsoft Project
+- Asana (vista Timeline)
+- Monday.com (vista Gantt)
+- Excel/Google Sheets (manual)
+
+::: {.callout-warning}
+## Limitación en DS
+Las Cartas Gantt funcionan mal para proyectos exploratorios de DS. Úsalas solo para hitos principales, no para tareas detalladas que cambiarán.
+:::
+
+### Trello
+
+**Qué es:**
+Herramienta de gestión visual basada en tableros Kanban. Simple, intuitiva y gratuita para uso básico.
+
+**Características principales:**
+
+- Tableros, listas y tarjetas
+- Drag & drop simple
+- Labels, due dates, checklists
+- Attachments y comments
+- Power-Ups para extensiones
+- Mobile apps
+
+**Estructura:**
+```
+Board: "Proyecto Churn Prediction"
+├─ Lista: "Backlog"
+│  ├─ Tarjeta: "Explorar variables de engagement"
+│  └─ Tarjeta: "Investigar imputación de valores faltantes"
+├─ Lista: "En Progreso (WIP: 3)"
+│  ├─ Tarjeta: "Análisis de correlaciones"
+│  └─ Tarjeta: "Feature engineering temporal"
+├─ Lista: "Review"
+│  └─ Tarjeta: "Modelo baseline logistic regression"
+└─ Lista: "Done"
+   ├─ Tarjeta: "Setup del proyecto"
+   └─ Tarjeta: "EDA inicial"
+```
+
+**Configuración recomendada para DS:**
+
+**Listas básicas:**
+
+1. Backlog
+2. To Do This Week
+3. In Progress (WIP: 2-3)
+4. Review/QA
+5. Done
+
+**Labels útiles:**
+
+- 🔴 Urgente
+- 🟡 Bloqueado
+- 🔵 Análisis
+- 🟢 Modeling
+- 🟣 Documentation
+- ⚪ Bug/Issue
+
+**Template de tarjeta:**
+```markdown
+## Descripción
+[Qué se necesita hacer]
+
+## Criterios de aceptación
+
+- [ ] Criterio 1
+- [ ] Criterio 2
+
+## Notas técnicas
+[Detalles técnicos, links, referencias]
+
+## Definition of Done
+
+- [ ] Código en Git
+- [ ] Peer reviewed
+- [ ] Documentado
+```
+
+**Ventajas:**
+
+- Muy fácil de usar
+- Gratis para equipos pequeños
+- Visual e intuitivo
+- Bueno para Kanban simple
+- Excelente mobile experience
+
+**Desventajas:**
+
+- Limitado para proyectos complejos
+- Reporting básico
+- No tiene timeboxing nativo (sprints)
+- Power-Ups requieren pago
+
+**Mejor para:**
+
+- Equipos pequeños (3-5 personas)
+- Proyectos simples a medianos
+- Kanban puro
+- Quick start sin setup complejo
+
+**Pricing (referencial al 8 de Diciembre del 2025):**
+
+- Free: 10 boards, unlimited cards
+- Standard: $5/user/mes
+- Premium: $10/user/mes
+- Enterprise: $17.50/user/mes
+
+### Notion
+
+**Qué es:**
+Workspace all-in-one que combina notes, docs, wikis, databases y project management.
+
+**Características principales:**
+
+- Bloques modulares flexibles
+- Databases con múltiples vistas
+- Wiki y documentación rica
+- Templates poderosos
+- Relaciones entre páginas
+- Colaboración en tiempo real
+
+**Configuración para DS Project:**
+
+**Estructura sugerida:**
+```
+📁 Proyecto Churn Prediction
+├─ 📊 Dashboard
+│  ├─ Project Overview
+│  ├─ Current Sprint
+│  └─ Team Calendar
+├─ 📋 Tasks Database
+│  ├─ Vista: Kanban
+│  ├─ Vista: Timeline
+│  ├─ Vista: Table
+│  └─ Vista: Calendar
+├─ 📚 Documentation
+│  ├─ Project Charter
+│  ├─ Data Dictionary
+│  ├─ Model Documentation
+│  └─ Meeting Notes
+├─ 🔬 Experiments Log
+├─ 📈 Metrics & Results
+└─ 🎯 Retrospectives
+```
+
+**Database de Tareas:**
+
+Propiedades útiles:
+
+- **Status**: Backlog / To Do / In Progress / Review / Done
+- **Priority**: High / Medium / Low
+- **Type**: Analysis / Modeling / Engineering / Documentation
+- **Assignee**: Persona responsable
+- **Due Date**: Fecha límite
+- **Sprint**: Hito 1, Hito 2, etc.
+- **Effort**: S / M / L / XL
+- **Tags**: Multi-select labels
+
+**Ventajas:**
+
+- Extremadamente flexible
+- Combina documentación y tareas
+- Múltiples vistas de misma data
+- Excelente para knowledge base
+- Templates compartibles
+- Buena experiencia mobile
+
+**Desventajas:**
+
+- Curva de aprendizaje más alta
+- Puede volverse complejo
+- Performance issues con mucha data
+- Versión free limitada
+
+**Mejor para:**
+
+- Equipos que valoran documentación
+- Proyectos que necesitan wiki interna
+- Combinar project management + knowledge base
+- Equipos que quieren flexibilidad máxima
+
+**Pricing (referencial al 8 de Diciembre del 2025):**
+
+- Free: Personal use
+- Plus: $10/user/mes (anual)
+- Business: $18/user/mes
+- Enterprise: Custom
+
+### GitHub Projects
+
+**Qué es:**
+Sistema de project management integrado directamente en GitHub, ideal para equipos que ya usan Git.
+
+**Características principales:**
+
+- Integración nativa con repos, issues y PRs
+- Tableros Kanban personalizables
+- Automation con GitHub Actions
+- Multiple views (Board, Table, Roadmap)
+- Markdown support en issues
+- Projects V2 (nuevo, más potente)
+
+**Configuración para DS:**
+
+**Setup básico:**
+
+1. Crear Project en GitHub
+2. Linkear a repositorio(s)
+3. Definir campos custom
+4. Configurar vistas
+5. Setup automation
+
+**Campos útiles:**
+
+- Status (Backlog/In Progress/Done)
+- Priority
+- Size (Story points o T-shirt)
+- Type (Feature/Bug/Research/Docs)
+- Sprint/Milestone
+- Assignees
+
+**Automatizaciones útiles:**
+```yaml
+# Auto-mover issue a "In Progress" cuando se asigna
+
+- When: Issue assigned
+  Then: Set status to "In Progress"
+
+# Auto-mover a "Done" cuando PR merged
+
+- When: Pull request merged
+  Then: Set status to "Done"
+
+# Auto-agregar label según tipo
+
+- When: Issue created with type "Bug"
+  Then: Add label "bug"
+```
+
+**Ventajas:**
+
+- Integración perfecta con código
+- Issues como tarjetas = trazabilidad
+- Gratis para repositorios públicos
+- Automation poderosa
+- Sin herramienta adicional
+
+**Desventajas:**
+
+- Requiere usar GitHub
+- Menos visual que Trello
+- UI menos pulida que herramientas especializadas
+- Limitado para non-code tasks
+
+**Mejor para:**
+
+- Equipos que ya usan GitHub
+- Proyectos open source
+- Cuando quieres trazabilidad code → task
+- Equipos técnicos
+
+**Pricing (referencial al 8 de Diciembre del 2025):**
+
+- Free: Public repos
+- Pro: $4/user/mes (private repos)
+- Team: $4/user/mes
+- Enterprise: $21/user/mes
+
+### Jira
+
+**Qué es:**
+Sistema de gestión de proyectos enterprise-grade de Atlassian, muy popular en empresas grandes.
+
+**Características principales:**
+
+- Scrum y Kanban boards
+- Backlogs y sprints
+- Reporting avanzado
+- Workflows customizables
+- Integraciones extensas
+- Confluence integration
+
+**Configuración Scrum:**
+
+- Backlogs organizados
+- Sprint planning integrado
+- Burndown charts
+- Velocity tracking
+- Epic → Story → Subtask hierarchy
+
+**Ventajas:**
+
+- Muy potente y completo
+- Excelente para Scrum
+- Reporting robusto
+- Escalable
+- Ampliamente usado en industria
+
+**Desventajas:**
+
+- Complejo y abrumador
+- Curva de aprendizaje alta
+- Caro
+- Overkill para equipos pequeños
+- UI puede ser confusa
+
+**Mejor para:**
+
+- Equipos grandes (10+)
+- Organizaciones enterprise
+- Scrum riguroso
+- Cuando se necesita reporting detallado
+
+**Pricing (referencial al 8 de Diciembre del 2025):**
+
+- Free: hasta 10 usuarios
+- Standard: $8.15/user/mes
+- Premium: $16/user/mes
+- Enterprise: Custom
+
+::: {.callout-tip}
+## Para el Curso
+Jira es probablemente **overkill** para equipos de 3-4 personas. Trello, Notion o GitHub Projects son más apropiados.
+:::
+
+### Otras Herramientas
+
+**Asana**
+
+- Similar a Trello pero más potente
+- Múltiples vistas (List, Board, Timeline, Calendar)
+- Bueno para proyectos medianos
+- $10.99/user/mes
+
+**Monday.com**
+
+- Muy visual y customizable
+- Excelente automations
+- Multiple workspaces y boards
+- Más caro: desde $8/user/mes
+
+**ClickUp**
+
+- "Todo en uno" - muy feature-rich
+- Docs, tasks, goals, time tracking
+- Puede ser abrumador
+- Free tier generoso
+
+**Microsoft Planner**
+
+- Incluido en Microsoft 365
+- Simple Kanban boards
+- Integración con Teams
+- Limitado comparado a otros
+
+**Linear**
+
+- Moderno, rápido, enfocado en devs
+- Excelente UX
+- Issue tracking potente
+- $8/user/mes
+
+## Comparación de Herramientas
+
+| Herramienta | Complejidad | Mejor para | Precio | Integración Git |
+|-------------|-------------|------------|--------|-----------------|
+| **Trello** | Baja | Kanban simple | Gratis-$10 | Limited |
+| **Notion** | Media | Docs + Tasks | Gratis-$18 | No nativo |
+| **GitHub Projects** | Media | Dev teams | Gratis-$21 | ⭐⭐⭐⭐⭐ |
+| **Jira** | Alta | Enterprise Scrum | $8-$16 | Good |
+| **Asana** | Media | Project mgmt | $11-$25 | Limited |
+| **Monday** | Media-Alta | Visual workflows | $8-$16 | Limited |
+| **ClickUp** | Alta | Todo-en-uno | Gratis-$19 | Good |
+
+## Herramientas de Comunicación
+
+### Slack
+
+**Qué es:**
+Plataforma de mensajería para equipos, organizada en channels.
+
+**Estructura recomendada para DS project:**
+
+**Channels:**
+
+- `#general`: Anuncios y comunicación general
+- `#proyecto-nombre`: Discusiones del proyecto
+- `#random`: Off-topic, team building
+- `#recursos`: Links, papers, tutoriales
+- `#git-notifications`: Integración con GitHub
+- `#daily-standup`: Check-ins diarios
+
+**Buenas prácticas:**
+
+- Usar threads para mantener conversaciones organizadas
+- Reactions para confirmaciones rápidas
+- Pins para información importante
+- Status para indicar disponibilidad
+- DMs para cosas 1-1, channels para cosas de equipo
+
+**Integraciones útiles:**
+
+- GitHub: Notificaciones de commits, PRs
+- Google Drive: Compartir docs
+- Zoom: Iniciar calls rápido
+- Calendar: Recordatorios de meetings
+- Polly: Polls rápidas
+
+**Ventajas:**
+
+- Async communication
+- Searchable history
+- File sharing
+- Muchas integraciones
+- Mobile apps excelentes
+
+**Desventajas:**
+
+- Puede ser distractivo
+- Information overload
+- Free tier limitado (90 días historia)
+- No reemplaza documentación formal
+
+**Pricing (referencial al 8 de Diciembre del 2025):**
+
+- Free: 90 días historia, 10 integrations
+- Pro: $7.25/user/mes
+- Business+: $12.50/user/mes
+
+### Discord
+
+**Qué es:**
+Originalmente para gaming, ahora popular para comunidades y equipos.
+
+**Ventajas sobre Slack:**
+
+- Completamente gratis
+- Voice channels always-on
+- Screen sharing gratis
+- Mejor para comunidades informales
+- Sin límite de historia
+
+**Desventajas:**
+
+- Menos profesional
+- Integraciones limitadas
+- No tan usado en contexto corporativo
+
+**Mejor para:**
+
+- Equipos de estudiantes
+- Proyectos informales
+- Cuando budget es limitado
+
+### Microsoft Teams
+
+**Qué es:**
+Plataforma de colaboración de Microsoft, integrada con Office 365.
+
+**Ventajas:**
+
+- Incluido en Office 365
+- Integración perfecta con Office apps
+- Video calls robustas
+- Bueno para organizaciones enterprise
+
+**Desventajas:**
+
+- UI menos intuitiva que Slack
+- Pesado en recursos
+- Menos flexible
+
+**Mejor cuando:**
+
+- Tu organización ya usa Office 365
+- Necesitas integración profunda con Office
+- Contexto corporativo formal
+
+### Zoom / Google Meet
+
+**Para:**
+
+- Videollamadas
+- Screen sharing
+- Demos
+- Sprint reviews
+- 1-on-1s
+
+**Buenas prácticas:**
+
+- Grabar meetings importantes
+- Compartir agenda antes
+- Timeboxear estrictamente
+- Cámara on cuando posible
+- Mute when not speaking
+
+## Herramientas de Documentación
+
+### Google Docs / Google Drive
+
+**Ventajas:**
+
+- Colaboración en tiempo real
+- Gratis con cuenta Google
+- Todos lo conocen
+- Versionamiento automático
+- Commenting y suggesting
+
+**Casos de uso en DS:**
+
+- Project charter
+- Meeting notes
+- Análisis escritos
+- Informes para stakeholders
+- Brainstorming docs
+
+### Notion
+
+Ya cubierto arriba, pero excelente para:
+
+- Knowledge base del equipo
+- Documentación técnica
+- Meeting notes
+- Project wiki
+
+### Confluence
+
+**Qué es:**
+Wiki empresarial de Atlassian, integrada con Jira.
+
+**Ventajas:**
+
+- Espacios organizados
+- Page hierarchy
+- Macros potentes
+- Integración Jira
+
+**Desventajas:**
+
+- Caro
+- UI anticuada
+- Curva de aprendizaje
+
+**Mejor para:**
+
+- Si ya usan Jira
+- Organizaciones enterprise
+- Documentación formal extensa
+
+### Markdown + Git
+
+**Para equipos técnicos:**
+
+- README.md en repo
+- Docs/ folder con markdown files
+- Versionado con Git
+- Review via Pull Requests
+- Renderiza en GitHub
+
+**Ventajas:**
+
+- Simple y portable
+- Versionado completo
+- Cerca del código
+- No requiere herramienta adicional
+
+**Ejemplo estructura:**
+```
+docs/
+├── README.md
+├── setup.md
+├── data-dictionary.md
+├── model-documentation.md
+├── deployment.md
+└── retrospectives/
+    ├── hito-1.md
+    ├── hito-2.md
+    └── hito-3.md
+```
+
+## Control de Versiones
+
+### Git - Esencial
+
+**Por qué es obligatorio:**
+
+- Historial completo de cambios
+- Colaboración sin conflictos
+- Branching para experimentación
+- Recovery de versiones anteriores
+- Estándar de la industria
+
+**Conceptos básicos:**
+```bash
+# Clonar repo
+git clone https://github.com/user/proyecto.git
+
+# Crear branch para feature
+git checkout -b feature/analisis-temporal
+
+# Hacer cambios, agregar y commit
+git add src/analysis.py
+git commit -m "Add temporal feature engineering"
+
+# Push a remote
+git push origin feature/analisis-temporal
+
+# Pull request en GitHub para review
+```
+
+**Buenas prácticas:**
+
+- Commits pequeños y frecuentes
+- Mensajes descriptivos
+- Branches para features
+- Pull Requests con code review
+- .gitignore apropiado para DS
+
+**.gitignore para DS:**
+```
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.env
+
+# Data (no versionar datasets grandes)
+data/raw/
+data/processed/
+*.csv
+*.parquet
+
+# Models
+models/*.pkl
+models/*.h5
+
+# Notebooks checkpoints
+.ipynb_checkpoints/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+```
+
+**Algunos comandos útiles:**
+```bash
+# Ver status
+git status
+
+# Ver diferencias
+git diff
+
+# Ver historia
+git log --oneline --graph
+
+# Deshacer cambios
+git checkout -- archivo.py
+
+# Volver a commit anterior
+git reset --hard HEAD~1
+
+# Crear tag para release
+git tag -a v1.0 -m "Modelo baseline"
+```
+
+### GitHub / GitLab / Bitbucket
+
+**Plataformas de hosting:**
+
+- **GitHub**: Más popular, mejor para open source
+- **GitLab**: CI/CD integrado potente
+- **Bitbucket**: Integración con Atlassian
+
+**Features importantes:**
+
+- Pull Requests / Merge Requests
+- Code review
+- Issues tracking
+- CI/CD pipelines
+- GitHub Actions / GitLab CI
+- Branch protection
+- README rendering
+
+**Para el curso:**
+
+- Usar GitHub (más popular)
+- Repo privado o público según preferencia
+- README.md completo
+- Issues para tasks
+- Pull Requests para review
+
+### DVC - Data Version Control
+
+**Qué es:**
+Git para datasets y modelos. Versiona archivos grandes sin llenarlos a Git.
+
+**Casos de uso:**
+
+- Versionar datasets grandes
+- Track experimentos con datos diferentes
+- Versionar modelos entrenados
+- Reproducibilidad de pipelines
+
+**Comandos básicos:**
+```bash
+# Inicializar DVC
+dvc init
+
+# Agregar dataset a DVC
+dvc add data/raw/dataset.csv
+
+# Commit el .dvc file a Git
+git add data/raw/dataset.csv.dvc .gitignore
+git commit -m "Add raw dataset"
+
+# Push datos a remote storage (S3, GDrive, etc.)
+dvc push
+
+# Pull datos
+dvc pull
+
+# Track experimento
+dvc run -n train \
+  -d src/train.py -d data/processed \
+  -o models/model.pkl \
+  python src/train.py
+```
+
+**Ventajas:**
+
+- Git-like para datos
+- Storage remoto (S3, GCS, Azure)
+- Pipelines reproducibles
+- Track experiments
+
+**Cuándo usar:**
+
+- Datasets > 100MB
+- Múltiples versiones de datos
+- Equipo necesita compartir datos
+- Reproducibilidad crítica
+
+## Herramientas de Coordinación
+
+### Calendarios
+
+**Google Calendar:**
+
+- Compartir calendarios del equipo
+- Crear eventos para meetings
+- Set reminders
+- Time blocking para deep work
+
+**Eventos recurrentes sugeridos:**
+
+- Daily standup (si aplica)
+- Weekly team meeting
+- Sprint planning
+- Sprint review/demo
+- Retrospective
+
+### When2Meet / Doodle
+
+**Para encontrar horarios:**
+
+- When2Meet: Gratis, simple
+- Doodle: Más features
+- Útil para coordinar con stakeholders externos
+
+### Time Tracking (opcional)
+
+**Toggl / Clockify:**
+
+- Track tiempo en tareas
+- Útil para entender dónde va el tiempo
+- Identificar bottlenecks
+- En contexto académico: opcional
+
+## Herramientas Especializadas para DS
+
+### Experiment Tracking
+
+**MLflow**
+
+- Track experiments
+- Log parámetros, métricas, artifacts
+- Compare runs
+- Model registry
+
+**Weights & Biases**
+
+- Experiment tracking
+- Visualización potente
+- Colaboración en equipo
+- Integración con frameworks
+
+**Neptune.ai**
+
+- Similar a W&B
+- Metadata tracking
+- Comparación de experimentos
+
+### Notebooks
+
+**Quarto Notebooks**
+
+- Útiles para hacer reportes u otro tipo de documentos (como este libro)
+- Tienen todas las ventajas importantes de los Jupyter Notebook y más, sin tener sus problemas
+- Interactive computing 
+- Visualizaciones inline
+
+## Recomendaciones para el Curso
+
+### Stack Obligatorio
+
+1. **Git**: Control de versiones
+2. **Comunicación**: U-Cursos/Slack/Discord/WhatsApp/Otro
+3. **Material de apoyo para presentación**:  Canva, Powerpoint, Prezi, otro.
+
+
+### Stack Recomendado (Opcional)
+
+1. **Tareas**: Trello/Notion/GitHub Projects (elegir 1)
+2. **Docs**: Google Docs o Notion
+3. **Calendar**: Google Calendar
+4. **Video**: Zoom o Google Meet
+
+
+### Stack Avanzado (Opcional)
+
+Si el equipo quiere y avanzan muy rápido:
+
+1. **Experiment tracking**: MLflow o W&B
+2. **DVC**: Para datasets grandes
+3. **CI/CD**: GitHub Actions
+4. **Monitoring**: Custom dashboards
+5. **Conteinerización**: Docker
+
+## Buenas Prácticas
+
+### Principios Generales
+
+1. **Menos es más**: No usar 10 herramientas cuando 3 son suficientes
+2. **Consistencia**: Todo el equipo debe usar las mismas herramientas
+3. **Documentar**: Donde está qué información
+4. **Revisar regularly**: ¿Están funcionando las herramientas?
+5. **Adapt**: Cambiar si algo no funciona
+
+### Setup del Proyecto
+
+**Semana 1:**
+
+1. Crear repo en GitHub
+2. Setup tablero (Trello/Notion/GitHub Projects)
+3. Crear channel de comunicación (Slack/Discord)
+4. Compartir calendarios
+5. Primera reunión para alinear
+
+**Durante el proyecto:**
+
+- Commits diarios a Git
+- Update tablero semanalmente (mínimo)
+- Comunicación asíncrona diaria
+- Meetings sincrónicas semanales
+- Documentar decisiones importantes
+
+### Comunicación Efectiva
+
+**Asíncrona (Slack/Discord):**
+
+- Updates de progreso
+- Preguntas rápidas
+- Compartir recursos
+- Coordinación logística
+
+**Síncrona (Zoom/Meet):**
+
+- Discusiones complejas
+- Toma de decisiones
+- Brainstorming
+- Resolución de conflictos
+- Demos
+
+**Documentación:**
+
+- Decisiones importantes
+- Arquitectura técnica
+- Hallazgos de análisis
+- Retrospectivas
+
+## Antipatrones a Evitar
+
+1. **Tool hoarding**: Usar demasiadas herramientas
+2. **Inconsistencia**: Información en múltiples lugares
+3. **Falta de actualización**: Tableros desactualizados
+4. **Over-engineering**: Setup demasiado complejo
+5. **Siloed information**: Info solo en la cabeza de una persona
+6. **No documentar**: "Lo recordaremos"
+7. **Meetings innecesarios**: Todo por video call
+
+## Conclusiones
+
+### Lecciones Clave
+
+- Las herramientas facilitan metodologías, no las reemplazan
+- Simple y consistente > complejo y completo
+- Git es obligatorio, el resto es negociable
+- Elegir según tamaño y necesidades del equipo
+- Revisar y adaptar herramientas regularmente
+
+### Para el Curso
+
+::: {.callout-tip}
+## Setup Recomendado
+
+**Mínimo viable:**
+
+- GitHub (código + Issues)
+- Slack/Discord (comunicación)
+- Google Docs (documentación)
+- Google Calendar (coordinación)
+
+**Si quieren más:**
+
+- Trello/Notion (tasks más visuales)
+- MLflow (experiment tracking)
+- DVC (si datasets > 100MB)
+
+Empezar simple, agregar según necesidad.
+:::
+
+## Recursos Adicionales
+
+### Tutoriales
+
+**Git:**
+
+- [Pro Git Book](https://git-scm.com/book/en/v2)
+- [GitHub Learning Lab](https://lab.github.com/)
+- [Git Branching Interactive](https://learngitbranching.js.org/)
+
+**Herramientas:**
+
+- [Trello Guide](https://trello.com/guide)
+- [Notion Help](https://www.notion.so/help)
+- [GitHub Projects Docs](https://docs.github.com/en/issues/planning-and-tracking-with-projects)
+
+**DS-Specific:**
+
+- [MLflow Documentation](https://mlflow.org/docs/latest/index.html)
+- [DVC Documentation](https://dvc.org/doc)
+- [Weights & Biases Tutorials](https://docs.wandb.ai/)
+
+### Videos
+
+- Git and GitHub for Beginners
+- Project Management Tools Comparison
+- MLOps Tools Overview
+
+## Próximo Capítulo
+
+En el siguiente capítulo exploraremos el **Manifiesto de Programación** y buenas prácticas de código para Data Science, incluyendo estructura de proyectos, testing, y documentación.

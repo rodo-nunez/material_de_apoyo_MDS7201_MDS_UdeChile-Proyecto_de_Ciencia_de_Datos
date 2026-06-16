@@ -1,0 +1,274 @@
+# Introducción a los Large Language Models (LLMs)
+
+Los **Large Language Models (LLMs)** son modelos de deep learning entrenados sobre corpus masivos de texto. Son capaces de comprender y generar texto similar al humano, y se han convertido en una de las tecnologías más influyentes de la última década.
+
+Modelos populares:
+
+- **GPT** (OpenAI)
+- **Gemini** (Google)
+- **Claude** (Anthropic)
+- **LLaMA** (Meta)
+- **DeepSeek**
+
+## Aplicaciones
+
+Los LLMs pueden usarse en una amplia variedad de tareas:
+
+- Resumen de texto
+- Traducción automática
+- Respuesta a preguntas
+- Generación de texto
+- Chatbots y asistentes conversacionales
+- Análisis de sentimiento
+- Generación de código
+
+## Limitaciones y Consideraciones Éticas
+
+::: {.callout-warning}
+## Consideraciones Importantes
+
+- **Alucinaciones**: los LLMs pueden generar respuestas factualmente incorrectas con total confianza
+- **Sesgos**: pueden reflejar y amplificar sesgos presentes en los datos de entrenamiento
+- **Costo ambiental y computacional**: el entrenamiento y la inferencia de modelos grandes tiene un impacto energético significativo
+- **Prompting**: el desempeño depende fuertemente de cómo se formula la instrucción al modelo
+:::
+
+## Modelos Comerciales vs. Open-Source
+
+Los LLMs se presentan en dos formas principales:
+
+### APIs Comerciales (Propietarias)
+
+- Pesos cerrados — no se puede acceder al modelo directamente
+- Se acceden típicamente vía API
+- Generalmente de pago (pueden tener un tier gratuito)
+- Alto desempeño, actualizaciones frecuentes
+- Ejemplos: OpenAI GPT-4, Anthropic Claude, Google Gemini
+
+### Modelos Open-Source
+
+- Los pesos están disponibles para descarga
+- Se pueden ejecutar localmente o en infraestructura propia
+- Con soporte de la comunidad y personalizables
+- Ejemplos: LLaMA (Meta), Mistral, Falcon, DeepSeek
+
+La elección entre uno y otro depende del caso de uso, los requisitos de privacidad, el presupuesto y la necesidad de personalización.
+
+## LLMs Multimodales
+
+Los transformers no están limitados al texto. Pueden procesar:
+
+- [Texto](https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf)
+- [Imágenes](https://arxiv.org/abs/2010.11929)
+- [Otros tipos de datos](https://arxiv.org/abs/2205.06175)
+
+Los LLMs modernos son cada vez más **multimodales**: pueden procesar texto e imágenes de forma integrada en un mismo modelo.
+
+Todos ellos están basados en una arquitectura de red neuronal llamada **Transformer**, introducida en 2017 ([Attention is all you need, Vaswani et al. 2017](https://arxiv.org/pdf/1706.03762.pdf)).
+
+## Atención y Transformers
+
+### Self-Attention
+
+En una capa de self-attention, una matriz de entrada $X$ ($n$ tokens de dimensión $d$) se transforma en una matriz de salida $Z$ ($n$ componentes de dimensión $d_v$) a través de tres matrices de representación:
+
+- **Queries** $Q$
+- **Keys** $K$
+- **Values** $V$
+
+$$\text{Attention}(Q, K, V) = \text{softmax}\!\left(\frac{Q \cdot K^T}{\sqrt{d_k}}\right) \cdot V$$
+
+donde $Q$, $K$ y $V$ son transformaciones lineales de la entrada $X$ via parámetros aprendibles $W^Q$, $W^K$ y $W^V$:
+
+$$Q = X W^Q, \quad K = X W^K, \quad V = X W^V$$
+
+Dimensiones:
+
+| Matriz | Dimensión |
+|---|---|
+| $X$ | $\mathbb{R}^{n \times d}$ |
+| $Q, K$ | $\mathbb{R}^{n \times d_k}$ |
+| $V$ | $\mathbb{R}^{n \times d_v}$ |
+| $W^Q, W^K$ | $\mathbb{R}^{d \times d_k}$ |
+| $W^V$ | $\mathbb{R}^{d_v \times d}$ |
+| $Z$ | $\mathbb{R}^{n \times d_v}$ |
+
+![Diagrama de self-attention](images/llm/selfattention.png)
+
+### Cross-Attention
+
+En cross-attention, una matriz de entrada $X_1$ ($n$ tokens) se contrasta con otra matriz $X_2$ ($m$ tokens):
+
+$$Q = X_1 W^Q, \quad K = X_2 W^K, \quad V = X_2 W^V$$
+
+La salida $Z \in \mathbb{R}^{n \times d_v}$ captura cómo cada token de $X_1$ "atiende" a los tokens de $X_2$. Es el mecanismo central en tareas como traducción, donde la secuencia de entrada y la de salida son distintas.
+
+![Diagrama de cross-attention](images/llm/cross-attention-summary.png)
+
+Un transformer encadena múltiples capas de **multi-head attention** (varias cabezas de atención en paralelo) para realizar tareas como traducción, predicción del siguiente token o clasificación de imágenes.
+
+![Arquitectura del Transformer](images/llm/transformer.png)
+
+### Predicción del Siguiente Token
+
+En modelos como GPT, solo se usa la parte **decoder** del transformer. Durante el entrenamiento, los tokens se desplazan un elemento a la derecha para compararlos con los valores originales (los tokens a predecir), con una máscara que impide que el decoder vea tokens futuros. Durante la inferencia, se predice un token a la vez.
+
+**Ejemplo:**
+
+- Tokens de entrada (desplazados a la derecha): `[CLS] The dog chased`
+- Tokens objetivo (a predecir): `The dog chased the`
+
+El modelo aprende:
+
+- De `[CLS]` → predecir `"The"`
+- De `"The"` → predecir `"dog"`
+- De `"dog"` → predecir `"chased"`
+- De `"chased"` → predecir `"the"`
+
+### Masked Self-Attention
+
+Para que el decoder no "vea el futuro", la fórmula de atención se modifica con una matriz de máscara $M$:
+
+$$\text{Attention}(Q, K, V) = \text{softmax}\!\left(\frac{Q \cdot K^T}{\sqrt{d_k}} + M\right) \cdot V$$
+
+Donde $M$ tiene $0$ en las posiciones permitidas y $-\infty$ en las posiciones futuras:
+
+|         | [CLS] | The | dog | chased |
+|---------|-------|-----|-----|--------|
+| [CLS]   | 0     | −∞  | −∞  | −∞     |
+| The     | 0     | 0   | −∞  | −∞     |
+| dog     | 0     | 0   | 0   | −∞     |
+| chased  | 0     | 0   | 0   | 0      |
+
+El softmax sobre $-\infty$ devuelve 0, por lo que los tokens futuros no pueden influir en la predicción.
+
+## Entrenamiento de LLMs
+
+Los LLMs se entrenan usualmente en tres fases:
+
+### 1. Pre-entrenamiento No Supervisado
+
+Se maximiza la verosimilitud del corpus de tokens $U = \{u_1, \ldots, u_n\}$:
+
+$$\sum_i \log P(u_i \mid u_{i-k}, \ldots, u_{i-1}; \theta)$$
+
+Se usa una variante del transformer llamada T-DMCA ([Transformer-Decoder Memory-Compressed Attention](https://arxiv.org/abs/1801.10198)), que modifica el transformer en tres formas:
+
+1. **Solo decoder**: se elimina la capa encoder para hacer predicción del siguiente token.
+2. **Atención con memoria comprimida**: se reduce el número de keys y values mediante una convolución con stride.
+3. **Atención local**: los tokens se dividen en bloques de longitud similar y la atención se realiza dentro de cada bloque independientemente.
+
+![Arquitectura T-DMCA](images/llm/TDMCA.png)
+
+### 2. Fine-Tuning Supervisado
+
+El modelo pre-entrenado puede ser ajustado para resolver tareas supervisadas como clasificación (análisis de sentimiento), inferencia lógica (entailment), similitud semántica y opción múltiple ([Radford et al. 2018, GPT](https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf)).
+
+![Pipeline de GPT (fine-tuning supervisado)](images/llm/GPT.png)
+
+### 3. Reinforcement Learning with Human Feedback (RLHF)
+
+RLHF es el proceso que alinea el modelo con las preferencias humanas. Tiene tres etapas:
+
+**Supervised Fine-Tuning (SFT)**
+
+Anotadores humanos proveen prompts de ejemplo con respuestas ideales. El modelo se fine-tunea sobre estos datos para acercarse a las expectativas del usuario.
+
+**Reward Model (RM)**
+
+Se recopilan comparaciones humanas entre dos o más respuestas del modelo ante el mismo prompt. Se entrena un modelo de recompensa separado para predecir cuál respuesta es preferida. Ejemplo: "la respuesta A es mejor que la B" → el RM aprende una función de scoring.
+
+**Reinforcement Learning (PPO)**
+
+Se usa Proximal Policy Optimization (PPO) para optimizar el LLM de modo que sus respuestas maximicen el score del modelo de recompensa. El LLM actúa como una política que elige tokens, y el RM lo guía hacia el comportamiento preferido.
+
+### Pipeline Completo
+
+En resumen, el pipeline completo de entrenamiento de un LLM moderno es:
+
+1. **Pre-entrenamiento**: entrenar un transformer sobre un dataset masivo usando predicción del siguiente token.
+2. **Supervised Fine-Tuning (SFT)**: ajustar el modelo con demostraciones escritas por humanos del comportamiento ideal.
+3. **RLHF**: refinar el modelo usando juicios de preferencia humana mediante aprendizaje por refuerzo.
+
+::: {.callout-note}
+## ¿Por Qué RLHF?
+
+El pre-entrenamiento enseña al modelo a predecir texto. Pero predecir texto ≠ ser útil o seguro. El RLHF cierra esa brecha: enseña al modelo a generar respuestas que los humanos *prefieren*, no solo las más probables estadísticamente.
+:::
+
+## Uso Práctico: Resumen con Hugging Face Transformers
+
+Usaremos la librería `transformers` para ejecutar un modelo pre-entrenado de resumen: `facebook/bart-large-cnn`.
+
+```{python}
+#| output: false
+# Instalar la librería si no está disponible
+# !pip install transformers -q
+from transformers import pipeline
+
+# Cargar pipeline de resumen
+summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
+```
+
+```{python}
+article = """
+ALeRCE is a real-time astronomical alert broker designed to process data
+from the Vera C. Rubin Observatory. It classifies variable and transient
+phenomena such as supernovae and variable stars using machine learning algorithms.
+It provides web interfaces and APIs to facilitate scientific exploration.
+"""
+
+summary = summarizer(article, max_length=50, min_length=10, do_sample=False)
+print(summary[0]['summary_text'])
+```
+
+Con solo cuatro líneas de código podemos usar un modelo de 400 millones de parámetros pre-entrenado sobre cientos de miles de artículos de noticias. Este es el poder de las APIs y librerías modernas de LLMs: no necesitas entrenar nada desde cero para aprovechar capacidades de lenguaje sofisticadas.
+
+## Más Allá del Resumen: Otras APIs
+
+El mismo patrón de `pipeline` de Hugging Face sirve para muchas otras tareas:
+
+```{python}
+from transformers import pipeline
+
+# Análisis de sentimiento
+sentiment = pipeline("sentiment-analysis")
+print(sentiment("ALeRCE is an amazing tool for astronomy!"))
+
+# Respuesta a preguntas
+qa = pipeline("question-answering")
+result = qa(
+    question="What does ALeRCE classify?",
+    context=article.strip()
+)
+print(result['answer'])
+```
+
+Para modelos más grandes (GPT-4, Claude, Gemini), la interacción es vía APIs HTTP con autenticación por clave. El patrón es el mismo: enviar un prompt, recibir una respuesta.
+
+## Resumen
+
+Los LLMs representan un cambio de paradigma en el procesamiento del lenguaje natural. En lugar de entrenar un modelo especializado para cada tarea, se pre-entrena un modelo masivo sobre texto general y luego se adapta mediante fine-tuning y RLHF.
+
+| Fase | Objetivo | Datos |
+|---|---|---|
+| Pre-entrenamiento | Aprender representaciones del lenguaje | Corpus masivo no etiquetado |
+| Fine-tuning supervisado | Aprender a resolver tareas | Ejemplos humanos etiquetados |
+| RLHF | Alinear con preferencias humanas | Comparaciones humanas de respuestas |
+
+::: {.callout-tip}
+## Para Explorar Más
+
+- [Hugging Face Hub](https://huggingface.co/models): catálogo de miles de modelos pre-entrenados
+- [OpenAI API](https://platform.openai.com/): acceso a GPT-4 y otros modelos de OpenAI
+- [Anthropic API](https://www.anthropic.com/api): acceso a Claude
+- [Ollama](https://ollama.com/): ejecutar LLMs open-source localmente
+:::
+
+## Referencias
+
+- Vaswani, A. et al. (2017). Attention Is All You Need. *NeurIPS*. [arXiv:1706.03762](https://arxiv.org/pdf/1706.03762.pdf)
+- Radford, A. et al. (2018). Improving Language Understanding by Generative Pre-Training. [OpenAI Blog (GPT)](https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf)
+- Dosovitskiy, A. et al. (2020). An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale. [arXiv:2010.11929](https://arxiv.org/abs/2010.11929)
+- Liu, H. et al. (2022). Visual Instruction Tuning. [arXiv:2205.06175](https://arxiv.org/abs/2205.06175)
+- Ouyang, L. et al. (2022). Training language models to follow instructions with human feedback (InstructGPT). *NeurIPS*. [arXiv:2203.02155](https://arxiv.org/abs/2203.02155)

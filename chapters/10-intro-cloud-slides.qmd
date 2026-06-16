@@ -1,0 +1,773 @@
+---
+title: "Introducción a Cloud Computing"
+subtitle: "MDS7201 - Master of Data Science"
+author: "Universidad de Chile"
+format:
+  revealjs:
+    theme: [default, ../custom-slides.scss]
+    slide-number: true
+    chalkboard: true
+    preview-links: auto
+    code-fold: false
+    code-tools: true
+    transition: slide
+    background-transition: fade
+  beamer:
+    theme: Madrid
+    colortheme: default
+    fonttheme: professionalfonts
+    aspectratio: 169
+    navigation: horizontal
+    section-titles: true
+    toc: true
+---
+
+# Introducción {background-color="#1a1a1a"}
+
+## ¿Por Qué Cloud Computing?
+
+::: {.callout-important}
+## Es Fundamental para DS Moderno
+
+- **Escalabilidad**: Procesar TBs sin comprar hardware
+- **Flexibilidad**: GPUs solo cuando las necesitas
+- **Costo-efectividad**: Pagar solo por uso
+- **Colaboración**: Recursos compartidos
+- **Deployment**: Modelos en producción fácilmente
+- **Estándar industria**: 90%+ empresas usan cloud
+:::
+
+## Objetivos del Capítulo
+
+::: {.incremental}
+- Entender qué es cloud computing
+- Conocer los 3 grandes proveedores
+- Profundizar en servicios AWS para DS
+- Aprender buenas prácticas
+- Comenzar a usar la nube
+:::
+
+# ¿Qué es Cloud Computing? {background-color="#2a2a2a"}
+
+## Definición
+
+**Cloud computing** es la entrega de servicios de computación a través de Internet ("la nube"):
+
+::: {.incremental}
+- Servidores
+- Almacenamiento
+- Bases de datos
+- Redes
+- Software
+- Análisis e inteligencia
+:::
+
+## Modelos de Servicio
+
+::: {.columns}
+::: {.column width="33%"}
+**IaaS**
+
+- Infraestructura
+- Tú: OS, apps
+- Ej: AWS EC2
+:::
+
+::: {.column width="33%"}
+**PaaS**
+
+- Plataforma
+- Tú: apps
+- Ej: AWS Lambda
+:::
+
+::: {.column width="33%"}
+**SaaS**
+
+- Software
+- Tú: usar
+- Ej: Gmail
+:::
+:::
+
+## Para Data Science
+
+**IaaS**: Entrenar modelos en instancias con GPU
+
+**PaaS**: Desplegar modelos como API sin gestionar servidores
+
+**SaaS**: Usar herramientas de BI en la nube
+
+# Los 3 Grandes Proveedores {background-color="#1a1a1a"}
+
+## Comparación General
+
+| Aspecto | AWS | Azure | GCP |
+|---------|-----|-------|-----|
+| **Lanzamiento** | 2006 | 2010 | 2008 |
+| **Market Share** | ~32% | ~23% | ~10% |
+| **Fortaleza** | Madurez | Enterprise | ML/AI |
+| **Para DS** | Muy completo | Enterprise | Mejor ML tools |
+
+## AWS - Amazon Web Services
+
+::: {.columns}
+::: {.column width="50%"}
+**Características**
+
+- Pionero (2006)
+- 200+ servicios
+- Mayor ecosistema
+- Más regiones
+:::
+
+::: {.column width="50%"}
+**Para DS**
+
+- SageMaker
+- EC2 con GPUs
+- S3 (storage ilimitado)
+- Athena (SQL/S3)
+- Redshift
+:::
+:::
+
+## Azure - Microsoft Azure
+
+::: {.columns}
+::: {.column width="50%"}
+**Características**
+
+- Enfoque enterprise
+- Integración Microsoft
+- Híbrido cloud/on-premise
+:::
+
+::: {.column width="50%"}
+**Para DS**
+
+- Azure ML
+- Azure Databricks
+- Azure Synapse
+- Cognitive Services
+:::
+:::
+
+## GCP - Google Cloud Platform
+
+::: {.columns}
+::: {.column width="50%"}
+**Características**
+
+- Infraestructura Google
+- Mejor ML/AI
+- BigQuery ultra-rápido
+- Pricing transparente
+:::
+
+::: {.column width="50%"}
+**Para DS**
+
+- Vertex AI
+- BigQuery ML
+- Cloud TPUs
+- AutoML
+:::
+:::
+
+## Comparación de Servicios
+
+| Servicio | AWS | Azure | GCP |
+|----------|-----|-------|-----|
+| **Compute** | EC2 | VMs | Compute Engine |
+| **Serverless** | Lambda | Functions | Cloud Functions |
+| **Storage** | S3 | Blob Storage | Cloud Storage |
+| **Data Warehouse** | Redshift | Synapse | BigQuery |
+| **ML Platform** | SageMaker | Azure ML | Vertex AI |
+
+# AWS EC2 {background-color="#2a2a2a"}
+
+## Elastic Compute Cloud
+
+**Qué es:** Servidores virtuales en la nube
+
+**Para DS:**
+
+::: {.incremental}
+- Entrenar modelos pesados
+- Instancias con GPUs
+- Escalar compute
+- Experimentar con configuraciones
+:::
+
+## Tipos de Instancias
+
+```
+T (t2, t3): General purpose
+- t3.medium: 2 vCPU, 4GB RAM
+- $0.04/hora
+
+M (m5, m6i): Balanced
+- m5.xlarge: 4 vCPU, 16GB RAM
+- $0.19/hora
+
+R (r5, r6i): Memory optimized
+- r5.2xlarge: 8 vCPU, 64GB RAM
+- $0.50/hora
+```
+
+## Instancias GPU
+
+```
+P (p3, p4): GPU para deep learning
+- p3.2xlarge: 8 vCPU, 1x V100 GPU
+- $3.06/hora
+
+G (g4dn): GPU económico
+- g4dn.xlarge: 4 vCPU, 1x T4 GPU
+- $0.52/hora
+```
+
+## Ejemplo de Uso
+
+```bash
+# 1. Lanzar instancia
+aws ec2 run-instances --image-id ami-xxx \
+  --instance-type p3.2xlarge --key-name mi-key
+
+# 2. Conectar
+ssh -i mi-key.pem ubuntu@ec2-xx-xx.amazonaws.com
+
+# 3. Setup y entrenar
+pip3 install torch
+python train_model.py
+
+# 4. ¡TERMINAR cuando termines!
+aws ec2 terminate-instances --instance-ids i-xxx
+```
+
+## Tips EC2
+
+::: {.incremental}
+- **Spot Instances**: Hasta 90% descuento
+- **Reserved Instances**: Descuento con compromiso
+- **Always terminate**: No dejar corriendo ($$)
+:::
+
+# AWS S3 {background-color="#1a1a1a"}
+
+## Simple Storage Service
+
+**Qué es:** Almacenamiento de objetos escalable, ilimitado
+
+**Para DS:**
+
+::: {.incremental}
+- Almacenar datasets (TBs, PBs)
+- Data lake
+- Modelos entrenados
+- Versioning de datos
+- Hosting archivos
+:::
+
+## Conceptos
+
+```
+Bucket: Contenedor de objetos
+└── Object: Archivo (hasta 5TB)
+    ├── Key: Path/nombre
+    ├── Value: Contenido
+    └── Metadata: Info adicional
+```
+
+## Storage Classes
+
+| Clase | Uso | Costo/GB/mes | Retrieval |
+|-------|-----|--------------|-----------|
+| **Standard** | Frecuente | $0.023 | Inmediato |
+| **Intelligent-Tiering** | Variable | $0.023-0.0125 | Automático |
+| **Glacier** | Archivo | $0.004 | Minutos-horas |
+| **Glacier Deep** | Archivo profundo | $0.00099 | 12+ horas |
+
+## Ejemplo de Uso
+
+```python
+import boto3
+
+s3 = boto3.client('s3')
+
+# Upload dataset
+s3.upload_file('local_data.csv', 
+               'mi-bucket-ds', 
+               'datasets/data.csv')
+
+# Download
+s3.download_file('mi-bucket-ds',
+                 'datasets/data.csv',
+                 'local_data.csv')
+
+# List objects
+response = s3.list_objects_v2(
+    Bucket='mi-bucket-ds',
+    Prefix='datasets/'
+)
+```
+
+## Tips S3
+
+::: {.incremental}
+- **Lifecycle policies**: Mover a Glacier automáticamente
+- **Versioning**: Para datos críticos
+- **S3 Select**: Query sin descargar todo
+- **Parquet**: Más eficiente que CSV
+:::
+
+# AWS Lambda {background-color="#2a2a2a"}
+
+## Serverless Computing
+
+**Qué es:** Ejecutar código sin gestionar servidores
+
+**Para DS:**
+
+::: {.incremental}
+- Inference de modelos ligeros
+- ETL pequeños
+- Trigger acciones automáticas
+- APIs sin servidor
+:::
+
+## Limitaciones
+
+::: {.callout-warning}
+- Max 15 minutos ejecución
+- Max 10GB RAM
+- Max 512MB /tmp storage
+- **No para entrenamiento pesado**
+:::
+
+## Ejemplo: Inference API
+
+```python
+# lambda_function.py
+import json
+import boto3
+import joblib
+
+# Cargar modelo (fuera del handler)
+s3 = boto3.client('s3')
+s3.download_file('bucket', 'model.pkl', '/tmp/model.pkl')
+model = joblib.load('/tmp/model.pkl')
+
+def lambda_handler(event, context):
+    body = json.loads(event['body'])
+    features = body['features']
+    
+    prediction = model.predict([features])[0]
+    probability = model.predict_proba([features])[0][1]
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps({
+            'prediction': int(prediction),
+            'probability': float(probability)
+        })
+    }
+```
+
+## Pricing Lambda
+
+::: {.incremental}
+- **Free tier**: 1M requests/mes
+- $0.20 por 1M requests
+- $0.0000166667 por GB-segundo
+- Muy económico para inference ligero
+:::
+
+# AWS Athena {background-color="#1a1a1a"}
+
+## Query SQL sobre S3
+
+**Qué es:** SQL directamente sobre datos en S3, sin cargar a BD
+
+**Para DS:**
+
+::: {.incremental}
+- Análisis exploratorio sobre data lake
+- No necesitas cargar a BD
+- Pagar solo por queries
+- SQL estándar
+:::
+
+## Ejemplo
+
+```sql
+-- Crear tabla "externa" sobre CSV en S3
+CREATE EXTERNAL TABLE customers (
+    customer_id INT,
+    name STRING,
+    age INT,
+    purchase_amount DOUBLE
+)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+LOCATION 's3://mi-bucket/data/customers/';
+
+-- Query directamente
+SELECT age, AVG(purchase_amount) as avg_purchase
+FROM customers
+WHERE age BETWEEN 25 AND 35
+GROUP BY age
+ORDER BY avg_purchase DESC;
+```
+
+## Athena vs Redshift
+
+::: {.columns}
+::: {.column width="50%"}
+**Athena**
+
+- Queries ocasionales
+- Exploración ad-hoc
+- Datos en S3
+- Serverless
+:::
+
+::: {.column width="50%"}
+**Redshift**
+
+- Queries frecuentes
+- Dashboards real-time
+- Optimización queries
+- Joins complejos
+:::
+:::
+
+## Tips Athena
+
+::: {.incremental}
+- Particionar datos por fecha
+- **Usar Parquet** en lugar de CSV (10x más rápido)
+- Comprimir datos
+- Pricing: $5 por TB escaneado
+:::
+
+# AWS SageMaker {background-color="#2a2a2a"}
+
+## Plataforma Completa de ML
+
+**Componentes principales:**
+
+::: {.incremental}
+1. **Notebooks**: Jupyter managed
+2. **Training**: Distributed, built-in algorithms
+3. **Deployment**: Real-time endpoints
+4. **Ground Truth**: Labeling de datos
+:::
+
+## Ejemplo Completo
+
+```python
+import sagemaker
+from sagemaker.sklearn import SKLearn
+
+role = get_execution_role()
+
+# Train
+sklearn = SKLearn(
+    entry_point='train.py',
+    role=role,
+    instance_type='ml.m5.xlarge',
+    hyperparameters={'n_estimators': 100}
+)
+sklearn.fit({'train': 's3://bucket/train/'})
+
+# Deploy
+predictor = sklearn.deploy(
+    initial_instance_count=1,
+    instance_type='ml.m5.large'
+)
+
+# Predict
+prediction = predictor.predict([[25, 50000, 3]])
+```
+
+## Pricing SageMaker
+
+::: {.incremental}
+- **Notebooks**: $0.05-0.46/hora
+- **Training**: Según instancia
+- **Endpoints**: $0.05-3.06/hora
+- Pagar por tiempo de uso
+:::
+
+# Otros Servicios Útiles {background-color="#1a1a1a"}
+
+## AWS Glue
+
+**Qué es:** Servicio ETL serverless
+
+**Componentes:**
+
+::: {.incremental}
+- **Data Catalog**: Metadata repository
+- **Crawlers**: Autodescubrir schema
+- **ETL Jobs**: PySpark transformations
+- Integración con Athena, Redshift
+:::
+
+## Servicios Adicionales
+
+::: {.columns}
+::: {.column width="50%"}
+**Storage & Compute**
+
+- EBS: Discos para EC2
+- ECR: Docker registry
+- ECS/EKS: Containers
+:::
+
+::: {.column width="50%"}
+**ML & Analytics**
+
+- QuickSight: BI tool
+- MWAA: Airflow managed
+- Mechanical Turk: Labeling
+:::
+:::
+
+## ¡CRÍTICO! Billing
+
+::: {.callout-important}
+## Cost Explorer & Budgets
+
+- **Monitorear costos** constantemente
+- **Alerts** cuando gastas mucho
+- **Breakdown** por servicio
+- **Siempre configurar budgets!**
+:::
+
+# Buenas prácticas {background-color="#2a2a2a"}
+
+## Seguridad - IAM
+
+```
+Root account: NUNCA usar día a día
+└── IAM Users: Usuarios individuales
+    ├── IAM Groups: Grupos con permisos
+    └── IAM Roles: Permisos para servicios
+```
+
+::: {.callout-warning}
+**Principio de menor privilegio**: Solo permisos necesarios
+:::
+
+## Claves de Acceso
+
+::: {.incremental}
+- ❌ Nunca commitear a Git
+- 🔄 Rotar regularmente
+- ✅ Usar IAM roles cuando sea posible
+- 🔒 AWS Secrets Manager para secrets
+:::
+
+## Tips para No Gastar de Más
+
+::: {.incremental}
+1. **Terminar** recursos no usados
+2. **Spot Instances** para jobs interrumpibles
+3. **Right-sizing**: No sobre-provisionar
+4. **Reserved Instances** si uso predecible
+5. **S3 Lifecycle**: Mover a Glacier
+6. **CloudWatch Alarms**: Alerts de gasto
+7. **AWS Budgets**: Límites de gasto
+:::
+
+## Arquitectura Típica DS
+
+```
+Data Ingestion
+    ↓
+S3 (Data Lake)
+    ↓
+AWS Glue (ETL) → Glue Data Catalog
+    ↓                      ↓
+S3 (Processed)        Athena (queries)
+    ↓
+SageMaker (Training)
+    ↓
+S3 (Models)
+    ↓
+Lambda/Endpoint (Inference)
+    ↓
+API Gateway → Application
+```
+
+# Primeros Pasos {background-color="#1a1a1a"}
+
+## Setup Inicial
+
+::: {.incremental}
+1. **Crear cuenta** en aws.amazon.com
+2. **Configurar IAM** (no usar root!)
+3. **Instalar AWS CLI**
+4. **Setup billing alerts** (¡importante!)
+:::
+
+## Instalar AWS CLI
+
+```bash
+# Linux/Mac
+curl "https://awscli.amazonaws.com/..." -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+
+# Configurar
+aws configure
+# Access Key ID: TU_KEY
+# Secret Access Key: TU_SECRET
+# Default region: us-east-1
+# Output format: json
+```
+
+## Primer Proyecto
+
+**Entrenar modelo en EC2:**
+
+```bash
+# 1. Lanzar instancia
+aws ec2 run-instances --image-id ami-xxx \
+  --instance-type t3.medium
+
+# 2. Conectar y setup
+ssh -i key.pem ubuntu@ec2-xx-xx
+git clone https://github.com/repo/proyecto
+pip install -r requirements.txt
+
+# 3. Descargar datos de S3
+aws s3 cp s3://bucket/data/ ./data/ --recursive
+
+# 4. Entrenar
+python train.py
+
+# 5. Subir modelo
+aws s3 cp models/model.pkl s3://bucket/models/
+
+# 6. ¡TERMINAR!
+aws ec2 terminate-instances --instance-ids i-xxx
+```
+
+# Certificaciones AWS {background-color="#2a2a2a"}
+
+## Niveles de Certificación
+
+::: {.incremental}
+- **Cloud Practitioner**: Entry-level, fundamentos
+- **Solutions Architect**: Intermedio, diseño arquitecturas
+- **Machine Learning Specialty**: Avanzado, específico ML
+:::
+
+::: {.callout-tip}
+Demuestran conocimiento y son valoradas en la industria
+:::
+
+# ¿Cuándo Usar Cada Proveedor? {background-color="#1a1a1a"}
+
+## Usar AWS si:
+
+::: {.incremental}
+- Necesitas máxima variedad de servicios
+- Startup (free tier generoso)
+- Mayor madurez y estabilidad
+- Comunidad y documentación grandes
+:::
+
+## Usar Azure si:
+
+::: {.incremental}
+- Tu empresa ya usa Microsoft
+- Ambientes híbridos cloud/on-premise
+- Enterprise/gobierno
+- Integración Active Directory
+:::
+
+## Usar GCP si:
+
+::: {.incremental}
+- Proyecto ML/AI intensivo
+- BigQuery para analytics masivo
+- Interfaz más moderna
+- Pricing más transparente
+:::
+
+## En la Práctica
+
+::: {.callout-note}
+## Multi-cloud es común
+
+- Muchas empresas usan múltiples clouds
+- Aprender uno facilita aprender otros
+- **AWS es buen punto de partida** (más común)
+:::
+
+# Recursos {background-color="#2a2a2a"}
+
+## Documentación
+
+- [AWS Documentation](https://docs.aws.amazon.com/)
+- [AWS for Data Science](https://aws.amazon.com/big-data/datalakes-and-analytics/)
+- [AWS Free Tier](https://aws.amazon.com/free/)
+- [AWS Training](https://aws.amazon.com/training/)
+
+## Tutoriales
+
+- [AWS Workshops](https://workshops.aws/)
+- [Servicios AWS para DS (Video)](https://www.youtube.com/watch?v=xeDjQgOdGb4)
+- [AWS vs Azure vs GCP](https://cloud.google.com/docs/get-started/aws-azure-gcp-service-comparison)
+
+# Conclusiones {background-color="#1a1a1a"}
+
+## Lecciones Clave
+
+::: {.incremental}
+1. **Cloud es esencial** para DS moderno
+2. **AWS es el más popular** - buen punto de partida
+3. **Muchos servicios útiles**: EC2, S3, Lambda, Athena
+4. **Costos**: Monitorear siempre, terminar recursos
+5. **Seguridad**: IAM, no root, no commitear keys
+6. **Certificaciones**: Demuestran conocimiento
+:::
+
+## Para el Curso
+
+**Recomendación:**
+
+::: {.incremental}
+- Crear cuenta AWS (free tier)
+- Practicar con EC2 y S3
+- Entrenar un modelo en la nube
+- Desplegar inference con Lambda
+- **¡Configurar billing alerts!**
+:::
+
+## Siguiente Paso
+
+::: {.callout-tip}
+## El mejor aprendizaje es hands-on
+
+1. Crear cuenta AWS
+2. Seguir tutorial EC2
+3. Subir datos a S3
+4. Entrenar modelo pequeño
+5. Monitorear costos
+:::
+
+¡No tengas miedo de experimentar! (pero siempre con billing alerts)
+
+# ¿Preguntas? {background-color="#2a2a2a"}
+
+## Referencias
+
+- AWS Official Documentation
+- AWS Well-Architected Framework
+- AWS for Data Science YouTube
+- Cloud Comparison Guide

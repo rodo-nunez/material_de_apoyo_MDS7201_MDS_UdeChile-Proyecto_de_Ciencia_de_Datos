@@ -1,0 +1,1040 @@
+# Análisis Exploratorio de Datos (EDA)
+
+El Análisis Exploratorio de Datos (EDA, por su sigla en inglés) es una etapa fundamental en cualquier proyecto de Ciencia de Datos. Antes de construir modelos, debemos entender profundamente los datos con los que trabajamos: su estructura, calidad, distribuciones, relaciones entre variables y anomalías. Un buen EDA no es solo un paso preliminar — es el proceso que determina si el análisis posterior tendrá sentido.
+
+Este capítulo cubre el EDA de datos tabulares. Los datos de imágenes, series de tiempo y texto tienen técnicas propias que se verán en otros capítulos.
+
+## Definición del Problema y KPIs
+
+Antes de tocar los datos, es imprescindible tener claridad sobre el problema que se quiere resolver y cómo se medirá el éxito. Dos marcos ampliamente usados son SMART y FAST.
+
+### Marco SMART
+
+El marco SMART define objetivos que son:
+
+- **Specific** (Específicos): bien delimitados, sin ambigüedad
+- **Measurable** (Medibles): con métricas cuantificables
+- **Achievable** (Alcanzables): realistas dado el contexto
+- **Relevant** (Relevantes): alineados con el negocio
+- **Time-bound** (Acotados en el tiempo): con plazos definidos
+
+![SMART Goals](../chapter_files/mediabag/smart.png)
+
+### Marco FAST
+
+El marco FAST es una alternativa más orientada a organizaciones ágiles:
+
+- **Frequently discussed** (Discutidos frecuentemente)
+- **Ambitious** (Ambiciosos)
+- **Specific** (Específicos)
+- **Transparent** (Transparentes)
+
+![FAST Goals](../chapter_files/mediabag/fast.png)
+
+### Preguntas Clave para el EDA
+
+Con el problema definido, el análisis exploratorio debe responder:
+
+**Análisis Preliminar**
+
+- ¿Qué datos están disponibles y en qué volumen?
+- ¿Hay valores faltantes? ¿Cuántos y en qué variables?
+- ¿Cuáles son las estadísticas básicas de cada variable?
+- ¿Qué preprocesamiento se requiere?
+- ¿Se puede escalar o normalizar los datos?
+- ¿Es posible incorporar fuentes de datos adicionales?
+- ¿Se puede visualizar la distribución de los datos?
+- ¿Es posible resolver el problema solo mirando los datos?
+
+**Análisis Detallado**
+
+- ¿Son independientes las variables? ¿Cuáles son las correlaciones?
+- ¿Es necesario reducir la dimensionalidad?
+- ¿Existen clusters naturales en los datos?
+- ¿Hay desbalance de clases? ¿Se puede corregir?
+- ¿Qué variables son más discriminativas entre clases?
+
+## Qué Debe Contener un Buen EDA
+
+### Perspectiva de ChatGPT-4o
+
+Un EDA completo debe incluir los siguientes componentes:
+
+**1. Comprensión del Dataset**
+
+- Descripción general: fuente, estructura y propósito
+- Descripción de columnas: tipo (categórica, numérica, etc.) y significado
+- Dimensiones: número de filas y columnas
+
+**2. Datos Faltantes**
+
+- Identificar valores faltantes por columna
+- Evaluar patrones de missingness (aleatorio, sistemático, correlacionado)
+- Definir estrategia de imputación
+
+**3. Duplicados**
+
+- Identificar y remover filas duplicadas cuando sean redundantes
+
+**4. Estadísticas Descriptivas**
+
+- Variables numéricas: media, mediana, varianza, skewness, kurtosis
+- Variables categóricas: frecuencias, moda, valores únicos
+
+**5. Distribuciones de Variables**
+
+- Histogramas y KDE para variables numéricas
+- Boxplots para detectar outliers
+- Gráficos de barras para variables categóricas
+
+**6. Detección de Outliers**
+
+- Boxplots, Z-scores, método IQR
+- Evaluación: ¿son errores o valores extremos válidos?
+
+**7. Relaciones y Correlaciones**
+
+- Pairplots entre variables numéricas
+- Matriz de correlación como heatmap
+- Relaciones categórica vs. numérica: boxplots, violin plots
+
+**8. Insights para Feature Engineering**
+
+- Transformaciones potenciales (log, escalado, etc.)
+- Features nuevas a partir de interacciones
+- Estrategias de encoding para variables categóricas
+
+**9. Calidad de Datos y Anomalías**
+
+- Inconsistencias, valores incorrectos, patrones inesperados
+- Verificación de tipos de datos y problemas de formato
+
+**10. Hipótesis Iniciales**
+
+- Tendencias y relaciones observadas
+- Hipótesis a validar en el modelamiento
+
+**Bonus: Automatización y Reproducibilidad**
+
+- Usar Jupyter Notebooks o scripts Python
+- Librerías de EDA automático: `ydata-profiling`, `sweetviz`, `dataprep`
+
+### Perspectiva de Claude Opus 4.6
+
+Esta perspectiva pone énfasis en el rigor conceptual, especialmente en los aspectos de missingness, calidad de datos y análisis de etiquetas.
+
+**1. Encuadre del Problema y Medición**
+
+Antes de analizar, definir explícitamente:
+
+- ¿Qué pregunta se quiere responder? Establecer el objetivo de predicción o análisis
+- ¿Qué representa cada observación? (un cliente, una transacción, una lectura de sensor)
+- ¿Cuál es el mecanismo de recolección de datos? Encuesta, sensor, log web, exportación de base de datos — cada uno introduce sesgos distintos
+- ¿Qué periodo temporal o alcance geográfico cubre el dato?
+- ¿Qué conocimiento de dominio es relevante?
+- ¿Cuáles son las limitaciones conocidas del dataset?
+
+**2. Resumen Automático**
+
+- Usar herramientas como `ydata-profiling` o `sweetviz` como primer paso
+- Verificar dimensiones y tipos de datos — una variable categórica codificada como entero puede corromper el análisis
+- Detectar filas duplicadas: ¿mediciones genuinas o errores de ingesta?
+- Identificar columnas constantes o casi constantes
+
+**3. Análisis de Datos Faltantes**
+
+- Calcular fracción de faltantes por columna y por fila
+- Diagnosticar el mecanismo de missingness:
+  - **MCAR**: missingness independiente de cualquier variable → seguro imputar o eliminar
+  - **MAR**: missingness depende de otras variables observadas → imputación válida condicionando correctamente
+  - **MNAR**: missingness depende del valor no observado → imputación estándar produce sesgo
+- Visualizar patrones de missingness — ¿los faltantes están correlacionados entre features?
+- Distinguir valores genuinamente faltantes de valores centinela (-999, "N/A" codificado como número)
+- Documentar la estrategia de imputación elegida
+
+**4. Distribuciones de Variables Individuales**
+
+- Para cada variable continua: histograma y/o KDE; media, mediana, desviación estándar, skewness, kurtosis
+- Para cada variable discreta o de conteo: gráfico de barras; detectar concentraciones inesperadas
+- Para cada variable categórica: tabular frecuencias; identificar categorías raras
+- Identificar outliers y evaluar críticamente cada uno
+
+**5. Transformaciones de Variables**
+
+- Para variables con sesgo, considerar transformaciones log, raíz cuadrada, o potencia
+- Aplicar tests de normalidad (Shapiro-Wilk para muestras pequeñas, Anderson-Darling o D'Agostino-Pearson para muestras grandes)
+- Usar `PowerTransformer` (Box-Cox para datos estrictamente positivos, Yeo-Johnson para datos de cualquier signo)
+
+::: {.callout-important}
+## Precaución con Data Leakage en Transformaciones
+Ajustar transformadores **solo en el conjunto de entrenamiento** y aplicarlos al conjunto de validación/test. Ajustar en el dataset completo es una forma de data leakage.
+:::
+
+**6. Estructura Bivariada y Multivariada**
+
+- Calcular matriz de correlación pairwise (Pearson para variables aproximadamente normales, Spearman para variables ordinales o no normales)
+- Identificar pares altamente correlacionados (|r| > 0.9 como umbral aproximado)
+- Para pares clave, graficar scatter plots o densidades 2D en lugar de depender solo del coeficiente de correlación
+- Para relaciones categórica vs. continua: boxplots o violin plots por categoría
+
+**7. Dimensionalidad y Redundancia**
+
+- Aplicar PCA y graficar la varianza explicada como función del número de componentes
+- Aplicar clustering jerárquico sobre la matriz de correlación para identificar grupos de features redundantes
+- Aplicar reducción no lineal (UMAP, t-SNE) para visualizar la estructura global en 2D
+- Distinguir reducción de dimensionalidad para *visualización* de reducción para *modelamiento*
+
+**8. Análisis Estratificado por Etiquetas (Contexto Supervisado)**
+
+- Tabular la distribución de clases — ¿hay desbalance? ¿cuán severo?
+- Para cada feature, graficar su distribución estratificada por clase
+- Aplicar el test KS o similar para rankear features por poder discriminativo
+- Corregir por comparaciones múltiples (Bonferroni, Benjamini-Hochberg)
+- Verificar si el missingness está correlacionado con la clase
+
+**9. Relevancia de Features**
+
+- Entrenar un modelo simple (random forest o gradient boosting superficial) y extraer importancias
+- Preferir **importancias de permutación** sobre importancias basadas en impureza cuando hay features correlacionadas
+- Cruzar importancias del modelo con resultados estadísticos univariados
+
+**10. Calidad de Datos y Anomalías**
+
+- Verificar inconsistencias entre variables relacionadas
+- Detectar **data leakage**: ¿alguna feature codifica información que no estaría disponible en producción real? Este es el problema de calidad más peligroso
+- Verificar que el índice o identificador sea genuinamente único
+
+**11. Síntesis y Decisiones**
+
+- Resumir hallazgos clave
+- Documentar decisiones de preprocesamiento
+- Identificar preguntas abiertas que requieren modelamiento
+- Documentar todo — un EDA no reproducible no es un análisis
+
+## Dataset de Ejemplo: ALeRCE Broker
+
+Usaremos datos del broker ALeRCE, que contiene features extraídas de series de tiempo en dos bandas fotométricas para objetos astronómicos. Algunas features no pueden calcularse, por lo que tienen valores NaN.
+
+::: {.callout-note}
+## Sobre el Dataset
+Este dataset es un ejemplo real de ciencia de datos aplicada a astrofísica. Los principios del EDA que aplicaremos son completamente generales y aplicables a cualquier dataset tabular de cualquier dominio.
+:::
+
+### Carga y Pivoteo del Dataset
+
+```{python}
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+```
+
+```{python}
+try:
+    df = pd.read_pickle("../chapter_files/data/pkls/features_small.pickle")
+except:
+    df = pd.read_pickle("MDS7201/libro/chapter_files/data/pkls/features_small.pickle")
+```
+
+```{python}
+df
+```
+
+Cada fila tiene el nombre del objeto (`oid`), el nombre de la feature (`name`), la banda fotométrica (`fid`), el valor de la feature (`value`) y la versión (`version`). Pivoteamos para tener una fila por objeto:
+
+```{python}
+df = df.reset_index()
+df["fname"] = df.name + "_" + df.fid.astype(str)
+df = df.pivot(index="oid", columns=["fname"], values="value")
+df.head()
+```
+
+```{python}
+df
+```
+
+Ahora cada fila es un objeto astronómico y cada columna es una feature en una banda específica. Trabajaremos con una muestra de 1000 filas para agilizar los cálculos:
+
+```{python}
+df = df.sample(1000, random_state=42)
+```
+
+## EDA Automático
+
+Las herramientas de EDA automático son útiles como punto de partida, pero no reemplazan el análisis manual. Tratar sus resultados como una línea base, no como una conclusión.
+
+```{python}
+# from ydata_profiling import ProfileReport
+```
+
+Primero hacemos un análisis mínimo de todas las columnas:
+
+```{python}
+# profile = ProfileReport(df, minimal=True)
+# profile.to_file(output_file="output.html")
+```
+
+Luego, un análisis completo de las primeras 15 columnas:
+
+```{python}
+# profile = ProfileReport(df.iloc[:, :15])
+# profile.to_file(output_file="output_selection.html")
+```
+
+## Preprocesamiento: Datos Faltantes
+
+### Visualización de Faltantes
+
+```{python}
+(df.isna().sum() / df.shape[0]).plot.barh(figsize=(6, 30), grid=True)
+```
+
+### Tipos de Missingness
+
+**MCAR — Missing Completely At Random**
+
+$$P(R \mid Y_{obs}, Y_{mis}) = P(R)$$
+
+La probabilidad de missingness es independiente de todos los datos. Cuando esto se cumple, las filas completas son una submuestra aleatoria del dataset completo — no se introduce sesgo al eliminarlas. Un diagnóstico clave: si puedes predecir missingness a partir de tus variables observadas, ya falsificaste MCAR.
+
+**MAR — Missing At Random**
+
+$$P(R \mid Y_{obs}, Y_{mis}) = P(R \mid Y_{obs})$$
+
+La probabilidad de missingness depende solo de los datos observados. Es una suposición fundamentalmente no testeable — no puedes distinguir MAR de MNAR usando solo los datos, porque los valores que permitirían distinguirlos son precisamente los que faltan.
+
+La imputación múltiple y los métodos basados en verosimilitud son válidos bajo MAR, pero solo si las variables que determinan el missingness están incluidas en el modelo de imputación.
+
+**MNAR — Missing Not At Random**
+
+$$P(R \mid Y_{obs}, Y_{mis}) \neq P(R \mid Y_{obs})$$
+
+La probabilidad de missingness depende del valor no observado en sí mismo. La imputación estándar bajo MNAR produce estimaciones sesgadas, y el sesgo no desaparece con más datos.
+
+#### Diagnóstico con KS Test
+
+Verificamos si el periodo es MNAR comparando la distribución de `mean_mag_1` para objetos con y sin periodo calculado:
+
+```{python}
+from scipy import stats
+
+df.loc[df.Period_band_1.isna()].mean_mag_1.plot.hist(
+    bins=30, cumulative=True, density=True, alpha=0.5, label="Sin periodo"
+)
+df.loc[df.Period_band_1.notna()].mean_mag_1.plot.hist(
+    bins=30, cumulative=True, density=True, alpha=0.5, label="Con periodo"
+)
+plt.xlabel("mean_mag_1")
+plt.legend()
+stats.ks_2samp(
+    df.loc[df.Period_band_1.isna()].mean_mag_1.dropna(),
+    df.loc[df.Period_band_1.notna()].mean_mag_1.dropna()
+)
+```
+
+El periodo **no es MNAR** en el sentido estricto — el missingness se debe a que objetos más débiles (mayor magnitud) son más difíciles de medir, lo que es conocimiento de dominio.
+
+### Estrategias de Imputación
+
+**Valor arbitrario** (señal explícita de faltante):
+
+```{python}
+aux = df.fillna(-99)
+aux
+```
+
+**Mediana** (robusto a outliers):
+
+```{python}
+aux = df.fillna(df.median())
+```
+
+**Muestro de la distribución empírica** (preserva la distribución):
+
+```{python}
+for col in list(df):
+    df[col] = df[col].fillna(
+        pd.Series(
+            index=df[df[col].isna()].index,
+            data=df[col].dropna().sample(df[col].isna().sum(), replace=True).values
+        )
+    )
+```
+
+**SimpleImputer de scikit-learn** (media):
+
+```{python}
+from sklearn.impute import SimpleImputer
+
+imp = SimpleImputer(missing_values=np.nan, strategy='mean')
+imp.fit(df)
+aux = pd.DataFrame(index=df.index, data=imp.transform(df), columns=list(df))
+aux.Mean_1.plot.hist(bins=30)
+aux.plot.scatter(x="Mean_1", y="Mean_2", s=2, alpha=0.5)
+```
+
+**SimpleImputer con valor más frecuente**:
+
+```{python}
+imp = SimpleImputer(missing_values=np.nan, strategy='most_frequent')
+imp.fit(df)
+aux = pd.DataFrame(index=df.index, data=imp.transform(df), columns=list(df))
+```
+
+**IterativeImputer** (basado en correlaciones entre features):
+
+```{python}
+from sklearn.experimental import enable_iterative_imputer
+from sklearn.impute import IterativeImputer
+
+imp = IterativeImputer(max_iter=10, random_state=0)
+imp.fit(df)
+aux = pd.DataFrame(index=df.index, data=imp.transform(df), columns=list(df))
+```
+
+**KNNImputer** (basado en vecinos más cercanos):
+
+```{python}
+# Primero aplicamos StandardScaler para que el KNN tenga sentido
+from sklearn.preprocessing import StandardScaler
+from sklearn.impute import KNNImputer
+
+# Recargamos el dataset original
+try:
+    df = pd.read_pickle("../chapter_files/data/pkls/features_small.pickle")
+except:
+    df = pd.read_pickle("MDS7201/libro/chapter_files/data/pkls/features_small.pickle")
+
+df = df.reset_index()
+df["fname"] = df.name + "_" + df.fid.astype(str)
+df = df.pivot(index="oid", columns=["fname"], values="value")
+df = df.sample(1000, random_state=42)
+
+scaler = StandardScaler()
+scaler.fit(df)
+df_scaled = scaler.transform(df)
+
+imputer = KNNImputer(n_neighbors=2, weights="uniform")
+imputer.fit(df_scaled)
+aux = pd.DataFrame(index=df.index, data=imputer.transform(df_scaled), columns=list(df))
+# Invertir la transformación para volver a escala original
+aux = pd.DataFrame(index=df.index, data=scaler.inverse_transform(aux), columns=list(df))
+aux.Mean_1.plot.hist(bins=30)
+aux.plot.scatter(x="Mean_1", y="Mean_2", s=2, alpha=0.5)
+```
+
+::: {.callout-tip}
+## Orden de Operaciones para Imputación
+Si vas a imputar datos, es mejor hacerlo **después** de aplicar transformaciones de varianza. De esta forma las correlaciones entre features son más informativas para métodos como KNNImputer o IterativeImputer. En contexto supervisado, aprender transformaciones solo sobre el training set para evitar data leakage.
+:::
+
+## Estadísticas Básicas
+
+Recargamos el dataset para el análisis estadístico:
+
+```{python}
+try:
+    df = pd.read_pickle("../chapter_files/data/pkls/features_small.pickle")
+except:
+    df = pd.read_pickle("MDS7201/libro/chapter_files/data/pkls/features_small.pickle")
+
+df = df.reset_index()
+df["fname"] = df.name + "_" + df.fid.astype(str)
+df = df.pivot(index="oid", columns=["fname"], values="value")
+df = df.sample(1000, random_state=42)
+```
+
+```{python}
+dfstats = df.describe()
+dfstats
+```
+
+## Normalidad de los Datos
+
+El objetivo es hacer los datos lo más normales posible aplicando transformaciones. Muchos métodos estadísticos y de ML asumen Gaussianidad en su derivación.
+
+Comenzamos con la versión imputada del dataframe (usamos `aux` del KNNImputer):
+
+```{python}
+df = aux
+```
+
+### Boxplots
+
+```{python}
+fig, ax = plt.subplots(figsize=(10, 30))
+ax.boxplot(df, vert=False, tick_labels=list(df), flierprops={'marker':'.'})
+
+plt.show()
+```
+
+Usando escala `asinh` para ver tanto valores pequeños como grandes, positivos y negativos:
+
+```{python}
+fig, ax = plt.subplots(figsize=(10, 30))
+ax.boxplot(df, vert=False, tick_labels=list(df), flierprops={'marker':'.'})
+ax.set_xscale('asinh', linthresh=0.1)
+```
+
+Los boxplots están llenos de outliers — los datos están lejos de ser normales. Algunas variables necesitan escala logarítmica:
+
+```{python}
+aux.Multiband_period_12.plot.hist(bins=100)
+```
+
+```{python}
+df.Multiband_period_12.plot.hist(log=True, bins=np.logspace(-2, 4, 30))
+plt.xscale('log')
+```
+
+### Escaladores
+
+Comparamos diferentes estrategias de escalado:
+
+```{python}
+from sklearn.preprocessing import RobustScaler, QuantileTransformer, StandardScaler
+
+df = aux
+
+# StandardScaler
+scaler = StandardScaler().fit(df)
+dft = pd.DataFrame(data=scaler.transform(df), index=df.index, columns=list(df))
+fig, ax = plt.subplots(figsize=(10, 30))
+ax.boxplot(dft.dropna(), vert=False, tick_labels=list(df), flierprops={'marker':'.'})
+ax.set_xscale('asinh', linthresh=0.1)
+```
+
+```{python}
+# RobustScaler
+scaler_r = RobustScaler().fit(df)
+dftr = pd.DataFrame(data=scaler_r.transform(df), index=df.index, columns=list(df))
+fig, ax = plt.subplots(figsize=(10, 30))
+ax.boxplot(dftr.dropna(), vert=False, tick_labels=list(df), flierprops={'marker':'.'})
+ax.set_xscale('asinh', linthresh=0.1)
+```
+
+```{python}
+# QuantileTransformer
+scaler_q = QuantileTransformer(output_distribution="uniform").fit(df)
+dftq = pd.DataFrame(data=scaler_q.transform(df), index=df.index, columns=list(df))
+fig, ax = plt.subplots(figsize=(10, 30))
+ax.boxplot(dftq.dropna(), vert=False, tick_labels=list(df), flierprops={'marker':'.'})
+plt.show()
+```
+
+### Test de Shapiro-Wilk
+
+Usamos el test de Shapiro-Wilk para medir desviación de normalidad. Usamos una muestra de 500 filas para detectar efectos más fuertes:
+
+```{python}
+df.Skew_1.plot.hist(bins=30)
+```
+
+```{python}
+stats.shapiro(df.Skew_1.dropna().sample(500))
+```
+
+El p-value indica desviación fuerte de normalidad. Aplicamos para todas las columnas:
+
+```{python}
+SW = dft.sample(500).apply(lambda col: np.log10(stats.shapiro(col.dropna()).pvalue), axis=0)
+SW.sort_values().plot.barh(figsize=(10, 30))
+```
+
+```{python}
+display(pd.DataFrame(SW.sort_values()))
+```
+
+### PowerTransform
+
+Power transforms son transformaciones paramétricas y monótonas que hacen los datos más Gaussianos.
+
+- **Box-Cox**: requiere datos estrictamente positivos
+- **Yeo-Johnson**: soporta datos positivos y negativos
+
+![Box-Cox Transform](../chapter_files/mediabag/boxcox.png)
+
+![Yeo-Johnson Transform](../chapter_files/mediabag/yeo-johnson.png)
+
+![PowerTransform Comparison](../chapter_files/mediabag/powertransform.png)
+
+![sklearn PowerTransformer](../chapter_files/mediabag/sklearn_powertransform.png)
+
+```{python}
+from sklearn.preprocessing import PowerTransformer
+
+power = PowerTransformer(method='yeo-johnson', standardize=False)
+power.fit(dft)
+dftp = pd.DataFrame(data=power.transform(dft), columns=list(dft), index=dft.index)
+dftp
+```
+
+Los parámetros lambda aprendidos por la transformación:
+
+```{python}
+pd.DataFrame(data=power.lambdas_, columns=["lambda"], index=list(df)).plot.barh(figsize=(10, 30))
+plt.xscale('asinh')
+```
+
+Comparación visual para una variable:
+
+```{python}
+fig, ax = plt.subplots(figsize=(14, 6))
+var = 'Psi_eta_2'
+dft[var].plot.hist(bins=50, ax=ax, label='StandardScaler', histtype='step')
+dftr[var].plot.hist(bins=50, ax=ax, label='RobustScaler', histtype='step')
+dftq[var].plot.hist(bins=10, ax=ax, label='QuantileTransform', histtype='step')
+dftp[var].plot.hist(bins=50, ax=ax, label='PowerTransform', histtype='step')
+fig.legend()
+```
+
+El PowerTransform es la mejor opción para acercar las variables a una distribución Gaussiana(0, 1).
+
+Repetimos los tests de normalidad y comparamos:
+
+```{python}
+SWr = dftr.apply(lambda col: np.log10(stats.shapiro(col.dropna()).pvalue), axis=0)
+SWr.sort_values().plot.barh(figsize=(10, 30))
+```
+
+```{python}
+SWp = dftp.apply(lambda col: np.log10(stats.shapiro(col.dropna()).pvalue), axis=0)
+SWp.sort_values().plot.barh(figsize=(10, 30))
+```
+
+```{python}
+fig, ax = plt.subplots(nrows=2, sharex=True)
+ax[0].scatter(SW, SWp, c='b', label='PowerTransform')
+ax[0].scatter(SW, SWr, c='g', marker='*', label='RobustScaler')
+ax[0].set_xlabel("SW StandardScaler")
+ax[0].set_ylabel("SW comparison")
+ax[0].legend()
+ax[1].hist(SW, bins=20, label="SW StandardScaler", cumulative=True, histtype='step')
+ax[1].hist(SWr, bins=20, label="SW RobustScaler", cumulative=True, histtype='step')
+ax[1].hist(SWp, bins=20, label="SW PowerTransform", cumulative=True, histtype='step')
+ax[1].legend()
+ax[0].plot(ax[0].get_xlim(), ax[0].get_xlim(), c='r')
+```
+
+Para p-values bajos, el PowerTransform es claramente superior. El RobustScaler empeora las cosas en casi todos los casos.
+
+Boxplots finales tras la transformación:
+
+```{python}
+fig, ax = plt.subplots(figsize=(10, 30))
+ax.boxplot(dftp.dropna(), vert=False, labels=list(df), flierprops={'marker':'.'})
+ax.set_xscale('asinh', linthresh=0.1)
+```
+
+## Correlaciones
+
+Con las variables más normalmente distribuidas, analizamos las correlaciones:
+
+```{python}
+cm = dftp.corr()  # usar cov() para la covarianza sin normalizar
+plt.imshow(cm)
+```
+
+```{python}
+cm = dft.corr()
+plt.imshow(cm)
+```
+
+```{python}
+cm = dftr.corr()
+plt.imshow(cm)
+```
+
+```{python}
+cm = dftq.corr()
+plt.imshow(cm)
+```
+
+Distribución de correlaciones entre escaladores:
+
+```{python}
+fig, ax = plt.subplots()
+ax.hist(dftp.corr().to_numpy().flatten(), bins=np.linspace(0, 1, 50),
+        lw=2, alpha=0.5, log=True, histtype='step', label='power-transform')
+ax.hist(dft.corr().to_numpy().flatten(), bins=np.linspace(0, 1, 50),
+        lw=2, alpha=0.5, log=True, histtype='step', label='standard scaler')
+ax.hist(dftr.corr().to_numpy().flatten(), bins=np.linspace(0, 1, 50),
+        lw=2, alpha=0.5, log=True, histtype='step', label='robust scaler')
+ax.hist(dftq.corr().to_numpy().flatten(), bins=np.linspace(0, 1, 50),
+        lw=2, alpha=0.5, log=True, histtype='step', label='quantile transform')
+ax.legend()
+```
+
+Hay una tendencia de estructura de correlación menos concentrada: standard/robust → power transform → quantile transform.
+
+### Matriz de Correlación Ordenada
+
+La matriz de correlación con etiquetas:
+
+```{python}
+fig, ax = plt.subplots(figsize=(30, 30))
+cm = dftp.corr()
+ax.imshow(cm)
+ax.set_yticks(range(dftp.shape[1]))
+ax.set_yticklabels(list(dftp))
+ax.set_xticks(range(dftp.shape[1]))
+ax.set_xticklabels(list(dftp), rotation=90)
+plt.show()
+```
+
+Para ordenar la matriz usamos clustering jerárquico, definiendo la distancia como `1 - |corr|`:
+
+```{python}
+import scipy.cluster.hierarchy as sch
+
+distance_matrix = 1 - cm.abs()
+linkage_matrix = sch.linkage(sch.distance.squareform(distance_matrix), method='complete')
+
+# Reordenar según el clustering
+dendrogram = sch.dendrogram(linkage_matrix, no_plot=True)
+index = dendrogram['leaves']
+sorted_correlation_matrix = cm.iloc[index, :].iloc[:, index]
+```
+
+```{python}
+fig, ax = plt.subplots(figsize=(30, 30))
+ax.imshow(sorted_correlation_matrix)
+ax.set_yticks(range(dftp.shape[1]))
+ax.set_yticklabels(np.array(list(dftp))[index])
+ax.set_xticks(range(dftp.shape[1]))
+ax.set_xticklabels(np.array(list(dftp))[index], rotation=90)
+plt.show()
+```
+
+### Más Allá de las Correlaciones Lineales: Información Mutua
+
+La Información Mutua (MI) cuantifica la dependencia entre dos variables capturando tanto relaciones lineales como no lineales.
+
+Para variables discretas:
+
+$$I(X;Y) = \sum_{x \in X} \sum_{y \in Y} P(x,y) \log\left(\frac{P(x, y)}{P(x) P(y)}\right)$$
+
+Para variables continuas:
+
+$$I(X;Y) = \int_x \int_y p(x, y) \log \left( \frac{p(x, y)}{p(x) p(y)} \right) dx \, dy$$
+
+Ejemplo comparando F-test (solo lineal) vs. MI (lineal y no lineal):
+
+```{python}
+import matplotlib.pyplot as plt
+import numpy as np
+from sklearn.feature_selection import f_regression, mutual_info_regression
+
+np.random.seed(0)
+X = np.random.rand(1000, 3)
+y = X[:, 0] + np.sin(6 * np.pi * X[:, 1]) + 0.1 * np.random.randn(1000)
+
+f_test, _ = f_regression(X, y)
+f_test /= np.max(f_test)
+
+mi = mutual_info_regression(X, y)
+mi /= np.max(mi)
+
+plt.figure(figsize=(15, 5))
+for i in range(3):
+    plt.subplot(1, 3, i + 1)
+    plt.scatter(X[:, i], y, edgecolor="black", s=20)
+    plt.xlabel("$x_{}$".format(i + 1), fontsize=14)
+    if i == 0:
+        plt.ylabel("$y$", fontsize=14)
+    plt.title("F-test={:.2f}, MI={:.2f}".format(f_test[i], mi[i]), fontsize=16)
+plt.show()
+```
+
+El F-test califica a $x_1$ como más discriminativo (relación lineal). La MI califica a $x_2$ como más discriminativo (relación sinusoidal no lineal). Ambos correctamente marcan $x_3$ como irrelevante.
+
+Funciones para calcular la matriz de información mutua:
+
+```{python}
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.feature_selection import mutual_info_classif, mutual_info_regression
+from sklearn.preprocessing import LabelEncoder
+
+
+def mutual_information_matrix(df, discrete_cols=None, random_state=42):
+    """
+    Calcula la matriz de información mutua pairwise para un DataFrame.
+    
+    Para cada par (X, Y), MI se estima tratando Y como target y X como feature.
+    La matriz se hace simétrica promediando MI(X->Y) y MI(Y->X).
+    """
+    if discrete_cols is None:
+        discrete_cols = []
+
+    cols = df.columns.tolist()
+    n = len(cols)
+    mi = np.zeros((n, n))
+
+    for i, col_i in enumerate(cols):
+        print(i, col_i, end="\r")
+        X = df[[col_i]].values
+        is_discrete_i = col_i in discrete_cols
+
+        for j, col_j in enumerate(cols):
+            if i == j:
+                mi[i, j] = np.nan
+                continue
+            if j < i:
+                mi[i, j] = mi[j, i]
+                continue
+
+            y = df[col_j].values
+            is_discrete_j = col_j in discrete_cols
+
+            if is_discrete_j:
+                mi_ij = mutual_info_classif(
+                    X, y, discrete_features=[is_discrete_i], random_state=random_state
+                )[0]
+            else:
+                mi_ij = mutual_info_regression(
+                    X, y, discrete_features=[is_discrete_i], random_state=random_state
+                )[0]
+
+            X_rev = df[[col_j]].values
+            y_rev = df[col_i].values
+            if is_discrete_i:
+                mi_ji = mutual_info_classif(
+                    X_rev, y_rev, discrete_features=[is_discrete_j], random_state=random_state
+                )[0]
+            else:
+                mi_ji = mutual_info_regression(
+                    X_rev, y_rev, discrete_features=[is_discrete_j], random_state=random_state
+                )[0]
+
+            mi[i, j] = (mi_ij + mi_ji) / 2.0
+
+    mi_df = pd.DataFrame(mi, index=cols, columns=cols)
+    return mi_df
+
+
+def normalised_mutual_information_matrix(mi_df):
+    """
+    Normaliza la matriz de MI a [0, 1] usando la media geométrica de entropías.
+    NMI(X, Y) = MI(X, Y) / sqrt(H(X) * H(Y))
+    """
+    mi_values = mi_df.fillna(0).values
+    row_max = mi_values.max(axis=1, keepdims=True).clip(min=1e-10)
+    col_max = mi_values.max(axis=0, keepdims=True).clip(min=1e-10)
+    nmi = mi_values / np.sqrt(row_max * col_max)
+    np.fill_diagonal(nmi, 1.0)
+    return pd.DataFrame(nmi, index=mi_df.index, columns=mi_df.columns)
+
+
+def plot_mi_matrix(mi_df, title="Mutual Information Matrix", figsize=(10, 8)):
+    """Grafica un heatmap de la matriz de MI o NMI."""
+    fig, ax = plt.subplots(figsize=figsize)
+    data = mi_df.fillna(1.0).values
+    im = ax.imshow(data, cmap="viridis", aspect="auto", vmin=0)
+    plt.colorbar(im, ax=ax, label="Mutual Information")
+    ax.set_xticks(range(len(mi_df.columns)))
+    ax.set_yticks(range(len(mi_df.index)))
+    ax.set_xticklabels(mi_df.columns, rotation=45, ha="right", fontsize=9)
+    ax.set_yticklabels(mi_df.index, fontsize=9)
+    ax.set_title(title, fontsize=12)
+    plt.tight_layout()
+    plt.show()
+```
+
+```{python}
+discrete = None
+mi = mutual_information_matrix(dftp.iloc[:, :60], discrete_cols=discrete)
+nmi = normalised_mutual_information_matrix(mi)
+plot_mi_matrix(nmi, title="Normalised Mutual Information Matrix")
+```
+
+## Reducción de Datos
+
+La reducción de datos abarca:
+
+- **Reducción de dimensionalidad**: disminuir el número de variables
+- **Reducción de numerosidad**: usar un subconjunto representativo de filas
+- **Compresión de datos**: cambiar la representación
+
+### Reducción de Dimensionalidad
+
+Para las visualizaciones estratificadas por clase, cargamos las etiquetas del dataset ALeRCE:
+
+```{python}
+try:
+    labels = pd.read_pickle("../chapter_files/data/pkls/dfcrossmatches_small.pickle")
+except:
+    labels = pd.read_pickle("MDS7201/libro/chapter_files/data/pkls/dfcrossmatches_small.pickle")
+
+labels
+```
+
+```{python}
+labels = labels.loc[labels.index.isin(df.index)].classALeRCE
+labels.unique()
+```
+
+Eliminamos dos clases no relevantes según conocimiento de dominio:
+
+```{python}
+mask = labels.isin(['LPV', 'RRL', 'AGN', 'QSO', 'EB/EW', 'YSO', 'EA',
+   'Blazar', 'RSCVn', 'DSCT', 'Ceph', 'SNIa', 'SLSN', 'CV/Nova',
+   'SNII', 'Periodic-Other', 'SNIbc', 'SNIIn', 'SNIIb', 'TDE'])
+
+dftp = dftp.loc[mask]
+labels = labels.loc[dftp.index]
+dftp.shape
+```
+
+```{python}
+labels.value_counts().sort_values().plot.barh(log=True)
+```
+
+Los datos están altamente desbalanceados.
+
+Codificamos las etiquetas numéricamente:
+
+```{python}
+from sklearn import preprocessing
+
+le = preprocessing.LabelEncoder()
+le.classes_ = np.array(['SNIbc', 'SNII', 'SNIIn', 'SNIIb', 'SNIa', 'SLSN', 'TDE',
+   'CV/Nova', 'AGN', 'QSO', 'Blazar', 'YSO',
+   'DSCT', 'RRL', 'EB/EW', 'EA', 'Ceph', 'LPV', 'RSCVn', 'Periodic-Other'])
+y = le.transform(labels)
+```
+
+#### PCA
+
+```{python}
+from sklearn.decomposition import PCA
+
+pca = PCA(n_components=2)
+pca.fit(dftp)
+df_pca = pca.transform(dftp)
+```
+
+```{python}
+fig, ax = plt.subplots(figsize=(10, 10), sharex=True)
+cax = ax.scatter(df_pca[:, 0], df_pca[:, 1], c=np.array(y), marker='.')
+ax.set_xlabel("PCA 1")
+ax.set_ylabel("PCA 2")
+cbar = plt.colorbar(cax, orientation='horizontal')
+cbar.ax.set_xticks(np.array(range(y.max()+1)),
+                   labels=[le.inverse_transform([i])[0] for i in (np.array(range(y.max()+1)))])
+cbar.ax.set_xticklabels(cbar.ax.get_xticklabels(), rotation=90)
+plt.show()
+```
+
+#### t-SNE
+
+```{python}
+from sklearn.manifold import TSNE
+
+tsne_model = TSNE(n_components=2, init='pca', perplexity=25)
+df_tsne = tsne_model.fit_transform(dftp[:10000])
+```
+
+```{python}
+fig, ax = plt.subplots(figsize=(10, 10), sharex=True)
+cax = ax.scatter(df_tsne[:, 0], df_tsne[:, 1], c=np.array(y[:10000]), marker='.')
+ax.set_xlabel("t-SNE 1")
+ax.set_ylabel("t-SNE 2")
+cbar = plt.colorbar(cax, orientation='horizontal')
+cbar.ax.set_xticks(np.array(range(y.max()+1)),
+                   labels=[le.inverse_transform([i])[0] for i in (np.array(range(y.max()+1)))])
+cbar.ax.set_xticklabels(cbar.ax.get_xticklabels(), rotation=90)
+plt.show()
+```
+
+#### UMAP
+
+```{python}
+import umap
+
+reducer = umap.UMAP()
+df_umap = reducer.fit_transform(dftp)
+```
+
+```{python}
+fig, ax = plt.subplots(figsize=(10, 10), sharex=True)
+cax = ax.scatter(df_umap[:, 0], df_umap[:, 1], c=y, marker='.')
+ax.set_xlabel("UMAP 1")
+ax.set_ylabel("UMAP 2")
+cbar = plt.colorbar(cax, orientation='horizontal')
+cbar.ax.set_xticks(np.array(range(y.max()+1)),
+                   labels=[le.inverse_transform([i])[0] for i in (np.array(range(y.max()+1)))])
+cbar.ax.set_xticklabels(cbar.ax.get_xticklabels(), rotation=90)
+plt.show()
+```
+
+#### PaCMAP
+
+```{python}
+import pacmap
+
+embedding = pacmap.PaCMAP(n_components=2, n_neighbors=None, MN_ratio=0.5, FP_ratio=4.0)
+df_pacmap = embedding.fit_transform(dftp, init="pca")
+```
+
+```{python}
+fig, ax = plt.subplots(figsize=(10, 10), sharex=True)
+cax = ax.scatter(df_pacmap[:, 0], df_pacmap[:, 1], c=y, marker=".", s=10)
+ax.set_xlabel("PACMAP 1")
+ax.set_ylabel("PACMAP 2")
+cbar = plt.colorbar(cax, orientation='horizontal')
+cbar.ax.set_xticks(np.array(range(y.max() + 1)),
+                   labels=[le.inverse_transform([i])[0] for i in (np.array(range(y.max() + 1)))])
+cbar.ax.set_xticklabels(cbar.ax.get_xticklabels(), rotation=90)
+plt.show()
+```
+
+## Importancia de Features con Random Forest
+
+```{python}
+from imblearn.ensemble import BalancedRandomForestClassifier
+
+forest = BalancedRandomForestClassifier(n_estimators=500)
+forest.fit(dftp, labels)
+```
+
+```{python}
+importances = forest.feature_importances_
+std = np.std([tree.feature_importances_ for tree in forest.estimators_], axis=0)
+imps = pd.DataFrame.from_dict({"importances": importances})
+imps.index = list(dftp)
+imps.sort_values(by="importances").plot.barh(figsize=(10, 30))
+```
+
+::: {.callout-warning}
+## Degeneración en Features Correlacionadas
+El orden de features correlacionadas puede ser degenerado — si dos features son altamente correlacionadas, el modelo puede dar alta importancia a cualquiera de las dos intercambiablemente. Preferir importancias de permutación en este caso.
+:::
+
+## Resumen
+
+Un EDA completo para datos tabulares debe incluir:
+
+1. **EDA Automático**: como punto de partida con `ydata-profiling` o similar
+2. **Estadísticas Básicas**: media, mediana, varianza, skewness, kurtosis
+3. **Análisis de Datos Faltantes**: identificar tipo de missingness (MCAR/MAR/MNAR) y elegir estrategia de imputación
+4. **Tests de Normalidad y Transformaciones**: Shapiro-Wilk, PowerTransform, comparación de escaladores
+5. **Correlaciones y Clustering de Variables**: matrices de correlación ordenadas jerárquicamente, información mutua
+6. **Reducción de Dimensionalidad**: PCA, t-SNE, UMAP, PaCMAP — separados para visualización vs. modelamiento
+7. **Distribución de Clases**: desbalance, KS test por feature
+8. **Importancia de Features**: random forest, cross-referencia con resultados estadísticos
+
+::: {.callout-important}
+## Comentarios Finales
+- Si vas a imputar datos, es mejor hacerlo después de aplicar transformaciones
+- En contexto supervisado, aprender transformaciones **solo sobre el training set** para evitar data leakage
+- ¡Hay mucho más que se puede hacer! Este capítulo cubre los fundamentos para datos tabulares
+:::
+
+## Referencias
+
+- Pedregosa, F., et al. (2011). Scikit-learn: Machine Learning in Python. *JMLR*
+- McInnes, L., Healy, J., & Melville, J. (2018). UMAP: Uniform Manifold Approximation and Projection
+- Van der Maaten, L., & Hinton, G. (2008). Visualizing data using t-SNE. *JMLR*
+- Wang, Y., et al. (2021). Understanding How Dimension Reduction Tools Work: An Introduction to PaCMAP
+- Rubin, D. B. (1976). Inference and Missing Data. *Biometrika*

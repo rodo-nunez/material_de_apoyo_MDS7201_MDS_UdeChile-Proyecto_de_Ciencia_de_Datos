@@ -1,0 +1,766 @@
+---
+title: "Metodologías Ágiles Específicas"
+subtitle: "MDS7201 - Master of Data Science"
+author: "Universidad de Chile"
+format:
+  revealjs:
+    theme: [default, ../custom-slides.scss]
+    slide-number: true
+    chalkboard: true
+    preview-links: auto
+    code-fold: false
+    code-tools: true
+    transition: slide
+    background-transition: fade
+  beamer:
+    theme: Madrid
+    colortheme: default
+    fonttheme: professionalfonts
+    aspectratio: 169
+    navigation: horizontal
+    section-titles: true
+    toc: true
+---
+
+# Introducción {background-color="#1a1a1a"}
+
+## Del Manifiesto a la Práctica
+
+::: {.callout-note}
+## Recordatorio
+- **Manifiesto Ágil** = Valores y principios
+- **Metodologías Ágiles** = Implementaciones concretas
+:::
+
+Hoy: CÓMO implementar esos valores
+
+## Metodologías que Veremos
+
+::: {.incremental}
+- **Scrum**: Estructura con sprints e iteraciones
+- **Kanban**: Flujo continuo y visualización
+- **XP**: Excelencia técnica
+- **Lean**: Eliminar desperdicio
+- **Crystal**: Adaptabilidad
+:::
+
+# Scrum {background-color="#2a2a2a"}
+
+## ¿Qué es Scrum?
+
+**Metodología ágil más popular**
+
+::: {.incremental}
+- Creado por Schwaber y Sutherland (1995)
+- Nombre del rugby: trabajo en equipo
+- Iteraciones de tiempo fijo (sprints)
+- Roles, eventos y artefactos definidos
+:::
+
+## Los Tres Pilares
+
+::: {.incremental}
+1. **Transparencia**: Todo visible para todos
+2. **Inspección**: Revisión frecuente
+3. **Adaptación**: Ajustar cuando es necesario
+:::
+
+## Roles en Scrum
+
+::: {.columns}
+::: {.column width="33%"}
+**Product Owner**
+
+- Define visión
+- Prioriza backlog
+- Valida resultados
+:::
+
+::: {.column width="33%"}
+**Scrum Master**
+
+- Facilita proceso
+- Elimina bloqueos
+- Coach del equipo
+:::
+
+::: {.column width="33%"}
+**Dev Team**
+
+- Auto-organizado
+- 3-9 personas
+- Entrega valor
+:::
+:::
+
+## Roles en el Curso
+
+- **Product Owner**: Tutor o contraparte
+- **Scrum Master**: Puede rotar en equipo
+- **Dev Team**: Tu grupo de proyecto
+
+## Artefactos de Scrum
+
+**1. Product Backlog**
+
+Lista priorizada de todo lo necesario
+
+```
+1. [Alta] Análisis exploratorio
+2. [Alta] Modelo baseline
+3. [Media] Feature engineering
+4. [Media] Modelo avanzado
+5. [Baja] Dashboard
+```
+
+## Artefactos de Scrum
+
+**2. Sprint Backlog**
+
+Tareas para el sprint actual
+
+```
+Sprint Goal: Establecer baseline
+
+□ Explorar calidad de datos (2d)
+□ Análisis de correlaciones (3d)
+□ Train/test split (0.5d)
+□ Regresión logística (1d)
+□ Métricas evaluación (1d)
+□ Documentar hallazgos (1d)
+```
+
+## Artefactos de Scrum
+
+**3. Increment**
+
+Producto funcional al final del sprint
+
+**Definition of Done:**
+- Código en Git
+- Script ejecutable
+- Resultados validados
+- Documentado
+- Presentado
+
+## El Sprint
+
+**Contenedor de todos los eventos**
+
+::: {.incremental}
+- Duración fija: 2-4 semanas
+- Nuevo sprint empieza inmediatamente
+- Sprint Goal no cambia durante sprint
+- En DS: 3-4 semanas más realista
+:::
+
+## Eventos de Scrum
+
+::: {.incremental}
+1. **Sprint Planning**: ¿Qué haremos?
+2. **Daily Scrum**: Coordinación diaria
+3. **Sprint Review**: Demo de resultados
+4. **Sprint Retrospective**: ¿Cómo mejorar?
+:::
+
+## Sprint Planning
+
+**Preguntas clave:**
+
+::: {.incremental}
+- ¿Qué puede entregarse?
+- ¿Cómo lo lograremos?
+- ¿Cuál es el Sprint Goal?
+:::
+
+**Ejemplo Sprint Goal DS:**
+- "Entender datos y establecer baseline"
+- "Mejorar accuracy en 10% con FE"
+
+## Daily Scrum
+
+**15 minutos, mismo lugar/hora**
+
+Tres preguntas:
+1. ¿Qué hice ayer?
+2. ¿Qué haré hoy?
+3. ¿Hay impedimentos?
+
+::: {.callout-tip}
+En DS: 2-3 veces/semana puede ser suficiente
+:::
+
+## Sprint Review
+
+**Demo de resultados**
+
+::: {.incremental}
+- Mostrar trabajo completado
+- Obtener feedback
+- Discutir próximos pasos
+- Ajustar Product Backlog
+:::
+
+**En DS**: Demo de modelos, análisis, visualizaciones
+
+## Sprint Retrospective
+
+**Reflexión sobre el proceso**
+
+::: {.incremental}
+- ¿Qué salió bien?
+- ¿Qué no salió tan bien?
+- ¿Qué haremos diferente?
+- 1-3 acciones concretas
+:::
+
+## Scrum en Data Science
+
+::: {.columns}
+::: {.column width="50%"}
+**Desafíos**
+
+- User stories no encajan
+- Estimación muy incierta
+- "Done" es ambiguo
+- Sprints cortos difíciles
+- Trabajo exploratorio
+:::
+
+::: {.column width="50%"}
+**Adaptaciones**
+
+- Sprints 3-4 semanas
+- Goals orientados a valor
+- 20-30% para exploración
+- Definition of Done adaptado
+- Dailies menos frecuentes
+:::
+:::
+
+## Cuándo Usar Scrum
+
+**Funciona bien cuando:**
+- Proyecto con roadmap claro
+- Entregas predecibles necesarias
+- Equipo necesita estructura
+- Múltiples stakeholders
+
+**No funciona cuando:**
+- Proyecto puramente exploratorio
+- Equipo muy pequeño (1-2)
+- Extrema incertidumbre
+
+# Kanban {background-color="#1a1a1a"}
+
+## ¿Qué es Kanban?
+
+**Sistema de gestión de flujo**
+
+::: {.incremental}
+- Origen: Toyota (1940s)
+- David Anderson lo adaptó a software
+- Visualización del trabajo
+- Flujo continuo (no sprints)
+- Mejora evolutiva
+:::
+
+## Principios de Kanban
+
+::: {.incremental}
+1. Comenzar con lo que haces ahora
+2. Mejora incremental y evolutiva
+3. Respetar procesos actuales
+4. Liderazgo en todos los niveles
+:::
+
+## El Tablero Kanban
+
+```
+┌──────────┬──────────┬──────────┬──────────┐
+│ Backlog  │   Doing  │  Review  │   Done   │
+│          │  (WIP:3) │  (WIP:2) │          │
+├──────────┼──────────┼──────────┼──────────┤
+│ Tarea 4  │ Tarea 2  │ Tarea 1  │ Tarea X  │
+│ Tarea 5  │ Tarea 3  │          │ Tarea Y  │
+│ Tarea 6  │ Tarea 7  │          │          │
+└──────────┴──────────┴──────────┴──────────┘
+```
+
+## WIP Limits
+
+**Work In Progress Limits**
+
+::: {.incremental}
+- Limitar tareas simultáneas
+- Prevenir multitasking
+- Identificar cuellos de botella
+- Forzar completar antes de empezar
+:::
+
+**Ejemplo**: Máximo 2 tareas en "Análisis"
+
+## Tablero Kanban para DS
+
+```
+┌────────┬──────────┬──────────┬──────────┬──────┐
+│Backlog │ Analysis │ Modeling │ Review   │ Done │
+│        │ (WIP:2)  │ (WIP:2)  │ (WIP:1)  │      │
+└────────┴──────────┴──────────┴──────────┴──────┘
+```
+
+## Políticas Explícitas
+
+**Reglas claras y visibles**
+
+::: {.incremental}
+- Cuándo mover una tarea
+- Qué significa "Done"
+- Cómo priorizar
+- WIP limits por columna
+:::
+
+## Métricas en Kanban
+
+::: {.incremental}
+- **Lead Time**: Del backlog a done
+- **Cycle Time**: De inicio a done
+- **Throughput**: Tareas completadas/tiempo
+- **WIP**: Tareas en progreso
+:::
+
+**Ley de Little**: Lead Time = WIP / Throughput
+
+## Kanban vs Scrum
+
+| Aspecto | Scrum | Kanban |
+|---------|-------|--------|
+| Iteraciones | Sprints fijos | Flujo continuo |
+| Roles | 3 definidos | Flexibles |
+| Cambios | No en sprint | Cualquier momento |
+| Tablero | Se resetea | Persistente |
+| Ceremonias | 5 obligatorias | Opcionales |
+
+## Cuándo Usar Kanban
+
+**Kanban si:**
+- Trabajo variable
+- Equipo maduro
+- Máxima flexibilidad
+- Mantenimiento continuo
+
+**Para el curso**: Muy apropiado para equipos pequeños
+
+# Extreme Programming (XP) {background-color="#2a2a2a"}
+
+## ¿Qué es XP?
+
+**Excelencia técnica al extremo**
+
+::: {.incremental}
+- Creado por Kent Beck (1990s)
+- Enfoque en calidad del código
+- Prácticas de ingeniería
+- 5 valores, 12 prácticas
+:::
+
+## Valores de XP
+
+::: {.incremental}
+1. **Comunicación**: Directa y constante
+2. **Simplicidad**: Lo más simple que funcione
+3. **Feedback**: Rápido y continuo
+4. **Coraje**: Para cambiar y mejorar
+5. **Respeto**: Entre miembros del equipo
+:::
+
+## Prácticas Clave de XP
+
+**Pair Programming**
+
+::: {.columns}
+::: {.column width="50%"}
+- Driver: Escribe código
+- Navigator: Revisa y piensa
+- Rotar cada 30-60 min
+:::
+
+::: {.column width="50%"}
+**Beneficios:**
+- Mejor calidad
+- Menos bugs
+- Transferencia conocimiento
+- Dos perspectivas
+:::
+:::
+
+## Prácticas Clave de XP
+
+**Test-Driven Development**
+
+::: {.incremental}
+1. **Red**: Test que falla
+2. **Green**: Código mínimo que pasa
+3. **Refactor**: Mejorar código
+:::
+
+```python
+# Test primero
+def test_remove_outliers():
+    data = pd.DataFrame({'value': [1,2,3,100,4,5]})
+    result = remove_outliers(data, 'value')
+    assert len(result) == 5
+```
+
+## Prácticas Clave de XP
+
+**Refactoring**
+
+Mejorar estructura sin cambiar comportamiento
+
+::: {.incremental}
+- Código duplicado → Función
+- Nombres confusos → Nombres claros
+- Script largo → Módulos
+- Complejidad → Simplicidad
+:::
+
+## Prácticas Clave de XP
+
+**Continuous Integration**
+
+::: {.incremental}
+- Integrar código frecuentemente
+- Tests automáticos
+- Validación de calidad
+- GitHub Actions, GitLab CI
+:::
+
+## Simple Design
+
+**YAGNI: You Aren't Gonna Need It**
+
+::: {.incremental}
+- No agregar funcionalidad especulativa
+- Lo más simple que funcione ahora
+- Refactorizar cuando sea necesario
+- No antes
+:::
+
+## XP en Data Science
+
+**Prácticas más valiosas:**
+
+::: {.incremental}
+- ✅ Pair Programming (ocasional)
+- ✅ Refactoring (scripts monolíticos → código modularizado)
+- ✅ Simple Design (empezar simple)
+- ✅ Testing (funciones críticas)
+- ✅ CI (automatizar validaciones)
+:::
+
+# Lean Development {background-color="#1a1a1a"}
+
+## Origen de Lean
+
+**Lean Manufacturing → Lean Software**
+
+::: {.incremental}
+- Toyota Production System
+- Mary y Tom Poppendieck (2003)
+- Eliminar desperdicio
+- Maximizar valor
+:::
+
+## Los 7 Principios Lean
+
+::: {.incremental}
+1. Eliminar desperdicio
+2. Amplificar el aprendizaje
+3. Decidir lo más tarde posible
+4. Entregar lo más rápido posible
+5. Empoderar al equipo
+6. Construir integridad
+7. Ver el todo
+:::
+
+## 1. Eliminar Desperdicio
+
+**Tipos de desperdicio en DS:**
+
+::: {.incremental}
+- Análisis que nunca se completan
+- Complejidad innecesaria
+- No documentar decisiones
+- Esperar por datos/aprobaciones
+- Multitasking excesivo
+- Bugs y datos incorrectos
+:::
+
+## 2. Amplificar el Aprendizaje
+
+**Experimentar y aprender rápido**
+
+::: {.incremental}
+- Fallar rápido
+- Documentar experimentos
+- Compartir conocimiento
+- Retrospectivas
+- Spike solutions
+:::
+
+## 3. Decidir lo Más Tarde Posible
+
+**Esperar más información**
+
+::: {.incremental}
+- No elegir modelo prematuramente
+- Explorar datos antes de decidir features
+- Probar múltiples enfoques
+- Mantener opciones abiertas
+:::
+
+::: {.callout-note}
+Balance: Tarde pero no demasiado tarde
+:::
+
+## 4. Entregar lo Más Rápido Posible
+
+**Velocidad genera aprendizaje**
+
+::: {.incremental}
+- Prototipos rápidos
+- Modelo baseline en días
+- Feedback loops cortos
+- Automatizar
+:::
+
+## 5. Empoderar al Equipo
+
+**Autonomía y confianza**
+
+::: {.incremental}
+- Equipo decide herramientas
+- Autonomía para experimentar
+- Sin microgestión
+- Responsabilidad compartida
+:::
+
+## 6. Construir Integridad
+
+**Calidad desde el inicio**
+
+::: {.incremental}
+- Validación de datos temprana
+- Tests automatizados
+- Code reviews
+- Documentación concurrente
+- Validación rigurosa de modelos
+:::
+
+## 7. Ver el Todo
+
+**Optimizar el sistema completo**
+
+::: {.incremental}
+- No solo accuracy
+- También: tiempo, interpretabilidad, mantenibilidad
+- Todo el pipeline: datos → modelo → deployment
+- Impacto de negocio
+:::
+
+## Lean en DS
+
+**Aplicación práctica:**
+
+::: {.incremental}
+- Kanban boards
+- WIP limits
+- Cycle time tracking
+- Retrospectivas
+- Eliminar desperdicio constantemente
+:::
+
+# Crystal {background-color="#2a2a2a"}
+
+## ¿Qué es Crystal?
+
+**Familia de metodologías adaptativas**
+
+::: {.incremental}
+- Creado por Alistair Cockburn (1990s)
+- Se adapta al tamaño y criticidad
+- Colores indican rigor necesario
+- Para el curso: **Crystal Clear**
+:::
+
+## La Familia Crystal
+
+::: {.incremental}
+- **Crystal Clear**: 1-6 personas ⭐
+- **Crystal Yellow**: 7-20 personas
+- **Crystal Orange**: 21-40 personas
+- **Crystal Red**: 41-80 personas
+- **Crystal Maroon**: 80+ personas
+:::
+
+Más oscuro = más riguroso
+
+## Tres Prioridades
+
+::: {.incremental}
+1. **Safety**: Seguro fallar y aprender
+2. **Efficiency**: Maximizar valor
+3. **Habitability**: Proceso cómodo para el equipo
+:::
+
+## Siete Propiedades
+
+::: {.incremental}
+1. Entregas frecuentes
+2. Mejora reflexiva
+3. Comunicación osmótica
+4. Seguridad personal
+5. Foco
+6. Acceso a usuarios expertos
+7. Ambiente técnico apropiado
+:::
+
+## Crystal en DS
+
+**Por qué funciona:**
+
+::: {.incremental}
+- Reconoce variabilidad
+- Énfasis en comunicación
+- Minimalista
+- Enfoque en personas
+- Equipos 3-4 = Crystal Clear perfecto
+:::
+
+## Prácticas Crystal Clear
+
+**Obligatorias:**
+- Entregas frecuentes
+- Retrospectivas
+- Comunicación directa
+
+**Opcionales:**
+- Dailies/check-ins
+- Pair programming
+- Tests automatizados
+
+**Adaptativas:**
+- Lo que funcione para tu equipo
+
+# Comparación {background-color="#1a1a1a"}
+
+## Tabla Comparativa
+
+| Aspecto | Scrum | Kanban | XP | Lean | Crystal |
+|---------|-------|--------|-----|------|---------|
+| Estructura | Alta | Baja | Media | Baja | Variable |
+| Roles | Prescriptivo | Flexible | Flexible | Flexible | Minimal |
+| Iteraciones | Sprints | Flujo | Iteraciones | Flujo | Flexible |
+| Enfoque | Gestión | Flujo | Ingeniería | Eficiencia | Personas |
+
+## ¿Cuál Usar?
+
+::: {.callout-tip}
+## No hay respuesta única
+
+Depende de:
+- Tamaño del equipo
+- Naturaleza del proyecto
+- Madurez del equipo
+- Requisitos de entrega
+- Contexto organizacional
+:::
+
+# Enfoque Híbrido {background-color="#2a2a2a"}
+
+## Para el Curso
+
+**Tomar lo mejor de cada metodología:**
+
+::: {.incremental}
+- **Scrum**: Planning, Reviews, Retros
+- **Kanban**: Tablero visual, WIP limits
+- **XP**: Pair programming, refactoring, tests
+- **Lean**: Eliminar desperdicio, entregar rápido
+- **Crystal**: Adaptar a lo que funciona
+:::
+
+## Setup Recomendado
+
+::: {.incremental}
+1. **Tablero Kanban** en Trello/Notion/GitHub
+2. **Hitos como Sprints** (3-4 semanas)
+3. **Planning** al inicio de cada hito
+4. **Check-ins semanales** del equipo
+5. **Review/Demo** al final de hito
+6. **Retrospectiva** después de cada hito
+7. **Prácticas XP** cuando necesario
+:::
+
+## Principios Core
+
+::: {.callout-important}
+## Mantener siempre:
+- Comunicación constante
+- Entregas incrementales de valor
+- Adaptación basada en aprendizaje
+- Calidad técnica
+- Ritmo sostenible
+:::
+
+# Conclusiones {background-color="#1a1a1a"}
+
+## Lecciones Clave
+
+::: {.incremental}
+- No hay metodología perfecta
+- Principios > Prácticas específicas
+- Adaptar al contexto
+- DS requiere flexibilidad
+- Híbridos funcionan bien
+:::
+
+## Para el Curso
+
+::: {.callout-tip}
+**Recomendación:**
+
+Empezar simple (Kanban + Scrum elements)
+
+Agregar según necesidad
+
+Adaptar continuamente
+
+Lo importante: ¡entregar valor!
+:::
+
+## Próximo Capítulo
+
+**Herramientas de Gestión de Proyectos**
+
+::: {.incremental}
+- Trello, Notion, Jira
+- GitHub Projects
+- Herramientas de comunicación
+- Control de versiones
+:::
+
+# ¿Preguntas? {background-color="#2a2a2a"}
+
+## Recursos
+
+**Lecturas:**
+- [Scrum Guide](https://scrumguides.org/)
+- Anderson, D. (2010). "Kanban"
+- Beck, K. (2004). "XP Explained"
+- Poppendieck (2003). "Lean Software Development"
+- Cockburn, A. (2004). "Crystal Clear"
+
+**Para DS:**
+- Russell Jurney: "Agile Data Science 2.0"

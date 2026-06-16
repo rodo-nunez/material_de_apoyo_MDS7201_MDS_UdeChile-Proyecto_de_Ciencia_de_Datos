@@ -1,0 +1,378 @@
+# Causalidad
+
+> Una introducción de 45 minutos al razonamiento causal para científicos de datos.
+
+**Lo que deberías llevarte de este capítulo:**
+
+1. *Correlación no es causalidad* — y hay una razón precisa para ello.
+2. Los *grafos acíclicos dirigidos (DAGs)* son un lenguaje simple para hablar de estructura causal.
+3. *Tres estructuras* (confundidores, mediadores, colisionadores) determinan qué variables debes y no debes incluir en un modelo.
+4. Dado un DAG, el *ajuste por la puerta trasera* permite estimar efectos causales a partir de datos observacionales.
+
+## 1. Motivación: La Paradoja de Simpson
+
+Antes de hablar de causalidad formalmente, veamos un fenómeno que es a la vez famoso e inquietante. El mismo conjunto de datos puede contar dos historias opuestas dependiendo de si lo miramos agregado o dividido en grupos.
+
+![Animación de la paradoja de Simpson](images/Simpsons_paradox_-_animation.gif)
+
+En la animación, cada subgrupo muestra una tendencia *positiva*, pero al juntar todos los puntos la tendencia general es *negativa*. Ninguna vista es incorrecta — responden preguntas distintas.
+
+### Admisiones en Berkeley, 1973
+
+El ejemplo más citado. UC Berkeley fue demandada por discriminación de género en admisiones de posgrado porque, a nivel agregado, los hombres eran admitidos a una tasa notablemente mayor que las mujeres. Pero al desagregar por departamento, el panorama cambió.
+
+```{python}
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+sns.set(style='whitegrid')
+np.random.seed(42)
+
+berkeley = pd.DataFrame({
+    'Department':    ['A', 'B', 'C', 'D', 'E', 'F'],
+    'Men_Applied':   [825, 560, 325, 417, 191, 373],
+    'Men_Admitted':  [511, 353, 120, 138,  53,  22],
+    'Women_Applied':  [108, 25, 593, 375, 393, 341],
+    'Women_Admitted': [ 89, 17, 202, 131,  94,  24],
+})
+
+berkeley['Men_Rate']   = berkeley['Men_Admitted']   / berkeley['Men_Applied']
+berkeley['Women_Rate'] = berkeley['Women_Admitted'] / berkeley['Women_Applied']
+
+agg_men   = berkeley['Men_Admitted'].sum()   / berkeley['Men_Applied'].sum()
+agg_women = berkeley['Women_Admitted'].sum() / berkeley['Women_Applied'].sum()
+
+print(f'Tasa de admisión agregada — hombres: {agg_men:.1%}')
+print(f'Tasa de admisión agregada — mujeres: {agg_women:.1%}')
+print()
+print(berkeley[['Department', 'Men_Applied', 'Women_Applied',
+                'Men_Rate', 'Women_Rate']].to_string(index=False))
+```
+
+Dos hechos:
+
+- **Agregado:** los hombres son admitidos a una tasa considerablemente mayor.
+- **Por departamento:** las mujeres son admitidas a una tasa similar o incluso *mayor* que los hombres en la mayoría de los departamentos.
+
+¿Qué está pasando? Las mujeres postularon desproporcionadamente a departamentos competitivos (con tasas de admisión bajas para todos); los hombres, a departamentos menos competitivos. La brecha agregada no está impulsada por discriminación dentro de los departamentos — está impulsada por *a qué departamentos postularon*.
+
+**Qué número es el "verdadero" depende de la pregunta.** *"¿Está Berkeley discriminando en el punto de admisión?"* y *"¿Favorece el sistema en su conjunto a los hombres?"* son preguntas distintas y requieren análisis distintos. La estadística sola no puede decirte cuál usar — para eso necesitas un modelo de la historia causal subyacente.
+
+## 2. Correlación vs. Causalidad: el Confundidor
+
+La paradoja de Simpson es una cara de un problema más profundo: una correlación entre dos variables puede ser producida enteramente por una *tercera* variable que influye en ambas. A esa tercera variable la llamamos **confundidor**.
+
+Veamos esto con un ejemplo sintético donde conocemos la verdad, porque la generamos nosotros mismos.
+
+```{python}
+n = 200
+
+# Causa oculta: temperatura
+temperature = np.random.normal(loc=25, scale=5, size=n)
+
+# Tanto las ventas de helado como los ataques de tiburón son causados por la temperatura.
+# Ninguno causa al otro.
+ice_cream_sales = temperature * 10 + np.random.normal(0, 5, size=n)
+shark_attacks   = temperature *  2 + np.random.normal(0, 2, size=n)
+
+df = pd.DataFrame({
+    'Temperature':   temperature,
+    'IceCreamSales': ice_cream_sales,
+    'SharkAttacks':  shark_attacks,
+})
+```
+
+```{python}
+sns.scatterplot(x='IceCreamSales', y='SharkAttacks', data=df)
+plt.title('Ventas de helado vs. ataques de tiburón')
+plt.xlabel('Ventas de helado')
+plt.ylabel('Ataques de tiburón')
+plt.show()
+
+print('Matriz de correlación:')
+print(df[['IceCreamSales', 'SharkAttacks']].corr().round(2))
+```
+
+Si confiáramos en este gráfico, concluiríamos que *vender más helado causa más ataques de tiburón*. Eso es obviamente absurdo — pero la correlación es real, y los tests estadísticos la marcarán felizmente como significativa. La correlación simplemente no proviene de un vínculo causal entre las dos variables.
+
+Ahora agreguemos la temperatura a una regresión y preguntemos: una vez que controlamos por temperatura, ¿sigue el helado prediciendo ataques de tiburón?
+
+```{python}
+def ols_with_se(X, y):
+    """Mínimos cuadrados ordinarios que retorna (coeficientes, errores estándar).
+    
+    X debe incluir una columna de intercepto.
+    """
+    X = np.asarray(X, dtype=float)
+    y = np.asarray(y, dtype=float)
+    n, p = X.shape
+    beta, *_ = np.linalg.lstsq(X, y, rcond=None)
+    resid = y - X @ beta
+    sigma2 = (resid @ resid) / (n - p)
+    cov_beta = sigma2 * np.linalg.inv(X.T @ X)
+    se = np.sqrt(np.diag(cov_beta))
+    return beta, se
+
+ones = np.ones(len(df))
+X_naive = np.column_stack([ones, df['IceCreamSales']])
+X_adj   = np.column_stack([ones, df['IceCreamSales'], df['Temperature']])
+y_reg   = df['SharkAttacks'].values
+
+b_n, se_n = ols_with_se(X_naive, y_reg)
+b_a, se_a = ols_with_se(X_adj,   y_reg)
+
+print('Modelo ingenuo (SharkAttacks ~ IceCreamSales):')
+print(f'  intercepto:    {b_n[0]:+7.3f} ± {se_n[0]:.3f}')
+print(f'  IceCreamSales: {b_n[1]:+7.3f} ± {se_n[1]:.3f}')
+print()
+print('Modelo ajustado (SharkAttacks ~ IceCreamSales + Temperature):')
+print(f'  intercepto:    {b_a[0]:+7.3f} ± {se_a[0]:.3f}')
+print(f'  IceCreamSales: {b_a[1]:+7.3f} ± {se_a[1]:.3f}')
+print(f'  Temperature:   {b_a[2]:+7.3f} ± {se_a[2]:.3f}')
+```
+
+En el modelo ingenuo, el coeficiente de `IceCreamSales` está varios errores estándar alejado de cero — una asociación estadísticamente clara, pero causalmente sin sentido. En el modelo ajustado, el coeficiente de `IceCreamSales` es comparable a su propio error estándar (consistente con cero), mientras que `Temperature` tiene un coeficiente grande y bien determinado. Al *controlar por* temperatura, el aparente efecto del helado sobre los ataques de tiburón desapareció.
+
+Esta es la idea clave: una correlación observacional entre $X$ e $Y$ puede provenir de cualquier combinación de:
+
+- $X$ causa $Y$
+- $Y$ causa $X$
+- Una tercera variable $Z$ causa ambas
+
+La correlación sola no puede distinguir entre estas posibilidades. Necesitamos estructura adicional — algún supuesto o conocimiento sobre el proceso generador de datos. Esa estructura se representa más naturalmente como un grafo.
+
+## 3. DAGs: un Lenguaje para la Estructura Causal
+
+Un **grafo acíclico dirigido (DAG)** es un diagrama con:
+
+- **Nodos** = variables.
+- **Flechas** = efectos causales directos (el origen causa el destino).
+- **Acíclico** = ninguna variable se causa a sí misma, ni siquiera indirectamente.
+
+La historia del helado y los tiburones es un DAG:
+
+```{python}
+import networkx as nx
+
+def draw_dag(edges, title='DAG Causal', pos=None):
+    G = nx.DiGraph()
+    G.add_edges_from(edges)
+    if pos is None:
+        pos = nx.spring_layout(G, seed=42)
+    fig, ax = plt.subplots(figsize=(7, 4))
+    nx.draw_networkx(G, pos, ax=ax, arrows=True, with_labels=True,
+                     node_size=2200, node_color='lightblue', font_size=11,
+                     arrowsize=20)
+    ax.set_title(title)
+    ax.axis('off')
+    plt.show()
+
+draw_dag(
+    [('Temperature', 'IceCreamSales'), ('Temperature', 'SharkAttacks')],
+    title='Temperatura como causa común',
+)
+```
+
+Todo DAG, por grande que sea, está construido a partir de tres estructuras locales básicas. Aprender a reconocerlas es la mayor parte del trabajo.
+
+### 3.1 Fork (confundidor): $A \leftarrow C \rightarrow B$
+
+$C$ es una **causa común** de $A$ y $B$. $A$ y $B$ están correlacionadas, pero ninguna causa a la otra. Es exactamente la historia temperatura / helado / tiburones.
+
+- **Implicación:** sin hacer nada, $A$ y $B$ parecen correlacionadas.
+- **Solución:** controlar por $C$ para eliminar la asociación espuria.
+
+### 3.2 Chain (mediador): $A \rightarrow B \rightarrow C$
+
+$B$ es un **mediador**: transporta la influencia causal de $A$ hacia $C$. Ejemplo clásico: $\text{Fumar} \rightarrow \text{Alquitrán en pulmones} \rightarrow \text{Cáncer de pulmón}$.
+
+- **Implicación:** $A$ y $C$ están correlacionadas, y sí hay un vínculo causal real.
+- **Advertencia:** si controlas por $B$, *bloqueas* parte del efecto de $A$ sobre $C$. Si tu pregunta es "¿cuál es el efecto total del tabaquismo sobre el cáncer?", **no** debes ajustar por el alquitrán.
+
+### 3.3 Collider (colisionador): $A \rightarrow B \leftarrow C$
+
+$B$ es un **efecto común** de $A$ y $C$. Esta es la estructura que más sorprende.
+
+- **Implicación:** sin condicionar, $A$ y $C$ son *independientes*.
+- **Advertencia:** si condicionas en $B$, *creas* una correlación espuria entre $A$ y $C$ donde no existía ninguna. Esto se llama **sesgo de colisionador** o **sesgo de selección**, y es ubicuo en datos reales.
+
+La regla del colisionador es contraintuitiva, así que la vemos numéricamente:
+
+```{python}
+from scipy.stats import pearsonr
+from sklearn.linear_model import LinearRegression
+
+np.random.seed(0)
+n = 1000
+
+# Dos causas independientes, un efecto común.
+A = np.random.normal(0, 1, n)
+C = np.random.normal(0, 1, n)
+B = A + C + np.random.normal(0, 1, n)   # B es el colisionador
+
+def residualize(x, Z):
+    """Retorna la parte de x no explicada linealmente por Z."""
+    model = LinearRegression().fit(Z, x)
+    return x - model.predict(Z)
+
+A_given_B = residualize(A.reshape(-1, 1), B.reshape(-1, 1)).ravel()
+C_given_B = residualize(C.reshape(-1, 1), B.reshape(-1, 1)).ravel()
+
+fig, ax = plt.subplots(ncols=2, figsize=(11, 4.5))
+ax[0].scatter(A, C, alpha=0.4)
+ax[0].set_title(f'Sin condicionar: corr(A, C) = {pearsonr(A, C)[0]:+.2f}')
+ax[0].set_xlabel('A'); ax[0].set_ylabel('C')
+
+ax[1].scatter(A_given_B, C_given_B, alpha=0.4, color='C3')
+ax[1].set_title(f'Condicionado en B: corr(A, C | B) = {pearsonr(A_given_B, C_given_B)[0]:+.2f}')
+ax[1].set_xlabel('Residual A')
+ax[1].set_ylabel('Residual C')
+plt.tight_layout(); plt.show()
+```
+
+A la izquierda, $A$ y $C$ son independientes — los construimos así. A la derecha, después de condicionar en el colisionador $B$, aparece una clara correlación *negativa*. Inventamos información al condicionar. La razón intuitiva: si $B = A + C$ y sabemos que $B$ es alto, entonces un valor bajo de $A$ implica un valor alto de $C$, y viceversa. Condicionar en el efecto común ata las causas entre sí.
+
+**Variantes del sesgo de colisionador en la práctica:**
+
+- *Muestrear por el resultado:* estudiar solo pacientes hospitalizados puede hacer que dos factores de riesgo independientes parezcan anticorrelacionados, porque cada uno es suficiente para llegar al hospital.
+- *Efectos de selección en encuestas:* las personas que responden la encuesta son el colisionador.
+- *Berkeley revisitado:* el resultado de admisión es parcialmente un colisionador entre los atributos del postulante y la elección de departamento.
+
+### Tabla Resumen (memorizar)
+
+| Estructura | Forma | Efecto sin condicionar | ¿Debes condicionar en el nodo central? |
+|---|---|---|---|
+| Fork (confundidor) | $A \leftarrow C \rightarrow B$ | Crea correlación espuria entre $A$ y $B$ | **Sí** — elimina la correlación espuria |
+| Chain (mediador) | $A \rightarrow B \rightarrow C$ | $A$ y $C$ correlacionadas por $B$ | **No** si quieres el efecto total de $A$ en $C$ |
+| Collider (colisionador) | $A \rightarrow B \leftarrow C$ | $A$ y $C$ son independientes | **No** — condicionar *crea* correlación espuria |
+
+## 4. Qué Controlar: la Regla Práctica
+
+Cuando tienes un dataset y quieres estimar el efecto causal de un *tratamiento* $T$ sobre un *resultado* $Y$, la pregunta siempre es: **¿qué otras variables debo incluir en mi modelo?** El DAG da la respuesta.
+
+**Regla de tres pasos:**
+
+1. Dibuja el DAG que crees que describe el proceso generador de datos. Sé explícito sobre qué variables causan cuáles otras.
+2. Para cada otra variable en tu dataset, pregunta: ¿es un *confundidor*, un *mediador* o un *colisionador* de $T$ e $Y$?
+3. **Ajusta por confundidores. No ajustes** por mediadores (a menos que quieras específicamente el efecto directo) ni por colisionadores.
+
+::: {.callout-important}
+## La Trampa del "Todo a la Regresión"
+
+El instinto de "meter todo en la regresión" es incorrecto. Agregar más variables puede empeorar el estimado causal, no mejorarlo, si esas variables son mediadores o colisionadores.
+:::
+
+### Berkeley Revisitado
+
+En el caso Berkeley el DAG es aproximadamente:
+
+$$\text{Género} \;\longrightarrow\; \text{Departamento postulado} \;\longrightarrow\; \text{Admisión}$$
+
+El departamento es un *mediador* del efecto del género sobre la admisión. Si queremos el "efecto directo del género en la etapa de admisión", condicionamos en el departamento — y ese efecto resulta pequeño o revertido. Si queremos el "efecto total del género sobre la probabilidad de ser admitido en Berkeley", *no* debemos condicionar en el departamento — y ese efecto es la brecha agregada.
+
+Distintas preguntas, distintos ajustes, mismos datos. La elección no es estadística, es causal.
+
+## 5. Estimando Efectos Causales: Ajuste por Puerta Trasera con DoWhy
+
+### El Criterio de Puerta Trasera
+
+Dado un DAG con tratamiento $T$ y resultado $Y$, un conjunto de variables $S$ satisface el **criterio de puerta trasera** si:
+
+1. Ninguna variable en $S$ es descendiente de $T$ (para no condicionar accidentalmente en un mediador o colisionador aguas abajo del tratamiento).
+2. $S$ bloquea todos los caminos desde $T$ hasta $Y$ que comienzan con una flecha apuntando *hacia* $T$ — estos son los "caminos de puerta trasera" por donde se cuela la confusión.
+
+Si tal $S$ existe, condicionar en él da un estimado no sesgado del efecto causal de $T$ sobre $Y$.
+
+En el ejemplo del helado y los tiburones, el único camino de puerta trasera desde `IceCreamSales` hasta `SharkAttacks` es `IceCreamSales ← Temperature → SharkAttacks`. Condicionar en `Temperature` lo bloquea. Eso es exactamente lo que hizo la regresión ajustada en la sección 2.
+
+### Ejemplo Simulado con DoWhy
+
+Construimos datos donde *conocemos* el efecto causal, y luego lo estimamos con la librería `DoWhy`:
+
+```{python}
+from dowhy import CausalModel
+
+np.random.seed(42)
+n = 1000
+
+# B es un confundidor de T e Y.
+# Efecto causal verdadero de T sobre Y es 2.
+B = np.random.normal(size=n)
+T = 0.5 * B + np.random.normal(size=n)
+Y = 2.0 * T + 1.5 * B**2 + np.random.normal(size=n)
+
+data = pd.DataFrame({'B': B, 'T': T, 'Y': Y})
+data.head()
+```
+
+```{python}
+model = CausalModel(
+    data=data,
+    treatment='T',
+    outcome='Y',
+    common_causes=['B'],
+)
+model.view_model(layout='dot')
+```
+
+```{python}
+identified = model.identify_effect()
+print(identified)
+```
+
+```{python}
+estimate = model.estimate_effect(identified, method_name='backdoor.linear_regression')
+print(f'Efecto verdadero:  2.00')
+print(f'Efecto estimado:   {estimate.value:.2f}')
+```
+
+DoWhy recorre tres pasos explícitos:
+
+1. **Modelar.** Declaras tu DAG causal (aquí: $B$ es causa común de $T$ e $Y$).
+2. **Identificar.** Pregunta: dado este DAG, ¿es el efecto causal de $T$ sobre $Y$ identificable desde las variables observadas? Encuentra el estimando de puerta trasera $\frac{d}{dT} E[Y \mid B]$.
+3. **Estimar.** Aplica el estimador a los datos (aquí, regresión lineal con $B$ como control) y reporta un número.
+
+El estimado está muy cerca del valor verdadero de 2 — incluso aunque el confundidor entra en $Y$ de forma *no lineal* (a través de $B^2$). La separación entre *identificación* (una pregunta gráfica) y *estimación* (una pregunta de modelado) es lo que hace poderoso este enfoque: puedes cambiar el estimador sin repensar el DAG.
+
+::: {.callout-tip}
+## Separación de Identificación y Estimación
+
+Esta separación es una de las ideas más poderosas del marco causal de Pearl: primero determinas *si* el efecto es identificable (usando el DAG), luego decides *cómo* estimarlo (usando los datos). Son preguntas independientes.
+:::
+
+## 6. Más Allá: Descubrimiento Causal
+
+A lo largo de este capítulo *asumimos* el DAG. Ese es el escenario estándar de **inferencia causal**: datos + DAG → efectos.
+
+El problema inverso — aprender el DAG a partir de datos — se llama **descubrimiento causal**, y es mucho más difícil. En general el DAG no es identificable solo desde datos observacionales (piensa: $X \rightarrow Y$ e $Y \rightarrow X$ pueden producir las mismas correlaciones), así que los algoritmos de descubrimiento causal dependen de supuestos adicionales: fidelidad, distribuciones de ruido, intervenciones, orden temporal, etc.
+
+Un punto de partida práctico en Python es el ecosistema `pywhy`. Ver por ejemplo las herramientas de falsificación en el módulo `gcm` de DoWhy:
+
+- [pywhy.org/dowhy — Falsify DAG](https://www.pywhy.org/dowhy/v0.10/example_notebooks/gcm_falsify_dag.html)
+
+## Resumen
+
+::: {.callout-note}
+## Las Cuatro Ideas Centrales
+
+1. La correlación puede ser creada por una tercera variable. Siempre pregunta: ¿dónde podría esconderse un confundidor?
+2. Dibuja el DAG *antes* de la regresión.
+3. Ajusta por confundidores. Deja mediadores y colisionadores solos (en general).
+4. Dado un DAG, el ajuste por puerta trasera convierte datos observacionales en un estimado causal.
+:::
+
+| Estructura | Forma | ¿Controlar? |
+|---|---|---|
+| Confundidor | $A \leftarrow C \rightarrow B$ | **Sí** |
+| Mediador | $A \rightarrow B \rightarrow C$ | **No** (si quieres el efecto total) |
+| Colisionador | $A \rightarrow B \leftarrow C$ | **No** |
+
+## Referencias
+
+- Pearl, J. (2009). *Causality: Models, Reasoning, and Inference* (2nd ed.). Cambridge University Press.
+- Pearl, J., Glymour, M., & Jewell, N. P. (2016). *Causal Inference in Statistics: A Primer*. Wiley.
+- Hernán, M. A., & Robins, J. M. (2020). *Causal Inference: What If*. Chapman & Hall. [Disponible online](https://www.hsph.harvard.edu/miguel-hernan/causal-inference-book/)
+- DoWhy: [py-why.github.io/dowhy](https://py-why.github.io/dowhy/)
+- Bickel, P. J. et al. (1975). Sex Bias in Graduate Admissions: Data from Berkeley. *Science*, 187(4175), 398–404.

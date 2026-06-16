@@ -1,0 +1,282 @@
+# Introducción a Cloud Computing
+
+La computación en la nube es hoy una habilidad fundamental para cualquier científico de datos que trabaje en proyectos reales. Permite acceder a infraestructura de cómputo, almacenamiento y servicios de datos a demanda, sin necesidad de administrar hardware propio. Para un data scientist, el cloud no es solo un lugar donde guardar archivos — es el entorno donde los modelos corren en producción, donde los pipelines de datos se ejecutan a escala, y donde los equipos colaboran.
+
+::: {.callout-note}
+## Videos recomendados
+- [E33 — Servicios útiles de AWS para un Data Scientist](https://www.youtube.com/watch?v=xeDjQgOdGb4)
+- [AWS en 100 Segundos](https://www.youtube.com/watch?v=JIbIYCM48to)
+:::
+
+## ¿Por Qué Importa Saber Usar la Nube?
+
+Trabajar en proyectos reales con datos reales implica necesidades que la computadora local no puede satisfacer:
+
+- **Escala**: los datasets reales pueden pesar terabytes; los modelos de producción procesan millones de registros
+- **Cómputo bajo demanda**: entrenar un modelo grande durante horas en una GPU potente, sin tener que comprar esa GPU
+- **Colaboración**: compartir datos, código y resultados con un equipo distribuido
+- **Producción**: hacer que un modelo o pipeline esté disponible de manera continua y confiable
+- **Costo**: pagar solo por lo que se usa, en lugar de mantener infraestructura ociosa
+
+Los tres grandes proveedores de cloud — AWS, Azure y Google Cloud — ofrecen esencialmente los mismos servicios con distintos nombres. Conocer uno facilita enormemente aprender los otros.
+
+::: {.callout-tip}
+## Comparación entre proveedores
+[AWS, Azure y GCP — Comparación de servicios (Google Cloud)](https://cloud.google.com/docs/get-started/aws-azure-gcp-service-comparison?hl=es-419)
+:::
+
+## Los Tres Grandes Proveedores
+
+### AWS — Amazon Web Services
+
+El proveedor más antiguo y con mayor cuota de mercado (~32%). Fue el pionero del cloud moderno, lanzando sus primeros servicios en 2006. Tiene la mayor cantidad de servicios disponibles y la comunidad más grande.
+
+**Fortalezas:** madurez, cantidad de servicios, documentación, comunidad.
+**Usado por:** startups, empresas medianas, y la gran mayoría de proyectos de Data Science en producción.
+
+### Azure — Microsoft Azure
+
+El segundo proveedor en cuota de mercado (~23%). Integración nativa con el ecosistema Microsoft (Active Directory, Office 365, SQL Server). Muy popular en empresas corporativas que ya usan productos Microsoft.
+
+**Fortalezas:** integración con Microsoft, fuerte en híbrido (on-premise + cloud).
+**Usado por:** grandes empresas con infraestructura Microsoft preexistente.
+
+### GCP — Google Cloud Platform
+
+El tercer proveedor (~11%). Tecnología de punta en datos y ML — BigQuery, Vertex AI, y TensorFlow son de Google. El mejor para workloads de ML/AI en opinión de muchos data scientists.
+
+**Fortalezas:** Big Data nativo (BigQuery), ML/AI, Kubernetes (lo inventó Google).
+**Usado por:** proyectos con foco en ML, startups tecnológicas.
+
+::: {.callout-note}
+## Para el curso
+Los proyectos del curso típicamente usan **AWS** por su popularidad en Chile y por la disponibilidad de créditos educativos. Los conceptos son transferibles a cualquier proveedor.
+:::
+
+## Servicios Útiles de AWS para un Data Scientist
+
+AWS tiene más de 200 servicios. Los siguientes son los más relevantes para proyectos de ciencia de datos.
+
+### EC2 — Elastic Compute Cloud
+
+El servicio más fundamental de AWS: máquinas virtuales en la nube. Puedes lanzar una instancia con las especificaciones que necesites (CPU, RAM, GPU, almacenamiento) y pagar por hora.
+
+**Para Data Science:**
+- Instancias de GPU (familia `p3`, `p4`, `g4`) para entrenar modelos
+- Instancias de alta RAM (familia `r`) para datasets grandes en memoria
+- Instancias spot (hasta 90% de descuento) para tareas que pueden interrumpirse
+
+**Conceptos clave:**
+- **AMI** (Amazon Machine Image): la imagen del sistema operativo que usará tu instancia
+- **Security Group**: el firewall que controla qué conexiones acepta la instancia
+- **Key Pair**: el par de claves SSH para conectarte a la instancia
+
+```bash
+# Conectarse a una instancia EC2
+ssh -i mi-clave.pem ec2-user@ec2-X-X-X-X.compute.amazonaws.com
+```
+
+### S3 — Simple Storage Service
+
+Almacenamiento de objetos en la nube. Es el lugar estándar para guardar datos, modelos entrenados, logs, y cualquier archivo en proyectos AWS.
+
+**Conceptos clave:**
+- **Bucket**: el contenedor principal (similar a un directorio raíz)
+- **Object**: cualquier archivo almacenado en S3
+- **Key**: la ruta del objeto dentro del bucket
+- **Prefix**: parte de la key que actúa como carpeta virtual
+
+**Para Data Science:**
+- Almacenar datasets crudos y procesados
+- Guardar artefactos de modelos (pesos, configuraciones)
+- Input/output de pipelines de ETL
+- Logs y resultados de experimentos
+
+```python
+import boto3
+
+s3 = boto3.client('s3')
+
+# Subir archivo
+s3.upload_file('datos_locales.csv', 'mi-bucket', 'datos/datos_locales.csv')
+
+# Descargar archivo
+s3.download_file('mi-bucket', 'datos/datos_locales.csv', 'datos_locales.csv')
+
+# Leer directamente con pandas
+import pandas as pd
+df = pd.read_csv('s3://mi-bucket/datos/datos_locales.csv')
+```
+
+### Lambda
+
+Funciones serverless: código que se ejecuta en respuesta a eventos, sin administrar servidores. Pagas solo por el tiempo de ejecución (por milisegundo).
+
+**Para Data Science:**
+- Triggers automáticos cuando llega un archivo a S3
+- APIs simples para servir predicciones
+- Preprocesamiento ligero de datos en tiempo real
+- Orquestación de tareas simples
+
+**Limitaciones:** máximo 15 minutos de ejecución, 10 GB de RAM, no apto para modelos grandes o entrenamiento.
+
+### Athena
+
+Servicio de queries SQL sobre datos en S3 usando Apache Presto. Sin servidores que administrar — solo escribes SQL y pagas por los datos escaneados.
+
+**Para Data Science:**
+- Analizar datasets grandes en S3 sin moverlos
+- Exploración rápida de datos crudos
+- Construcción de features a partir de datos históricos
+
+```sql
+-- Ejemplo: query sobre datos en S3
+SELECT fecha, COUNT(*) as cantidad, AVG(valor) as promedio
+FROM mi_base_de_datos.mi_tabla
+WHERE fecha >= '2024-01-01'
+GROUP BY fecha
+ORDER BY fecha;
+```
+
+::: {.callout-tip}
+Athena es especialmente útil para analizar logs, datos de IoT, o cualquier dataset que ya esté en S3 en formato Parquet o CSV.
+:::
+
+### Redshift
+
+Data warehouse en la nube. Optimizado para queries analíticas sobre grandes volúmenes de datos estructurados (terabytes a petabytes).
+
+**Diferencia con Athena:** Redshift carga los datos en su propio almacenamiento y los indexa para queries más rápidas. Athena consulta directamente S3. Redshift tiene mayor costo fijo pero mejor performance para queries frecuentes.
+
+**Para Data Science:**
+- Fuente de datos para dashboards y reportes
+- Almacenamiento de features históricas
+- Análisis de datos de negocio a gran escala
+
+### Glue
+
+Servicio de ETL (Extract, Transform, Load) serverless. Permite mover y transformar datos entre distintas fuentes y destinos.
+
+**Componentes clave:**
+- **Glue Crawler**: escanea fuentes de datos y crea automáticamente el esquema en el Glue Data Catalog
+- **Glue Data Catalog**: metastore centralizado que registra qué datos existen y dónde
+- **Glue Jobs**: scripts de ETL en Python (PySpark) que se ejecutan en un clúster administrado
+
+**Para Data Science:**
+- Pipelines de ingesta de datos desde múltiples fuentes
+- Transformaciones de datos a escala
+- Actualización automática de datasets
+
+### EBS — Elastic Block Store
+
+Almacenamiento en bloque para instancias EC2. Funciona como el disco duro de tu máquina virtual — persistente, de alta performance, pero asociado a una instancia específica.
+
+**Diferencia con S3:** EBS es como un disco duro (acceso rápido, adjunto a una instancia); S3 es como un servidor de archivos en red (acceso via API, compartible entre muchos servicios).
+
+### SageMaker
+
+La plataforma de ML de AWS. Integra todo el ciclo de vida de un modelo de ML en un solo servicio:
+
+- **SageMaker Studio**: entorno de notebooks en la nube (como JupyterLab)
+- **SageMaker Training**: entrenamiento distribuido de modelos
+- **SageMaker Endpoints**: despliegue de modelos como APIs REST
+- **SageMaker Pipelines**: orquestación de pipelines de ML
+- **SageMaker Feature Store**: almacenamiento de features reutilizables
+
+**Para Data Science:** es una alternativa a construir tu propia infraestructura de ML, con todo integrado y administrado por AWS.
+
+### ECR — Elastic Container Registry
+
+Registro privado de imágenes Docker. Similar a Docker Hub pero dentro del ecosistema AWS.
+
+**Para Data Science:**
+- Almacenar imágenes Docker con tus dependencias de Python
+- Desplegar modelos en contenedores
+- Versionamiento de entornos reproducibles
+
+### ECS — Elastic Container Service
+
+Servicio de orquestación de contenedores Docker. Permite correr contenedores en la nube sin administrar el cluster tú mismo (a diferencia de Kubernetes).
+
+**Para Data Science:**
+- Servir modelos como APIs containerizadas
+- Ejecutar pipelines de datos en contenedores
+- Despliegue de aplicaciones de datos
+
+### VPC — Virtual Private Cloud
+
+Red virtual privada dentro de AWS. Define el espacio de red donde viven tus recursos, controlando qué puede comunicarse con qué.
+
+**Conceptos clave para Data Science:**
+- **Subnet pública**: recursos accesibles desde internet (APIs, load balancers)
+- **Subnet privada**: recursos solo accesibles internamente (bases de datos, modelos)
+- **Security Group**: firewall a nivel de recurso
+
+Aunque como data scientist raramente configuras VPCs desde cero, entender la diferencia entre subnet pública y privada es importante para saber por qué ciertos recursos son accesibles y otros no.
+
+### MWAA — Managed Workflows for Apache Airflow
+
+Airflow administrado por AWS. Apache Airflow es el orquestador de workflows más popular en Data Engineering y Data Science.
+
+**Para Data Science:**
+- Orquestar pipelines de datos complejos (DAGs)
+- Programar entrenamiento periódico de modelos
+- Coordinar múltiples pasos de procesamiento con dependencias
+
+### Mechanical Turk
+
+Plataforma de microtareas para humanos. Permite distribuir tareas que requieren inteligencia humana (anotación de datos, clasificación, transcripción) a una fuerza laboral distribuida.
+
+**Para Data Science:**
+- **Anotación de datos**: etiquetar imágenes, texto, audio para entrenamiento de modelos
+- **Validación de datos**: verificar la calidad de datos generados automáticamente
+- **Ground truth**: crear conjuntos de datos de referencia
+
+### QuickSight
+
+Servicio de Business Intelligence (BI) de AWS. Permite crear dashboards y visualizaciones interactivas conectadas a fuentes de datos AWS.
+
+**Para Data Science:**
+- Dashboards de monitoreo de modelos en producción
+- Visualización de KPIs del negocio para stakeholders
+- Reportes automáticos conectados a Athena o Redshift
+
+### Billing — Control de Costos
+
+El cloud puede generar costos inesperadamente altos si no se monitorea. AWS ofrece herramientas para controlar el gasto:
+
+- **AWS Cost Explorer**: visualizar y analizar el gasto histórico
+- **AWS Budgets**: configurar alertas cuando el gasto supera un umbral
+- **Cost Allocation Tags**: etiquetar recursos para saber qué proyecto genera qué costo
+
+::: {.callout-warning}
+## Precaución con los costos
+Siempre configura alertas de billing al comenzar un proyecto en AWS. Es muy fácil olvidar una instancia EC2 corriendo o un endpoint de SageMaker activo y recibir una factura inesperada.
+:::
+
+## Resumen de Servicios
+
+| Servicio | Categoría | Para qué |
+|---------|-----------|---------|
+| EC2 | Cómputo | Máquinas virtuales, GPU para entrenamiento |
+| S3 | Almacenamiento | Datos, modelos, artefactos |
+| Lambda | Serverless | Triggers, APIs simples, automatización |
+| Athena | Queries | SQL sobre S3 sin servidor |
+| Redshift | Data Warehouse | Analytics a gran escala |
+| Glue | ETL | Pipelines de datos, catálogo |
+| EBS | Almacenamiento | Disco de instancias EC2 |
+| SageMaker | ML Platform | Ciclo completo de ML |
+| ECR | Contenedores | Registro de imágenes Docker |
+| ECS | Contenedores | Orquestación de contenedores |
+| VPC | Red | Redes privadas virtuales |
+| MWAA | Orquestación | Airflow administrado |
+| Mechanical Turk | Datos | Anotación humana |
+| QuickSight | BI | Dashboards y visualización |
+| Billing | Costos | Monitoreo y control de gasto |
+
+## Referencias
+
+- [E33 — Servicios útiles de AWS para un Data Scientist](https://www.youtube.com/watch?v=xeDjQgOdGb4)
+- [AWS en 100 Segundos](https://www.youtube.com/watch?v=JIbIYCM48to)
+- [Comparación AWS, Azure y GCP — Google Cloud](https://cloud.google.com/docs/get-started/aws-azure-gcp-service-comparison?hl=es-419)
+- [Top AWS Services — GeeksForGeeks](https://www.geeksforgeeks.org/top-aws-services/)

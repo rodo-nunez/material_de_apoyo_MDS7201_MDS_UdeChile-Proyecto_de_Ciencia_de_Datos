@@ -1,0 +1,552 @@
+# Introducción a Linux
+
+Linux es el sistema operativo dominante en servidores, supercomputadoras, plataformas cloud y entornos de ciencia de datos. Entender su estructura y dominar sus comandos básicos es una habilidad fundamental para cualquier científico de datos que trabaje con infraestructura real.
+
+::: {.callout-note}
+## Videos recomendados
+- [Linux in 100 Seconds — Fireship](https://www.youtube.com/watch?v=42iQKuQodW4)
+- [Linux para principiantes — Herbertech](https://www.youtube.com/watch?v=Py4Gtp8fj1k)
+- [Linux, distribuciones y Data Science — en_coders Podcast](https://www.youtube.com/watch?v=97nqF859K0w)
+:::
+
+## ¿Qué es Unix?
+
+Unix es un sistema operativo desarrollado en los laboratorios Bell de AT&T en 1969. Fue diseñado con una filosofía central: **hacer una cosa y hacerla bien**. Esta filosofía se concreta en herramientas pequeñas, combinables mediante tuberías (`|`), que pueden encadenarse para resolver problemas complejos.
+
+Linux es un sistema operativo de tipo Unix, creado por Linus Torvalds en 1991, que reimplementó el núcleo de Unix de manera libre y abierta. Hoy, cuando hablamos de servidores en la nube, contenedores Docker, o clústeres de cómputo científico, casi siempre estamos hablando de Linux.
+
+::: {.callout-tip}
+## ¿Por qué importa para Ciencia de Datos?
+- Los servidores donde se ejecutan tus modelos casi siempre corren Linux
+- Las herramientas de MLOps (Docker, Kubernetes, cloud providers) asumen Linux
+- La mayoría de los tutoriales y documentación técnica asumen un entorno Unix
+:::
+
+**Referencia:** [What is Unix — TechTarget](https://www.techtarget.com/searchdatacenter/definition/Unix)
+
+## El Sistema de Archivos
+
+### Root y Home
+
+En Linux todo es un archivo, y todos los archivos cuelgan de una raíz única llamada `/` (root). No existen letras de unidad como en Windows — todo el sistema de archivos es un árbol que parte desde `/`.
+
+Hay dos conceptos que se confunden frecuentemente:
+
+- **`/` (root del sistema de archivos):** La raíz de todo el árbol de directorios. No confundir con el usuario `root`.
+- **`/root`:** El directorio home del usuario administrador (`root`).
+- **`/home`:** El directorio que contiene los homes de los usuarios normales. Tu home personal es `/home/tu_usuario`, accesible también como `~`.
+
+### Estructura de Directorios en `/`
+
+El estándar FHS (Filesystem Hierarchy Standard) define el propósito de cada directorio:
+
+| Directorio | Propósito |
+|-----------|-----------|
+| `/bin` | Binarios esenciales del sistema disponibles para todos los usuarios (`ls`, `cp`, `mv`, `bash`) |
+| `/sbin` | Binarios del sistema para administración, típicamente solo accesibles por `root` (`fdisk`, `ifconfig`) |
+| `/lib` | Librerías compartidas necesarias para los binarios de `/bin` y `/sbin` |
+| `/usr/bin` | Binarios de usuario no esenciales — la mayoría de los programas que instalas van aquí |
+| `/usr/local/bin` | Binarios instalados localmente por el administrador del sistema, fuera del gestor de paquetes |
+| `/etc` | Archivos de configuración del sistema (pronunciado "et-cee") |
+| `/home` | Directorios personales de los usuarios |
+| `/boot` | Archivos del bootloader y el kernel |
+| `/dev` | Dispositivos de hardware representados como archivos (`/dev/sda` es tu disco duro) |
+| `/mnt` | Punto de montaje temporal para sistemas de archivos externos |
+| `/opt` | Software opcional instalado manualmente, fuera del gestor de paquetes |
+| `/var` | Datos variables: logs, bases de datos, colas de correo (`/var/log`) |
+| `/tmp` | Archivos temporales, se borran al reiniciar |
+| `/proc` | Sistema de archivos virtual que expone información del kernel y los procesos en ejecución |
+| `/media` | Punto de montaje automático para medios removibles (USB, CD) |
+
+### El PATH y las Variables de Entorno
+
+#### ¿Qué es el PATH?
+
+Cuando escribes `python` en la terminal, ¿cómo sabe Linux dónde está ese programa? Lo busca en los directorios listados en la variable de entorno `PATH`, de izquierda a derecha, y ejecuta el primero que encuentra.
+
+```bash
+echo $PATH
+# /usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin
+```
+
+#### Variables de Entorno
+
+Las variables de entorno son pares `NOMBRE=valor` que configuran el comportamiento del sistema y los programas. Son fundamentales en ciencia de datos para gestionar credenciales, rutas y configuraciones sin hardcodearlas en el código.
+
+```bash
+# Ver todas las variables de entorno
+env
+
+# Ver el valor de una variable específica
+echo $HOME
+echo $USER
+echo $PATH
+
+# Crear una variable de entorno para la sesión actual
+export MI_VARIABLE="hola mundo"
+echo $MI_VARIABLE
+```
+
+#### Agregar una Ruta al PATH
+
+Un caso muy común: instalas un programa en una ubicación no estándar y necesitas que Linux lo encuentre.
+
+```bash
+# Agregar una ruta al PATH (solo para la sesión actual)
+export PATH="/ruta/a/mi/programa:$PATH"
+
+# Para hacerlo permanente, agregar esta línea al final de ~/.bashrc
+echo 'export PATH="/ruta/a/mi/programa:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+::: {.callout-important}
+## Orden importa
+El PATH se busca de izquierda a derecha. Al poner tu ruta al inicio (`"$NUEVA_RUTA:$PATH"`), tu versión tiene prioridad sobre cualquier otra instalación del mismo programa.
+:::
+
+### Archivos Importantes en el Home
+
+El directorio `~` (home del usuario) contiene configuraciones personales, la mayoría en archivos y carpetas que empiezan con `.` (ocultos por defecto).
+
+#### `.bashrc` — Configuración del Shell
+
+El archivo `~/.bashrc` se ejecuta cada vez que abres una terminal interactiva. Es donde defines aliases, funciones y variables de entorno permanentes.
+
+```bash
+# Ver el contenido actual
+cat ~/.bashrc
+
+# Recargar después de modificar
+source ~/.bashrc
+```
+
+**Aliases:** atajos para comandos que usas frecuentemente.
+
+```bash
+# Sintaxis
+alias nombre='comando'
+
+# Ejemplos útiles
+alias ll='ls -lah'
+alias gs='git status'
+alias gp='git pull'
+alias activate='source venv/bin/activate'
+
+# Para que sea permanente, agregar a ~/.bashrc
+echo "alias ll='ls -lah'" >> ~/.bashrc
+```
+
+**Funciones:** bloques de código reutilizables con parámetros.
+
+```bash
+# Sintaxis básica
+nombre_funcion() {
+    # $1, $2, etc. son los parámetros
+    echo "Primer parámetro: $1"
+}
+
+# Ejemplo: función para crear un directorio y entrar en él
+mkcd() {
+    mkdir -p "$1" && cd "$1"
+}
+
+# Ejemplo: función para activar un venv en cualquier proyecto
+venv() {
+    source "${1:-.}/venv/bin/activate"
+}
+```
+
+::: {.callout-tip}
+## Referencias
+- [Shell functions — TutorialsPoint](https://www.tutorialspoint.com/unix/unix-shell-functions.htm)
+- [Passing parameters to bash functions — StackOverflow](https://stackoverflow.com/questions/6212219/passing-parameters-to-a-bash-function)
+:::
+
+#### `.ssh` — Claves SSH
+
+El directorio `~/.ssh/` contiene:
+
+- `~/.ssh/id_rsa` o `~/.ssh/id_ed25519`: tu clave privada (nunca compartir)
+- `~/.ssh/id_rsa.pub`: tu clave pública (la que entregas a servidores y GitHub)
+- `~/.ssh/config`: configuración de hosts SSH
+- `~/.ssh/known_hosts`: hosts a los que te has conectado
+
+```bash
+# Generar un par de claves SSH
+ssh-keygen -t ed25519 -C "tu@email.com"
+
+# Conectarse a un servidor
+ssh usuario@servidor.ejemplo.com
+
+# Conectarse usando una clave específica
+ssh -i ~/.ssh/mi_clave usuario@servidor.ejemplo.com
+```
+
+#### Otros Directorios Relevantes
+
+| Directorio | Contenido |
+|-----------|-----------|
+| `~/.gitconfig` | Configuración global de Git (nombre, email, aliases) |
+| `~/.aws/` | Credenciales y configuración de AWS CLI |
+| `~/.vscode-server/` | Extensiones de VS Code cuando te conectas remotamente via SSH |
+
+## Comandos Básicos
+
+### Navegación
+
+```bash
+# Cambiar de directorio
+cd /ruta/absoluta          # Ruta absoluta desde /
+cd ruta/relativa           # Ruta relativa desde donde estás
+cd ..                      # Subir un nivel
+cd ~                       # Ir al home
+cd -                       # Volver al directorio anterior
+
+# Listar contenido
+ls                         # Listar archivos
+ls -l                      # Formato largo (permisos, tamaño, fecha)
+ls -a                      # Incluir archivos ocultos (. al inicio)
+ls -lah                    # Largo + ocultos + tamaño legible (combinación útil)
+ls -lt                     # Ordenar por fecha de modificación
+ls -latr                   # Largo + ocultos + Ordenar por fecha de modificación + orden invertido para ver el último archivo modificado al final
+```
+
+### Gestión de Archivos y Directorios
+
+```bash
+# Crear directorios
+mkdir mi_directorio
+mkdir -p ruta/completa/anidada    # Crea todos los directorios intermedios
+
+# Copiar
+cp archivo.txt destino/           # Copiar archivo
+cp -r directorio/ destino/        # Copiar directorio recursivamente
+cp archivo.txt archivo_copia.txt  # Copiar con nuevo nombre
+
+# Mover y renombrar
+mv archivo.txt destino/           # Mover archivo
+mv nombre_viejo.txt nombre_nuevo.txt  # Renombrar
+
+# Eliminar
+rm archivo.txt                    # Eliminar archivo
+rm -r directorio/                 # Eliminar directorio recursivamente
+rm -rf directorio/                # Eliminar sin confirmación (¡cuidado!)
+```
+
+::: {.callout-warning}
+## `rm -rf` es irreversible
+No existe papelera de reciclaje en la terminal. `rm -rf` elimina permanentemente. Verifica siempre lo que vas a borrar.
+
+![](https://i.kym-cdn.com/photos/images/newsfeed/000/089/026/sandwich.png){fig-align="center" width="50%"}
+:::
+
+### Editores de Texto
+
+#### nano — El Editor Amigable
+
+```bash
+nano archivo.txt
+
+# Atajos principales (^ = Ctrl):
+# Ctrl+O → Guardar (Write Out)
+# Ctrl+X → Salir
+# Ctrl+W → Buscar
+# Ctrl+K → Cortar línea
+# Ctrl+U → Pegar
+```
+
+#### vim — El Editor Poderoso
+
+vim tiene un modo normal y un modo de inserción. Esta distinción confunde a todos al principio.
+
+```bash
+vim archivo.txt
+
+# Al abrir, estás en MODO NORMAL
+# i → entrar a MODO INSERCIÓN (puedes escribir)
+# Esc → volver a MODO NORMAL
+
+# En modo normal:
+# :w → guardar
+# :q → salir
+# :wq → guardar y salir
+# :q! → salir sin guardar (forzar)
+# dd → eliminar línea
+# yy → copiar línea
+# p → pegar
+# /texto → buscar "texto"
+```
+
+![Cómo salir de vim](https://cdn.thenewstack.io/media/2022/08/0ae25624-exit-vim-the-arrival-way-6n632sipjag61-1024x692.jpg){fig-align="center" width="60%"}
+
+::: {.callout-note}
+## Video recomendado
+[Vim en 100 segundos — Fireship](https://www.youtube.com/watch?v=g2fT-g9PX9o)
+:::
+
+### Permisos
+
+Linux controla el acceso a archivos con un sistema de permisos de tres niveles: **propietario**, **grupo**, y **otros**.
+
+```bash
+# Ver permisos
+ls -l archivo.txt
+# -rwxr-xr-- 1 usuario grupo 1234 jan 1 12:00 archivo.txt
+#  ^^^       → permisos del propietario (rwx = leer, escribir, ejecutar)
+#     ^^^    → permisos del grupo (r-x = leer, ejecutar)
+#        ^^^ → permisos de otros (r-- = solo leer)
+
+# Cambiar permisos con chmod
+chmod 755 archivo.txt          # rwxr-xr-x (notación octal)
+chmod +x script.sh             # Agregar permiso de ejecución
+chmod -w archivo.txt           # Quitar permiso de escritura
+chmod u+x,g-w archivo.txt      # Combinar cambios
+
+# Cambiar propietario
+chown usuario archivo.txt
+chown usuario:grupo archivo.txt
+chown -R usuario directorio/   # Recursivo
+```
+
+| Número | Permisos |
+|--------|---------|
+| 7 | rwx (leer + escribir + ejecutar) |
+| 6 | rw- (leer + escribir) |
+| 5 | r-x (leer + ejecutar) |
+| 4 | r-- (solo leer) |
+| 0 | --- (ninguno) |
+
+### Usuarios y Privilegios
+
+```bash
+# Cambiar contraseña
+passwd
+
+# Ejecutar un comando como administrador
+sudo comando
+sudo apt-get update
+
+# Cambiar al usuario root (abrir shell como root)
+sudo su
+
+# Ejecutar como otro usuario
+sudo -u otro_usuario comando
+```
+
+::: {.callout-important}
+## `sudo` con cuidado
+`sudo` ejecuta comandos con privilegios de root. Un error con `sudo` puede afectar todo el sistema. Úsalo solo cuando sea necesario.
+
+![](https://programmerhumor.io/wp-content/uploads/2023/02/programmerhumor-io-programming-memes-bd74a05b65e71d5-608x562.jpg){fig-align="center" width="50%"}
+:::
+
+### Gestión de Paquetes con apt
+
+`apt` (Advanced Package Tool) es el gestor de paquetes de Debian/Ubuntu, las distribuciones más comunes en servidores.
+
+```bash
+# Actualizar la lista de paquetes disponibles
+sudo apt-get update
+
+# Actualizar los paquetes instalados
+sudo apt-get upgrade
+
+# Instalar un paquete
+sudo apt-get install nombre-paquete
+
+# Instalar múltiples paquetes
+sudo apt-get install git curl wget vim
+
+# Buscar un paquete
+apt-cache search término-de-búsqueda
+
+# Eliminar un paquete
+sudo apt-get remove nombre-paquete
+sudo apt-get purge nombre-paquete  # Elimina también archivos de configuración
+```
+
+#### ¿Qué son los Repositorios?
+
+Los repositorios son servidores que contienen paquetes de software. `apt-get update` descarga la lista actualizada de paquetes disponibles en los repositorios configurados en `/etc/apt/sources.list`. No instala nada — solo actualiza el índice local. `apt-get upgrade` sí instala las actualizaciones.
+
+### Python y Ambientes Virtuales
+
+#### Versiones de Python
+
+En un servidor puede haber múltiples versiones de Python instaladas. Puedes especificar cuál usar:
+
+```bash
+python3 --version         # Versión por defecto de python3
+python3.11 --version      # Versión específica
+which python3             # Ubicación del binario
+
+# pip para la versión correspondiente
+pip3 install paquete
+python3.11 -m pip install paquete
+```
+
+#### Ambientes Virtuales
+
+Un ambiente virtual es un directorio que contiene una instalación aislada de Python con sus propias dependencias. Es la práctica estándar para evitar conflictos entre proyectos.
+
+```bash
+# Crear un ambiente virtual
+python -m venv venv
+
+# Activar el ambiente
+source venv/bin/activate          # Linux/Mac
+# venv\Scripts\activate           # Windows
+
+# Verificar que estás en el ambiente
+which python    # Debería apuntar a venv/bin/python
+
+# Instalar paquetes (solo afectan al ambiente)
+pip install pandas numpy matplotlib
+
+# Guardar dependencias
+pip freeze > requirements.txt
+
+# Instalar desde requirements.txt
+pip install -r requirements.txt
+
+# Desactivar el ambiente
+deactivate
+```
+
+#### uv — El Gestor Moderno
+
+`uv` es una alternativa moderna a `pip` y `venv`, significativamente más rápida:
+
+```bash
+# Instalar uv
+pip install uv
+
+# Crear proyecto con uv
+uv init mi-proyecto
+cd mi-proyecto
+
+# Instalar dependencias desde pyproject.toml
+uv sync
+
+# Agregar una dependencia
+uv add pandas
+
+# Ejecutar un comando en el ambiente
+uv run python script.py
+```
+
+::: {.callout-tip}
+## Video recomendado
+[Python Virtual Environments — Corey Schafer](https://www.youtube.com/watch?v=vDOVEDl2z84)
+:::
+
+## Variables de Ambiente con `.env`
+
+Hardcodear credenciales, tokens de API o rutas en el código es una mala práctica de seguridad. El patrón estándar es usar un archivo `.env` en la raíz del proyecto.
+
+### Crear el Archivo `.env`
+
+```bash
+# .env
+DATABASE_URL=postgresql://usuario:password@localhost:5432/mi_db
+API_KEY=sk-abc123xyz
+AMBIENTE=development
+RUTA_DATOS=/data/proyecto
+```
+
+::: {.callout-warning}
+## Nunca subir `.env` al repositorio
+Agregar inmediatamente a `.gitignore`:
+```bash
+echo ".env" >> .gitignore
+```
+:::
+
+### Usar Variables de Entorno en Python
+
+```python
+# Con python-dotenv
+from dotenv import load_dotenv
+import os
+
+load_dotenv()  # Carga las variables de .env al entorno
+
+db_url = os.getenv("DATABASE_URL")
+api_key = os.getenv("API_KEY")
+ambiente = os.getenv("AMBIENTE", "production")  # Valor por defecto
+```
+
+```bash
+# Instalar python-dotenv
+pip install python-dotenv
+```
+
+### Cargar Variables en el Shell
+
+```bash
+# Exportar manualmente una variable
+export API_KEY="sk-abc123xyz"
+
+# Cargar todas las variables de un .env en el shell actual
+export $(cat .env | xargs)
+
+# O usando source con un archivo de formato compatible
+set -a && source .env && set +a
+```
+
+::: {.callout-tip}
+## Referencias
+- [python-dotenv — BetterDataScience](https://betterdatascience.com/python-dotenv/)
+- [Environment variables in Python](https://able.bio/rhett/how-to-set-and-get-environment-variables-in-python--274rgt5)
+:::
+
+## Referencia Rápida de Comandos
+
+```bash
+# NAVEGACIÓN
+pwd                    # Directorio actual
+cd ~                   # Ir al home
+ls -lah                # Listar con detalles y ocultos
+find . -name "*.py"   # Buscar archivos por nombre
+
+# ARCHIVOS
+cat archivo.txt        # Ver contenido
+head -n 20 archivo     # Primeras 20 líneas
+tail -n 20 archivo     # Últimas 20 líneas
+tail -f log.txt        # Ver en tiempo real (útil para logs)
+grep "patrón" archivo  # Buscar patrón en archivo
+wc -l archivo          # Contar líneas
+
+# PROCESOS
+ps aux                 # Ver procesos en ejecución
+top                    # Monitor de procesos interactivo
+htop                   # Monitor mejorado (si está instalado)
+kill PID               # Terminar proceso por ID
+Ctrl+C                 # Terminar proceso en primer plano
+Ctrl+Z                 # Suspender proceso (continuar con fg/bg)
+
+# RED
+ping google.com        # Verificar conectividad
+curl URL               # Hacer petición HTTP
+wget URL               # Descargar archivo
+ssh usuario@host       # Conectar via SSH
+scp archivo user@host:/ruta  # Copiar archivo via SSH
+
+# AYUDA
+man comando            # Manual del comando
+comando --help         # Ayuda breve
+which comando          # Ubicación del binario
+```
+
+## Referencias
+
+- [What is Unix — TechTarget](https://www.techtarget.com/searchdatacenter/definition/Unix)
+- [Linux in 100 Seconds — Fireship](https://www.youtube.com/watch?v=42iQKuQodW4)
+- [Intro a Linux — Herbertech](https://www.youtube.com/watch?v=Py4Gtp8fj1k)
+- [Linux File System — NetworkChuck](https://www.youtube.com/watch?v=eGz9DS-aIeY)
+- [Python Virtual Environments — Corey Schafer](https://www.youtube.com/watch?v=vDOVEDl2z84)
+- [Crontab en Linux — TecAdmin](https://tecadmin.net/crontab-in-linux-with-20-examples-of-cron-schedule/)
+- [Shell functions — TutorialsPoint](https://www.tutorialspoint.com/unix/unix-shell-functions.htm)
+- [python-dotenv — BetterDataScience](https://betterdatascience.com/python-dotenv/)
+- [Linux, distribuciones y Data Science](https://www.youtube.com/watch?v=97nqF859K0w)

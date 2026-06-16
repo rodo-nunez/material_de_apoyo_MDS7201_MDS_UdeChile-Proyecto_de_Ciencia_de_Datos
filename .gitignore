@@ -1,0 +1,74 @@
+# Quarto ----------------------------------------
+_book/
+_site/
+site_libs
+*.qmd.html
+.quarto/
+
+# LaTeX ----------------------------------------
+*.aux
+*.log
+*.tex
+*.out
+*.toc
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+*.bbl
+*.blg
+*.bcf
+*.run.xml
+/.quarto/
+.vdoc.*
+
+**/*.quarto_ipynb
+
+# Archivos binarios o grandes ---------------------------------------- 
+
+*.xlsx
+*.pdf
+*.zip
+*.docx
+*.pptx
+*.jpeg
+*.jpg
+*.png
+
+# Outputs de otros codigos ---------------------------------------- 
+
+*.html
+.Rproj.user
+*.ipynb
+
+# Ambientes virtuales y variables de ambiente ---------------------------------------- 
+
+.env
+.venv
+
+# Archivos temporales de renderizado ----------------------------------------
+*_files/
+*_cache/
+
+# Quarto ----------------------------------------
+_book/
+_site/
+site_libs
+*.qmd.html
+.quarto/
+
+# LaTeX ----------------------------------------
+*.aux
+*.log
+*.tex
+*.out
+*.toc
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+*.bbl
+*.blg
+*.bcf
+*.run.xml
+/.quarto/
+MDS7201/pautas_y_rubricas
+.vdoc.*

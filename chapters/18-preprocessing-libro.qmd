@@ -1,0 +1,834 @@
+# Preprocesamiento, Feature Engineering y Data Leakage
+
+> **La regla de oro.** Ninguna estadística, parámetro, modelo, decisión ni feature derivada de los datos de validación o test puede influir en el entrenamiento. Cada paso ajustable (imputador, scaler, encoder, selector, resampler, …) pertenece *dentro* de un pipeline validado con CV.
+
+Este capítulo sigue el hilo de esa regla a través de todas las técnicas de preprocesamiento habituales: primero mostramos cómo es fácil engañarse con un pipeline descuidado, luego construimos la infraestructura correcta con `Pipeline` y `ColumnTransformer`, y después aplicamos esa infraestructura a datos faltantes, escalado, encoding, feature engineering, splitting, desbalance de clases y tuning de hiperparámetros.
+
+## Configuración del Entorno
+
+```{python}
+import warnings
+warnings.filterwarnings('ignore')
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from sklearn import set_config
+set_config(display='diagram')   # visualizaciones más claras de pipelines
+
+RANDOM_STATE = 42
+np.random.seed(RANDOM_STATE)
+
+plt.rcParams['figure.figsize'] = (8, 4)
+```
+
+## 1. Un Baseline con Data Leakage
+
+Comenzamos haciendo las cosas de la manera obvia-pero-incorrecta para ver con qué facilidad nos podemos engañar. El dataset: features de curvas de luz de ALeRCE para una muestra de objetos astronómicos. El target es `classALeRCE`.
+
+```{python}
+featfile = "../chapter_files/data/pkls/features_small.pickle"
+featfile_alternative = "MDS7201/libro/chapter_files/data/pkls/features_small.pickle"
+
+xmatchfile = "../chapter_files/data/pkls/dfcrossmatches_small.pickle"
+xmatchfile_alternative = "MDS7201/libro/chapter_files/data/pkls/dfcrossmatches_small.pickle"
+```
+
+```{python}
+ordered_classes = ['SNIbc', 'SNII', 'SNIIn', 'SNIIb', 'SNIa', 'SLSN', 'TDE',
+       'CV/Nova', 'AGN', 'QSO', 'Blazar', 'YSO', 
+       'DSCT', 'RRL','EB/EW', 'EA', 'Ceph', 'LPV', 'RSCVn', 'Periodic-Other'] 
+
+def getdata(nsample=2000, nmin=50):
+    try:
+        df = pd.read_pickle(featfile)
+    except:
+        df = pd.read_pickle(featfile_alternative)
+    df = df.reset_index()
+    df["fname"] = df.name + "_" + df.fid.astype(str)
+    df = df.pivot(index="oid", columns=["fname"], values="value")
+    try:
+        labels = pd.read_pickle(xmatchfile)
+    except:
+        labels = pd.read_pickle(xmatchfile_alternative)
+    labels = labels.loc[df.index].classALeRCE
+    mask = labels.isin(ordered_classes)
+    labels = labels.loc[mask]
+    df = df.loc[mask]
+
+    df = df.sample(nsample, random_state=RANDOM_STATE)
+    labels = labels.loc[df.index]
+    # Seleccionar etiquetas con al menos nmin ejemplos
+    sellabels = labels.value_counts().loc[labels.value_counts() >= nmin].index
+    df = df.loc[labels.isin(sellabels)]
+    labels = labels.loc[labels.isin(sellabels)]
+    labels.value_counts().plot.barh()
+    
+    return df, labels
+
+df, labels = getdata(2000, 50)
+print("features:", df.shape)
+print("labels  :", labels.shape)
+```
+
+### EDA Rápido
+
+```{python}
+# Distribución de clases — notar el desbalance, esto importará más adelante
+fig, ax = plt.subplots(figsize=(8, 4))
+labels.value_counts().plot.bar(ax=ax)
+ax.set_ylabel("# objetos"); ax.set_title("Distribución de clases");
+```
+
+```{python}
+# ¿Dónde está la missingness?
+missing = df.isna().mean().sort_values(ascending=False)
+print(f"{(missing > 0).sum()} de {len(missing)} columnas tienen valores faltantes")
+missing.head(15).plot.barh(figsize=(7, 5))
+plt.gca().invert_yaxis(); plt.xlabel("fracción faltante"); plt.title("Features con más valores faltantes");
+```
+
+```{python}
+# Las distribuciones tienen colas pesadas — necesitaremos pensar en scaling y skewness
+sample_cols = df.columns[:6]
+df[sample_cols].hist(bins=40, figsize=(10, 6), log=True)
+plt.suptitle("Distribuciones de features de muestra (log-y)"); plt.tight_layout();
+```
+
+```{python}
+# UMAP para visualizar estructura de clases
+from sklearn.preprocessing import StandardScaler
+from sklearn.impute import SimpleImputer
+
+dft = pd.DataFrame(
+    data=StandardScaler().fit_transform(SimpleImputer(strategy='median').fit_transform(df)),
+    index=df.index, columns=list(df)
+)
+
+import umap
+reducer = umap.UMAP()
+df_umap = reducer.fit_transform(dft)
+
+from sklearn import preprocessing
+le = preprocessing.LabelEncoder()
+le.fit(ordered_classes)
+le.classes_ = np.array(ordered_classes)
+y = le.transform(labels)
+
+fig, ax = plt.subplots(figsize=(10, 10))
+cax = ax.scatter(df_umap[:, 0], df_umap[:, 1], c=y, marker='.', alpha=1)
+ax.set_xlabel("UMAP 1"); ax.set_ylabel("UMAP 2")
+cbar = plt.colorbar(cax, orientation='horizontal')
+cbar.ax.set_xticks(np.array(range(y.max()+1)), 
+                   labels=[le.inverse_transform([i])[0] for i in range(y.max()+1)])
+cbar.ax.set_xticklabels(cbar.ax.get_xticklabels(), rotation=90);
+```
+
+### El Pipeline Descuidado
+
+Imputar la mediana de la columna, escalar, hacer CV de 5 folds. Identifica el bug *antes* de ejecutar la celda.
+
+```{python}
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import cross_val_score, cross_val_predict
+from sklearn.metrics import ConfusionMatrixDisplay
+
+imputer = SimpleImputer(strategy='median')
+scaler  = StandardScaler()
+
+# fit sobre TODAS las filas, incluyendo los futuros folds de validación
+X_all = scaler.fit_transform(imputer.fit_transform(df))
+y_all = labels.values
+
+clf = LogisticRegression(max_iter=2000)
+score_leaky = cross_val_score(clf, X_all, y_all, cv=5, scoring='f1_macro').mean()
+print(f"CV f1_macro (setup con leakage): {score_leaky:.3f}")
+
+y_pred = cross_val_predict(clf, X_all, y_all, cv=5)
+fig, ax = plt.subplots()
+ConfusionMatrixDisplay.from_predictions(
+    y_all, y_pred, ax=ax,
+    xticks_rotation='vertical',
+    normalize='true',   # row-normalized = recall por clase
+    colorbar=False,
+)
+ax.set_title("Leaky pipeline — matriz de confusión");
+```
+
+**¿Qué está mal?** Las medianas del imputador y las medias/stds del scaler fueron computadas usando filas que luego aparecerán en los folds de validación del CV. El score de validación ya no es una estimación honesta de la generalización.
+
+Para imputation por mediana el efecto es pequeño. Para convencernos de que el *patrón* es peligroso, aquí hay una versión más dramática usando selección de features sobre ruido puro:
+
+```{python}
+from sklearn.feature_selection import SelectKBest, f_classif
+
+# Ruido puro — no hay señal en ningún lado por construcción
+rng = np.random.default_rng(0)
+n_samples, n_features = 1000, 2000
+X_noise = rng.standard_normal((n_samples, n_features))
+y_noise = rng.integers(0, 2, size=n_samples)   # binario balanceado
+
+# Leaky: elegir las 'mejores' 5 features usando TODAS las filas, luego CV
+X_sel = SelectKBest(f_classif, k=5).fit_transform(X_noise, y_noise)
+leaky = cross_val_score(LogisticRegression(max_iter=2000), X_sel, y_noise,
+                        cv=5, scoring='f1_macro').mean()
+
+# Honesto: mismo selector, pero dentro de un pipeline que refittea por fold
+from sklearn.pipeline import Pipeline
+honest = cross_val_score(
+    Pipeline([("select", SelectKBest(f_classif, k=5)),
+              ("model",  LogisticRegression(max_iter=2000))]),
+    X_noise, y_noise, cv=5, scoring='f1_macro').mean()
+
+print(f"CV leaky  : {leaky:.3f}   <- ¡no hay señal!")
+print(f"CV honesto: {honest:.3f}  <- ~azar, como debería ser")
+```
+
+::: {.callout-warning}
+## Data Leakage con Feature Selection
+
+Seleccionar features usando todo el dataset *antes* de la validación cruzada puede hacer que un clasificador sobre ruido puro aparezca como si tuviera poder predictivo real. El CV honesto devuelve ~0.5, el esperado por azar.
+:::
+
+## 2. La Solución: `Pipeline` + `ColumnTransformer`
+
+El remedio: cada paso que aprende parámetros de datos va *dentro* de un `Pipeline`. El CV entonces re-fittea esos pasos en cada fold de entrenamiento solamente. También separamos un conjunto de test real ahora mismo y no lo tocamos hasta la §9.
+
+```{python}
+from sklearn.model_selection import train_test_split, StratifiedKFold
+
+X_train, X_test, y_train, y_test = train_test_split(
+    df, labels, test_size=0.2, stratify=labels, random_state=RANDOM_STATE
+)
+print("train:", X_train.shape, " test:", X_test.shape)
+```
+
+```{python}
+pipe = Pipeline(steps=[
+    ("impute", SimpleImputer(strategy='median')),
+    ("scale",  StandardScaler()),
+    ("model",  LogisticRegression(max_iter=2000)),
+])
+pipe   # renderizado como diagrama gracias a set_config(display='diagram')
+```
+
+```{python}
+cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=RANDOM_STATE)
+score_clean = cross_val_score(pipe, X_train, y_train, cv=cv, scoring='f1_macro').mean()
+print(f"CV f1_macro (pipeline, fit-por-fold): {score_clean:.3f}")
+
+y_pred = cross_val_predict(pipe, X_train, y_train, cv=5)
+fig, ax = plt.subplots()
+ConfusionMatrixDisplay.from_predictions(
+    y_train, y_pred, ax=ax,
+    xticks_rotation='vertical',
+    normalize='true',
+    colorbar=False,
+)
+ax.set_title("Pipeline correcto — matriz de confusión");
+```
+
+### `ColumnTransformer` para Columnas Heterogéneas
+
+Este dataset es todo numérico, pero los datasets reales no lo son. `ColumnTransformer` enruta cada grupo de columnas a su propio sub-pipeline. Lo construimos ahora y lo reutilizamos en cada sección siguiente.
+
+```{python}
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OneHotEncoder
+
+numeric_cols = X_train.columns.tolist()
+
+numeric_pipe = Pipeline([
+    ("impute", SimpleImputer(strategy='median')),
+    ("scale",  StandardScaler()),
+])
+
+# Cuando existen categóricas, se enrutan a través de OneHotEncoder:
+preproc = ColumnTransformer(
+    transformers=[
+        ("num", numeric_pipe, numeric_cols),
+        # ("cat", OneHotEncoder(handle_unknown='ignore'), categorical_cols),
+    ],
+    remainder='drop',
+)
+preproc
+```
+
+```{python}
+pipe = Pipeline([("preproc", preproc), ("model", LogisticRegression(max_iter=2000))])
+score = cross_val_score(pipe, X_train, y_train, cv=cv, scoring='f1_macro').mean()
+print(f"CV f1_macro (pipeline con ColumnTransformer): {score:.3f}")
+```
+
+::: {.callout-note}
+## La Arquitectura Correcta
+
+A partir de aquí, **cada** técnica que introduzcamos se agrega como un paso en `numeric_pipe` o como hermano en `preproc`. La discusión sobre leakage desaparece — es estructuralmente imposible filtrar información cuando se usa `cross_val_score(pipeline, X, y)`.
+:::
+
+## 3. Datos Faltantes
+
+Dos enfoques complementarios:
+
+- **Imputación** — rellenar el valor faltante con algo razonable.
+- **Indicador de missingness** — agregar una columna binaria que señala "este valor estaba faltante." Vale la pena cuando la missingness es *informativa* (ej: un sensor que falla bajo condiciones extremas, una pregunta de encuesta que los respondentes evitan cuando la respuesta es sensible).
+
+```{python}
+# ¿Cuánta missingness tenemos que manejar?
+n_total   = df.size
+n_missing = df.isna().sum().sum()
+print(f"{n_missing}/{n_total} celdas faltantes  ({100*n_missing/n_total:.2f}%)")
+print(f"{(df.isna().any(axis=1)).mean()*100:.1f}% de las filas tienen al menos un valor faltante")
+```
+
+### Comparación de Estrategias de Imputación
+
+Comparamos cuatro estrategias, cada una envuelta en un pipeline para que la comparación sea honesta:
+
+```{python}
+from sklearn.experimental import enable_iterative_imputer  # noqa
+from sklearn.impute import IterativeImputer, KNNImputer
+
+def cv_with_imputer(imputer, name):
+    p = Pipeline([
+        ("impute", imputer),
+        ("scale",  StandardScaler()),
+        ("model",  LogisticRegression(max_iter=2000)),
+    ])
+    score = cross_val_score(p, X_train, y_train, cv=cv, scoring='f1_macro').mean()
+    print(f"{name:25s}  f1_macro = {score:.3f}")
+    return score
+
+results = {}
+results["mean"]      = cv_with_imputer(SimpleImputer(strategy='mean'),     "SimpleImputer(mean)")
+results["median"]    = cv_with_imputer(SimpleImputer(strategy='median'),   "SimpleImputer(median)")
+results["-99"]       = cv_with_imputer(SimpleImputer(fill_value=-99),      "SimpleImputer(-99)")
+results["knn-5"]     = cv_with_imputer(KNNImputer(n_neighbors=5),          "KNNImputer(k=5)")
+results["iterative"] = cv_with_imputer(IterativeImputer(max_iter=10, random_state=RANDOM_STATE),
+                                       "IterativeImputer (MICE)")
+```
+
+```{python}
+pd.Series(results).sort_values().plot.barh()
+plt.xlabel("CV f1_macro"); plt.title("Estrategias de imputación");
+```
+
+### Agregar un Indicador de Missingness
+
+Si "este valor estaba faltante" es en sí mismo informativo, queremos conservar esa señal incluso después de rellenar la celda.
+
+```{python}
+from sklearn.pipeline import FeatureUnion
+from sklearn.impute import MissingIndicator
+
+preproc_with_indicator = FeatureUnion([
+    ("imputed",   SimpleImputer(strategy='median')),
+    ("indicator", MissingIndicator(features='all')),
+])
+
+pipe = Pipeline([
+    ("preproc", preproc_with_indicator),
+    ("scale",   StandardScaler()),
+    ("model",   LogisticRegression(max_iter=2000)),
+])
+score = cross_val_score(pipe, X_train, y_train, cv=cv, scoring='f1_macro').mean()
+print(f"con indicador de missingness: {score:.3f}")
+print(f"sin indicador (solo mediana): {results['median']:.3f}")
+```
+
+### El Orden Importa: Transformar *Antes* de Imputar
+
+Si planeamos aplicar una transformación de potencia a columnas sesgadas, imputar la mediana *primero* inserta un spike en la distribución que `PowerTransformer` luego tiene que deshacer. El orden más limpio es: transformar → imputar → escalar.
+
+```{python}
+from sklearn.preprocessing import PowerTransformer
+
+# Orden A — imputar primero (el default conveniente)
+A = Pipeline([
+    ("impute", SimpleImputer(strategy='median')),
+    ("power",  PowerTransformer(method='yeo-johnson', standardize=False)),
+    ("scale",  StandardScaler()),
+    ("model",  LogisticRegression(max_iter=2000)),
+])
+# Orden B — power-transform primero (PT maneja NaNs bien en sklearn reciente)
+B = Pipeline([
+    ("power",  PowerTransformer(method='yeo-johnson', standardize=False)),
+    ("impute", SimpleImputer(strategy='median')),
+    ("scale",  StandardScaler()),
+    ("model",  LogisticRegression(max_iter=2000)),
+])
+sA = cross_val_score(A, X_train, y_train, cv=cv, scoring='f1_macro').mean()
+sB = cross_val_score(B, X_train, y_train, cv=cv, scoring='f1_macro').mean()
+print(f"impute → power → scale : {sA:.3f}")
+print(f"power → impute → scale : {sB:.3f}")
+```
+
+::: {.callout-tip}
+## Recomendación Práctica sobre Orden
+
+En este caso imputar primero fue mejor — pero el resultado puede variar según el dataset. Lo importante es siempre comparar con CV honesto dentro del pipeline, nunca fuera.
+:::
+
+## 4. Escalado, Sesgo y Encoding
+
+**¿Por qué escalar?** Los modelos lineales, los modelos basados en distancia (kNN, k-means) y los optimizadores basados en gradiente se preocupan por la escala. Los modelos de árbol (random forest, gradient boosting) no — pero tampoco les hace daño.
+
+```{python}
+# Comparar tres scalers sobre una feature muy sesgada
+from sklearn.preprocessing import RobustScaler, MinMaxScaler
+
+col = df.notna().sum().sort_values(ascending=False).index[100]
+x = df[col].dropna().values.reshape(-1, 1)
+
+scaled = {
+    "raw":      x.ravel(),
+    "Standard": StandardScaler().fit_transform(x).ravel(),
+    "Robust":   RobustScaler().fit_transform(x).ravel(),
+    "MinMax":   MinMaxScaler().fit_transform(x).ravel(),
+}
+fig, axes = plt.subplots(1, 4, figsize=(14, 3))
+for ax, (name, v) in zip(axes, scaled.items()):
+    ax.hist(v, bins=60); ax.set_title(name); ax.set_xscale('asinh')
+plt.suptitle(f"Efecto del escalado en '{col}'"); plt.tight_layout();
+```
+
+**Standard vs Robust vs MinMax:** elige `RobustScaler` cuando hay outliers frecuentes y no quieres que dominen la estimación de varianza.
+
+### Reducción de Sesgo — `PowerTransformer`
+
+```{python}
+x_pt = PowerTransformer(method='yeo-johnson').fit_transform(x).ravel()
+
+fig, axes = plt.subplots(1, 2, figsize=(10, 3))
+axes[0].hist(x.ravel(), bins=60); axes[0].set_title("raw"); axes[0].set_xscale('asinh')
+axes[1].hist(x_pt, bins=60);      axes[1].set_title("yeo-johnson")
+plt.suptitle("Efecto de PowerTransformer (Yeo-Johnson)"); plt.tight_layout();
+```
+
+### Encoding de Variables Categóricas (Boceto)
+
+El dataset es todo numérico, así que ilustramos con una columna categórica sintética.
+
+```{python}
+# Supongamos que teníamos una columna categórica 'survey'
+cat = pd.Series(np.random.choice(['ATLAS', 'ZTF', 'Pan-STARRS'], size=len(X_train)),
+                index=X_train.index, name='survey')
+cat.value_counts()
+```
+
+```{python}
+# OneHotEncoder — agnóstico del modelo, bien para baja cardinalidad
+from sklearn.preprocessing import OneHotEncoder
+ohe = OneHotEncoder(handle_unknown='ignore', sparse_output=False)
+ohe.fit_transform(cat.to_frame())[:5]
+```
+
+**Opciones de encoding:**
+
+| Encoder | Cuándo usarlo | Pitfall |
+|---|---|---|
+| `OneHotEncoder` | baja cardinalidad, cualquier modelo | explosión de dimensiones con alta cardinalidad |
+| Label / Ordinal | solo modelos de árbol | los modelos lineales leen el entero como magnitud |
+| `TargetEncoder` | alta cardinalidad | **trampa clásica de leakage** — debe fittearse en el fold de entrenamiento, dentro del pipeline |
+| Hashing | cardinalidad muy alta, setting online | colisiones; no invertible |
+
+### Pipeline Numérico Completo
+
+```{python}
+numeric_pipe = Pipeline([
+    ("power",  PowerTransformer(method='yeo-johnson', standardize=False)),
+    ("impute", SimpleImputer(strategy='median')),
+    ("scale",  StandardScaler()),
+])
+preproc = ColumnTransformer([("num", numeric_pipe, numeric_cols)])
+
+pipe = Pipeline([("preproc", preproc), ("model", LogisticRegression(max_iter=2000))])
+score = cross_val_score(pipe, X_train, y_train, cv=cv, scoring='f1_macro').mean()
+print(f"CV f1_macro (power → impute → scale → logreg): {score:.3f}")
+```
+
+## 5. Feature Engineering Motivado
+
+Cada feature nueva debe estar motivada por algo que el modelo actualmente está haciendo mal. El patrón siempre es: agregar la feature como un paso transformador en el pipeline, re-ejecutar CV, ver si ayudó.
+
+### Features de Cruce / Interacción
+
+Para dos features $x_1, x_2$, una feature de cruce es $x_1 \cdot x_2$ o $x_1 / x_2$. Útil cuando el target depende de una *razón* que un modelo lineal no puede recuperar por sí solo.
+
+```{python}
+# Elegir dos features bien pobladas y emitir su razón como nueva feature
+from sklearn.preprocessing import FunctionTransformer
+
+a, b = "Amplitude_1", "Amplitude_2"
+print(f"creando razón: {a} / {b}")
+
+def add_ratio(X):
+    X = pd.DataFrame(X, columns=numeric_cols).copy() if not isinstance(X, pd.DataFrame) else X.copy()
+    safe_b = X[b].replace(0, np.nan)
+    X[f"ratio_{a[:8]}_over_{b[:8]}"] = X[a] / safe_b
+    return X
+
+ratio_step = FunctionTransformer(add_ratio, validate=False)
+
+# Insertar el paso de razón al inicio del pipeline numérico
+numeric_pipe_with_ratio = Pipeline([
+    ("ratio",  ratio_step),
+    ("power",  PowerTransformer(method='yeo-johnson', standardize=False)),
+    ("impute", SimpleImputer(strategy='median')),
+    ("scale",  StandardScaler()),
+])
+
+pipe = Pipeline([
+    ("preproc", ColumnTransformer([("num", numeric_pipe_with_ratio, numeric_cols)])),
+    ("model",   LogisticRegression(max_iter=2000)),
+])
+score = cross_val_score(pipe, X_train, y_train, cv=cv, scoring='f1_macro').mean()
+print(f"CV f1_macro (con feature de razón): {score:.3f}")
+```
+
+¿Ayudó la razón? En la mayoría de los pares no va a ayudar — el feature engineering es principalmente una historia de pequeñas ganancias y muchos callejones sin salida. El punto es el *protocolo*: probar, medir con CV, conservar si ayuda.
+
+### Features de Fecha y Hora
+
+Si una feature es un ángulo, hora del día, o día del año, codifícala como $(\sin(2\pi t/T), \cos(2\pi t/T))$. El par cíclico preserva "las 11pm está cerca de la medianoche" — un entero crudo no.
+
+```{python}
+# Boceto con una columna 'hour' sintética
+synthetic = pd.DataFrame({'hour': np.arange(0, 24)})
+synthetic['hour_sin'] = np.sin(2*np.pi * synthetic['hour'] / 24)
+synthetic['hour_cos'] = np.cos(2*np.pi * synthetic['hour'] / 24)
+
+fig, ax = plt.subplots(figsize=(6, 4))
+ax.scatter(synthetic['hour_sin'], synthetic['hour_cos'], c=synthetic['hour'], cmap='twilight')
+for _, r in synthetic.iterrows():
+    ax.annotate(int(r['hour']), (r['hour_sin'], r['hour_cos']))
+ax.set_xlabel('sin'); ax.set_ylabel('cos'); ax.set_title('Encoding cíclico de hora del día');
+```
+
+**Time-since-event** es la otra mitad del feature engineering temporal: para cada fila, ¿cuánto tiempo pasó desde la ocurrencia más reciente de algún evento de referencia (último login, última detección, último pago)?
+
+### Tour: Extractores de Features Específicos de Dominio
+
+La misma regla aplica — cada paso con parámetros aprendidos vive dentro del pipeline.
+
+#### Series de Tiempo → `tsfresh`
+
+```{python}
+from tsfresh.examples.robot_execution_failures import download_robot_execution_failures, \
+    load_robot_execution_failures
+download_robot_execution_failures()
+timeseries, y_ts = load_robot_execution_failures()
+```
+
+```{python}
+# Comportamiento normal
+timeseries[timeseries['id'] == 3].plot(subplots=True, sharex=True, figsize=(10, 10))
+plt.suptitle("ID 3 — Comportamiento normal"); plt.show()
+```
+
+```{python}
+# Comportamiento anómalo
+timeseries[timeseries['id'] == 20].plot(subplots=True, sharex=True, figsize=(10, 10))
+plt.suptitle("ID 20 — Comportamiento anómalo"); plt.show()
+```
+
+```{python}
+from tsfresh import extract_features
+extracted_features = extract_features(timeseries, column_id="id", column_sort="time")
+extracted_features
+```
+
+```{python}
+from tsfresh import select_features
+from tsfresh.utilities.dataframe_functions import impute
+
+impute(extracted_features)
+features_filtered = select_features(extracted_features, y_ts)
+features_filtered
+```
+
+::: {.callout-warning}
+## Leakage en `select_features`
+
+`extract_relevant_features` — que combina extracción y selección — realiza pruebas estadísticas que usan **todas** las etiquetas para filtrar features. Si se aplica antes de separar train/test, hay leakage. La solución: extraer features primero (sin seleccionar), dividir train/test, luego seleccionar *solo dentro del fold de entrenamiento*.
+:::
+
+#### Texto → TF-IDF
+
+```{python}
+from sklearn.feature_extraction.text import TfidfVectorizer
+
+tiny_corpus = [
+    "supernova type Ia bright peak",
+    "variable star RR Lyrae short period",
+    "active galactic nucleus quasar variable",
+    "supernova type II hydrogen lines",
+]
+tfidf = TfidfVectorizer(stop_words='english')
+X_text = tfidf.fit_transform(tiny_corpus)
+pd.DataFrame(X_text.toarray(), columns=tfidf.get_feature_names_out()).round(2)
+```
+
+Para texto en un pipeline real de clasificación, `TfidfVectorizer` se convierte en un paso en `ColumnTransformer` junto al pipeline numérico.
+
+#### Imágenes → Momentos, Augmentation
+
+El patrón: los pipelines de augmentación de `albumentations` se aplican solo a *batches de entrenamiento*; nunca a imágenes de validación/test.
+
+::: {.callout-tip}
+## Ejercicio
+
+Elige tres columnas de este dataset que creas que *físicamente* deberían interactuar (un color y una magnitud, una amplitud y un período...). Agrega una como razón o producto, mide con CV, y reporta el cambio en f1_macro.
+:::
+
+## 6. Splitting Más Allá del Aleatorio
+
+`train_test_split(shuffle=True)` es incorrecto cuando:
+
+- **Las clases están desbalanceadas** → `stratify=y`
+- **Los datos tienen un orden temporal** → `TimeSeriesSplit`; el futuro nunca debería aparecer en el entrenamiento
+- **Múltiples filas pertenecen a una entidad** (mismo paciente, mismo objeto astronómico) → `GroupKFold`; de lo contrario el modelo memoriza la entidad
+
+### K-Fold Estratificado
+
+```{python}
+from sklearn.model_selection import StratifiedKFold
+skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=RANDOM_STATE)
+for i, (tr, va) in enumerate(skf.split(X_train, y_train)):
+    print(f"fold {i}: fracciones de clase en train = "
+          + ", ".join(f"{c}:{y_train.iloc[tr].value_counts(normalize=True).get(c, 0):.2f}"
+                      for c in sorted(y_train.unique())[:3]) + " …")
+```
+
+### `TimeSeriesSplit` — Nunca Dejar que el Futuro Se Filtre
+
+```{python}
+from sklearn.model_selection import TimeSeriesSplit
+
+# Visualizar la estructura de los folds
+fig, ax = plt.subplots(figsize=(8, 3))
+n = 120
+tscv = TimeSeriesSplit(n_splits=5)
+for i, (tr, va) in enumerate(tscv.split(np.arange(n))):
+    ax.scatter(tr, [i]*len(tr), c='tab:blue',  marker='_', lw=8, label='train' if i==0 else "")
+    ax.scatter(va, [i]*len(va), c='tab:orange', marker='_', lw=8, label='val'   if i==0 else "")
+ax.set_yticks(range(5)); ax.set_xlabel('índice de fila (≈ tiempo)'); ax.set_title('Folds de TimeSeriesSplit')
+ax.legend(loc='upper left');
+```
+
+### `GroupKFold` — Cuando Muchas Filas Comparten una Entidad
+
+```{python}
+from sklearn.model_selection import GroupKFold
+
+# Demo sintética de leakage de grupo: 100 pacientes, 10 visitas cada uno
+# La 'feature' es ruido pequeño + el id del paciente — memorizar el paciente resuelve la tarea
+n_patients, n_visits = 100, 10
+patient_id = np.repeat(np.arange(n_patients), n_visits)
+y_synth    = np.tile([0]*5 + [1]*5, n_patients)
+X_synth    = (patient_id + np.random.randn(len(patient_id))*0.01).reshape(-1, 1)
+
+from sklearn.tree import DecisionTreeClassifier
+random_cv = cross_val_score(DecisionTreeClassifier(), X_synth, y_synth, cv=5).mean()
+group_cv  = cross_val_score(DecisionTreeClassifier(), X_synth, y_synth,
+                            cv=GroupKFold(n_splits=5), groups=patient_id).mean()
+print(f"random KFold (LEAKY) accuracy: {random_cv:.3f}")
+print(f"GroupKFold (correcto)        : {group_cv:.3f}")
+```
+
+Con folds aleatorios el modelo memoriza los ids de pacientes y "predice" sus visitas. Con `GroupKFold`, los pacientes en el fold de validación son *nuevos pacientes*, y la feature espuria colapsa a ruido. La misma lección de la §1: el leakage se esconde como un gran score.
+
+## 7. Desbalance de Clases sin Leakage
+
+El oversampling sintético (SMOTE, ADASYN) genera nuevos puntos de la clase minoritaria interpolando entre los existentes. **Regla:** el resampling debe ocurrir *dentro* del loop de CV, sobre el fold de entrenamiento únicamente. Resamplear antes de dividir filtra copias sintéticas de las filas de validación al entrenamiento.
+
+```{python}
+from imblearn.over_sampling import SMOTE, ADASYN
+from imblearn.pipeline import Pipeline as ImbPipeline
+
+# --- Anti-patrón: SMOTE antes del CV (NO HACER) ---
+X_imp = SimpleImputer(strategy='median').fit_transform(StandardScaler().fit_transform(X_train))
+X_res, y_res = SMOTE(random_state=RANDOM_STATE).fit_resample(X_imp, y_train)
+leaky_smote = cross_val_score(LogisticRegression(max_iter=2000), X_res, y_res,
+                              cv=cv, scoring='f1_macro').mean()
+
+# --- Correcto: SMOTE dentro de un ImbPipeline (solo fitea en folds de entrenamiento) ---
+pipe = ImbPipeline([
+    ("preproc", preproc),
+    ("smote",   SMOTE(random_state=RANDOM_STATE)),
+    ("model",   LogisticRegression(max_iter=2000)),
+])
+honest_smote = cross_val_score(pipe, X_train, y_train, cv=cv, scoring='f1_macro').mean()
+
+print(f"SMOTE antes del CV (leaky)      : {leaky_smote:.3f}")
+print(f"SMOTE dentro del pipeline (limpio): {honest_smote:.3f}")
+```
+
+El número leaky es optimista: cuando SMOTE corre en el set de entrenamiento completo, las filas de validación obtienen vecinos sintéticos que se ven casi idénticos a ellas mismas.
+
+### Alternativas a SMOTE
+
+El resampling no es la única herramienta. A menudo el fix más limpio es `class_weight='balanced'` en el modelo mismo.
+
+```{python}
+variants = {
+    "sin rebalanceo":       Pipeline([("preproc", preproc), ("m", LogisticRegression(max_iter=2000))]),
+    "class_weight=balanced": Pipeline([("preproc", preproc), ("m", LogisticRegression(max_iter=2000, class_weight='balanced'))]),
+    "SMOTE en pipeline":    ImbPipeline([("preproc", preproc), ("s", SMOTE(random_state=RANDOM_STATE)), ("m", LogisticRegression(max_iter=2000))]),
+}
+for name, p in variants.items():
+    s = cross_val_score(p, X_train, y_train, cv=cv, scoring='f1_macro').mean()
+    print(f"{name:27s} f1_macro = {s:.3f}")
+```
+
+¿Cuándo ayuda SMOTE sobre `class_weight`? Aproximadamente: cuando la clase minoritaria tiene una *estructura* compleja (multimodal, frontera no lineal) que se beneficia de muestras sintéticas adicionales; menos útil cuando el modelo simplemente puede re-ponderar la pérdida.
+
+## 8. Tuning de Hiperparámetros sin Leakage
+
+Tunear hiperparámetros en los mismos folds sobre los que *reportas* sesga el score reportado hacia arriba — has usado esos folds para tomar una decisión. La respuesta limpia es **CV anidado**:
+
+- **Loop externo**: estima la generalización
+- **Loop interno**: elige hiperparámetros
+
+Tuneamos en `X_train` únicamente (con CV interno) y reportamos una vez sobre `X_test` en la §9. Tuneamos el **pipeline completo**, así cada decisión de preprocesamiento se re-fittea por fold interno.
+
+```{python}
+import optuna
+import lightgbm as lgb
+optuna.logging.set_verbosity(optuna.logging.WARNING)
+
+# Preprocessing simplificado para el estudio de tuning (LGBM no necesita scaling)
+preproc_lgb = ColumnTransformer([("num",
+    Pipeline([("impute", SimpleImputer(strategy='median'))]),
+    numeric_cols)])
+
+inner_cv = StratifiedKFold(n_splits=3, shuffle=True, random_state=RANDOM_STATE)
+
+def objective(trial):
+    params = {
+        "n_estimators":      trial.suggest_int("n_estimators", 100, 600),
+        "num_leaves":        trial.suggest_int("num_leaves", 15, 127),
+        "learning_rate":     trial.suggest_float("learning_rate", 1e-3, 3e-1, log=True),
+        "min_child_samples": trial.suggest_int("min_child_samples", 5, 100),
+        "verbosity":         -1,
+    }
+    p = Pipeline([("preproc", preproc_lgb),
+                  ("model",   lgb.LGBMClassifier(**params, random_state=RANDOM_STATE))])
+    return cross_val_score(p, X_train, y_train, cv=inner_cv, scoring='f1_macro').mean()
+
+study = optuna.create_study(direction="maximize",
+                            sampler=optuna.samplers.TPESampler(seed=RANDOM_STATE))
+study.optimize(objective, n_trials=20, show_progress_bar=False)
+print(f"mejor CV f1_macro: {study.best_value:.3f}")
+print("mejores params:", study.best_params)
+```
+
+```{python}
+# Historial de optimización
+trials = pd.DataFrame([{**t.params, "value": t.value} for t in study.trials])
+fig, ax = plt.subplots(figsize=(7, 3))
+ax.plot(trials.index, trials['value'], 'o-')
+ax.plot(trials.index, trials['value'].cummax(), color='red', label='mejor hasta ahora')
+ax.set_xlabel("trial"); ax.set_ylabel("CV f1_macro"); ax.legend(); ax.set_title("Trials de Optuna");
+```
+
+```{python}
+# Importancia de parámetros
+try:
+    importances = optuna.importance.get_param_importances(study)
+    pd.Series(importances).plot.barh(); plt.title("Importancia de parámetros (Optuna)");
+except Exception as e:
+    print("El gráfico de importancia necesita scikit-learn>=0.24:", e)
+```
+
+## 9. Evaluación Final y Pasos Hacia Producción
+
+Tocamos el set de test exactamente una vez. Si re-tuneamos después de ver este número, deja de ser un set de test.
+
+```{python}
+best_pipe = Pipeline([
+    ("preproc", preproc_lgb),
+    ("model",   lgb.LGBMClassifier(**study.best_params, random_state=RANDOM_STATE, verbosity=-1)),
+])
+best_pipe.fit(X_train, y_train)
+y_pred = best_pipe.predict(X_test)
+```
+
+```{python}
+from sklearn.metrics import f1_score, classification_report, ConfusionMatrixDisplay
+
+print(f"f1_macro en test held-out: {f1_score(y_test, y_pred, average='macro'):.3f}\n")
+print(classification_report(y_test, y_pred))
+```
+
+```{python}
+fig, ax = plt.subplots(figsize=(8, 8))
+ConfusionMatrixDisplay.from_estimator(best_pipe, X_test, y_test, ax=ax,
+                                      xticks_rotation='vertical', normalize='true', colorbar=False)
+ax.set_title("Matriz de confusión en test (normalizada por fila)");
+```
+
+### Entrar en Producción
+
+El flujo correcto es:
+
+1. Tunear en `X_train` con CV para obtener `best_params`.
+2. Reportar una vez en `X_test` para confirmar que el estimado de CV es honesto.
+3. Re-entrenar con `best_params` en `X_train + X_test` combinados — ese es tu modelo de producción.
+
+El paso 3 sorprende a mucha gente. Una vez que el test set cumplió su función (darte un estimado no sesgado de generalización), no hay razón para no usar esas filas en el entrenamiento del modelo que vas a desplegar. Más datos ⇒ generalmente un mejor modelo, y el score de CV/test ya te dijo qué esperar.
+
+Antes de hacer el deploy:
+
+- **Estabilidad del CV.** Mira la dispersión de los scores por fold, no solo la media. Si los folds son muy diferentes (ej: 0.65 / 0.81 / 0.72 / 0.59 / 0.78), tus "mejores" hiperparámetros pueden haber ganado por ruido. Prefiere una configuración ligeramente peor con folds más consistentes.
+
+- **Regla de un error estándar (Breiman).** Entre las configuraciones cuyo score de CV está dentro de 1 SE del mejor, elige la más simple (modelo más pequeño, regularización más fuerte). Protege contra el overfitting al ruido del CV.
+
+- **Re-tunear el presupuesto de entrenamiento después de que los datos crezcan.** Si usaste `early_stopping` contra un slice held-out durante el tuning, re-fittea con la misma lógica en el set combinado más grande.
+
+- **Ensemble gratuito.** Re-fittea `best_params` con N semillas diferentes sobre los datos completos, promedia predicciones. A menudo da un 1-3% de mejora sin nuevo riesgo de hiperparámetros.
+
+- **Datos ordenados por tiempo.** No hagas shuffle al re-entrenar si el orden importa — usa las filas más recientes para cualquier validación held-out, y no incluyas el futuro en tu entrenamiento final.
+
+### Qué Añadiríamos con Más Tiempo
+
+- **Drift y re-entrenamiento** — los datos de producción no se verán siempre como los datos de entrenamiento. Monitorear distribuciones y programar re-entrenamientos.
+
+- **Calibración** — las probabilidades predichas deben coincidir con las frecuencias observadas; `CalibratedClassifierCV`.
+
+- **Splits group-aware en producción** — diseñar splits que imiten el deployment (las mismas entidades pueden reaparecer entre train y test en la vida real).
+
+- **Features causales vs. predictivas** — features que son consecuencias downstream del target (ej: "¿hizo clic el usuario en el email de confirmación?" para predecir "¿completó el usuario el registro?") son leakage con otro nombre.
+
+- **Feature stores** — una vez que una feature está en producción, el mismo código debe calcularla en tiempo de entrenamiento y en tiempo de inferencia, o hay train/serve skew (un leakage lento).
+
+- **Documentación** — registrar cada decisión de preprocesamiento. El model card existe o muere por la reproducibilidad.
+
+::: {.callout-important}
+## La Versión Corta del Flujo Completo
+
+CV elige la configuración → el test set la verifica → el re-entrenamiento sobre datos completos la despliega → el monitoreo decide cuándo rehacer los tres pasos.
+:::
+
+## Resumen del Capítulo
+
+| Técnica | Regla anti-leakage |
+|---|---|
+| Imputación / Escalado / Encoding | Dentro del pipeline, fitteado por fold |
+| Selección de features | Dentro del pipeline |
+| Feature engineering con FunctionTransformer | Puede ir antes del fit; si usa estadísticas, dentro del pipeline |
+| SMOTE / resampling | `ImbPipeline` — nunca antes del CV |
+| Tuning de hiperparámetros | CV anidado; reportar sobre test solo una vez |
+| Splits temporales | `TimeSeriesSplit`; jamás shuffle cuando el orden importa |
+| Splits de grupo | `GroupKFold` cuando múltiples filas comparten una entidad |
+
+## Referencias
+
+- Pedregosa, F. et al. (2011). Scikit-learn: Machine Learning in Python. *JMLR*, 12, 2825–2830.
+- Christ, M. et al. (2018). Time Series FeatuRe Extraction on basis of Scalable Hypothesis tests (tsfresh). *Neurocomputing*.
+- Akiba, T. et al. (2019). Optuna: A Next-generation Hyperparameter Optimization Framework. *KDD*.
+- Ke, G. et al. (2017). LightGBM: A Highly Efficient Gradient Boosting Decision Tree. *NeurIPS*.

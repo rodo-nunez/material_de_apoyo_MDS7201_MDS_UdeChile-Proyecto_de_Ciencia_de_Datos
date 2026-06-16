@@ -1,0 +1,54 @@
+# Bienvenida {.unnumbered}
+
+Bienvenidos al curso **Proyecto de Ciencia de Datos** (MDS7201) del **Master of Data Science** de la Universidad de Chile.
+ 
+::: {.callout-note}
+# Disclaimer
+
+Este libro fue creado en base a las notas de las clases, punteos, referencias, códigos y otros. Usamos Claude Sonnet 4.5 para generar el detalle de cada punto a partir del esqueleto. Luego revisamos capítulo por capítulo parta corregir los errores que cometió Claude y adaptar algunas secciones al contexto del curso. Toda la generación en base a prompts, estructuración y la edición la hizo Rodolfo Núñez.
+
+Este libro debe ser usado como referencia para estudiar temas antes de clases, repasarlos o estudiar autodidactamente. Pero siempre teniendo en cuenta que puede contener errores o imprecisiones. Por favor, reporta cualquier error o sugerencia a través de Issues en el repositorio de GitHub del curso.
+
+:::
+
+## Sobre el Curso
+
+Este curso tiene como objetivo que los estudiantes trabajen en grupos en proyectos reales con empresas y contrapartes reales, para aportarles valor a las organizaciones y ganar experiencia práctica en ciencia de datos.
+
+### Objetivos
+
+- Aplicar conocimientos adquiridos en cursos previos del MDS
+- Trabajar en proyectos reales con empresas colaboradoras
+- Desarrollar habilidades de trabajo en equipo
+- Comunicar resultados de manera efectiva
+- Gestionar proyectos de ciencia de datos de principio a fin
+
+### Metodología
+
+El curso combina:
+
+<!-- TODO Actualizar metodología cuando todos los capítulos estén listos -->
+- **Clases teóricas**: Fundamentos de gestión de proyectos, metodologías ágiles, y muenas prácticas
+- **Clases prácticas**: Herramientas técnicas (Git, Linux, Cloud Computing)
+- **Trabajo en proyecto**: Desarrollo continuo del proyecto con hitos evaluados
+
+### Estructura del Libro
+
+Este libro está organizado en partes temáticas que cubren los aspectos fundamentales del curso:
+
+<!-- TODO Actualizar metodología cuando todos los capítulos estén listos -->
+
+1. **Fundamentos**: Introducción y metodologías de ciencia de datos
+2. **Gestión de Proyectos**: Planificación y trabajo en equipo
+3. **Herramientas Técnicas**: Git, Cloud, y Linux
+4. **Desarrollo y Entregas**: Documentación, presentaciones y reproducibilidad
+
+Cada capítulo puede consultarse como material de referencia o como presentación de slides.
+
+## Contacto
+
+Para consultas sobre el curso, contactar al equipo docente a través de U-Cursos, o a Rodolfo Núñez a su correo(si lo tienes), LinkedIn o Issue en GitHub.
+
+---
+
+**Universidad de Chile** | **Master of Data Science**

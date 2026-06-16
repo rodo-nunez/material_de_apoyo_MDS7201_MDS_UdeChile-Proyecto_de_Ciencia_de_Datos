@@ -1,0 +1,1069 @@
+---
+title: "Introducción a Git"
+subtitle: "MDS7201 - Master of Data Science"
+author: "Universidad de Chile"
+format:
+  revealjs:
+    theme: [default, ../custom-slides.scss]
+    slide-number: true
+    chalkboard: true
+    preview-links: auto
+    code-fold: false
+    code-tools: true
+    transition: slide
+    background-transition: fade
+  beamer:
+    theme: Madrid
+    colortheme: default
+    fonttheme: professionalfonts
+    aspectratio: 169
+    navigation: horizontal
+    section-titles: true
+    toc: true
+---
+
+# Introducción {background-color="#1a1a1a"}
+
+## Git es Obligatorio
+
+::: {.callout-important}
+## No Negociable
+**No saber Git te hace perder muchos puntos**
+
+- En este curso
+- En entrevistas
+- En la industria
+:::
+
+## El Problema Sin Git
+
+```
+proyecto_final.py
+proyecto_final_v2.py
+proyecto_final_v2_modificado.py
+proyecto_final_v2_modificado_REAL.py
+proyecto_final_ESTE_SI_final.py
+proyecto_final_ahora_si_final_FINAL.py
+```
+
+::: {.fragment}
+**¿Te suena familiar? Esto es un caos.**
+:::
+
+## Con Git
+
+```
+proyecto.py  (con historial completo)
+```
+
+::: {.incremental}
+- Un solo archivo
+- Historial completo de cambios
+- Volver a cualquier versión
+- Saber qué cambió y cuándo
+:::
+
+# ¿Qué es Git? {background-color="#2a2a2a"}
+
+## Control de Versiones
+
+**Sistema que registra cambios a lo largo del tiempo**
+
+::: {.incremental}
+- Ver qué cambió, cuándo, quién
+- Volver a versiones anteriores
+- Trabajar en paralelo sin conflictos
+- Experimentar sin miedo
+:::
+
+## Sistemas de Control de Versiones
+
+::: {.columns}
+::: {.column width="33%"}
+**SVN**
+- Centralizado
+- Popular en 2000s
+- Menos flexible
+:::
+
+::: {.column width="33%"}
+**Mercurial**
+- Distribuido
+- Más simple
+- Menos popular
+:::
+
+::: {.column width="33%"}
+**Git** ⭐
+- Distribuido
+- El estándar
+- >90% proyectos
+- Lo que usaremos
+:::
+:::
+
+## Por Qué Git Ganó
+
+::: {.incremental}
+- **Velocidad**: Operaciones muy rápidas
+- **Distribuido**: Cada uno tiene copia completa
+- **Branches**: Desarrollo paralelo fácil
+- **Popular**: GitHub, GitLab, Bitbucket
+- **Comunidad**: Enorme ecosistema
+:::
+
+# Para Qué Sirve {background-color="#1a1a1a"}
+
+## 1. Colaborar Fácilmente
+
+**Sin Git:**
+- "Envíame tu versión por email"
+- "No puedo trabajar hasta que termines"
+- Conflictos manuales
+- Pérdida de trabajo
+
+**Con Git:**
+- Cada persona trabaja en su copia
+- Integración automática
+- Conflictos detectados claramente
+
+## 2. Reproducibilidad
+
+**Crítico en Data Science**
+
+::: {.incremental}
+- Volver a versión funcional
+- Reproducir resultados exactos
+- Auditar cambios
+- Recuperar trabajo eliminado
+:::
+
+## 2. Ejemplo Reproducibilidad
+
+```bash
+# Semana 3: Modelo funciona
+git commit -m "Baseline: 82% accuracy"
+git tag v1.0-baseline
+
+# Semana 4: Experimento falla
+# accuracy baja a 65%
+
+# Volver al baseline
+git checkout v1.0-baseline
+
+# Ver qué cambiaste
+git diff v1.0-baseline
+```
+
+## 3. Experimentar Sin Miedo
+
+```bash
+# Crear branch para experimento
+git checkout -b experiment/deep-learning
+
+# Experimentar libremente
+# Si funciona: merge
+# Si no: descartar branch
+
+git checkout main
+git branch -D experiment/deep-learning
+```
+
+## 4. Documentar Decisiones
+
+::: {.columns}
+::: {.column width="50%"}
+**❌ Mal**
+```bash
+git commit -m "fix"
+```
+:::
+
+::: {.column width="50%"}
+**✅ Bueno**
+```bash
+git commit -m "Change imputation 
+from mean to median
+
+Outliers in income skewed mean.
+Median improved accuracy 
+78% → 82%"
+```
+:::
+:::
+
+# Por Qué es Fundamental {background-color="#2a2a2a"}
+
+## Razones Técnicas
+
+::: {.incremental}
+1. **Reproducibilidad científica**: DS es ciencia
+2. **Versionamiento de experimentos**: Track todo
+3. **Colaboración en notebooks**: Aunque difíciles
+4. **Backup automático**: Nunca perder trabajo
+:::
+
+## Razones Profesionales
+
+::: {.callout-important}
+## Empleabilidad
+
+**Si no sabes Git:**
+- ❌ Pierdes puntos en entrevistas
+- ❌ 99% empresas tech usan Git
+- ❌ No puedes mostrar tu trabajo
+:::
+
+## Tu GitHub es Tu Portafolio
+
+```
+github.com/tu-usuario/
+├── churn-prediction/       # Proyecto curso
+├── nlp-sentiment/          # Proyecto personal
+└── open-source-contrib/    # Contribuciones
+```
+
+**Reclutadores revisan tu GitHub**
+
+## En Este Curso
+
+::: {.callout-warning}
+## Evaluación
+
+Parte de la nota incluye:
+- Uso adecuado de Git
+- Commits frecuentes y descriptivos
+- Branches para features
+- README completo
+- Historial claro
+
+**No usar Git = perder puntos**
+:::
+
+# Servicios Remotos {background-color="#1a1a1a"}
+
+## Principales Plataformas
+
+| Plataforma | Ventaja Principal | Ideal Para |
+|------------|-------------------|------------|
+| **GitHub** | Más popular | Open source, portafolio |
+| **GitLab** | CI/CD potente | Enterprise, self-hosted |
+| **Bitbucket** | Integra Jira | Equipos Atlassian |
+
+## GitHub
+
+**El estándar (>100M usuarios)**
+
+::: {.incremental}
+- Gratuito (público y privado)
+- GitHub Actions (CI/CD gratis)
+- GitHub Pages (hosting gratis)
+- Comunidad más grande
+- **Lo usaremos en el curso**
+:::
+
+## GitLab
+
+**Segunda opción**
+
+::: {.incremental}
+- CI/CD muy potente
+- Puede ser self-hosted
+- DevOps tools integrados
+- Bueno para enterprise
+:::
+
+## Bitbucket
+
+**De Atlassian**
+
+::: {.incremental}
+- Integración con Jira
+- Bueno para enterprise
+- Gratis hasta 5 usuarios
+:::
+
+# Conceptos Fundamentales {background-color="#2a2a2a"}
+
+## Repositorio
+
+**Proyecto versionado con Git**
+
+```
+mi-proyecto/
+├── .git/           # Magia de Git aquí
+├── src/
+├── data/
+├── notebooks/
+└── README.md
+```
+
+**Tipos:**
+- **Local**: En tu computadora
+- **Remoto**: En GitHub
+
+## Commit
+
+**Conjunto de cambios respecto al mismo tema**
+
+```
+commit abc123def456
+Author: Tu Nombre <email>
+Date:   Mon Dec 4 10:30:00 2023
+
+    Add baseline model
+    
+    - Implemented preprocessing
+    - Trained logistic regression
+    - Achieved 78% accuracy
+```
+
+## Commits Forman Cadena
+
+```
+C1 ← C2 ← C3 ← C4 ← C5 (HEAD)
+```
+
+Cada commit apunta al anterior = historial completo
+
+## Branch (Rama)
+
+**Línea independiente de desarrollo**
+
+```
+        C3 ← C4 ← C5 (feature/new-model)
+       /
+C1 ← C2 ← C6 ← C7 (main)
+```
+
+## Por Qué Branches
+
+::: {.incremental}
+1. **Desarrollo paralelo**: Múltiples features
+2. **Experimentación segura**: No afecta main
+3. **Code review**: Revisar antes de integrar
+4. **Organización**: Cada feature su rama
+:::
+
+## Tag
+
+**Etiqueta para puntos importantes**
+
+```bash
+git tag v1.0-baseline -m "Baseline: 82% accuracy"
+git tag final-submission -m "Final project"
+git tag presentation-results
+```
+
+**Diferencia con branch:**
+- Branch: Puntero móvil
+- Tag: Puntero fijo
+
+## Remoto y Origin
+
+**Remoto**: Repo en otro lugar (GitHub)
+
+**Origin**: Nombre convencional del remoto principal
+
+```bash
+git remote -v
+# origin  https://github.com/user/repo.git (fetch)
+# origin  https://github.com/user/repo.git (push)
+```
+
+# Comandos Básicos {background-color="#1a1a1a"}
+
+## Los 12 Comandos Esenciales
+
+::: {.incremental}
+1. `git init` - Inicializar repo
+2. `git status` - Ver estado
+3. `git add` - Agregar a staging
+4. `git commit` - Guardar cambios
+5. `git push` - Subir a remoto
+6. `git pull` - Bajar de remoto
+:::
+
+## Los 12 Comandos Esenciales
+
+::: {.incremental}
+7. `git fetch` - Descargar sin integrar
+8. `git merge` - Integrar cambios
+9. `git checkout` - Cambiar branch
+10. `git branch` - Gestionar branches
+11. `git tag` - Gestionar tags
+12. `git config` - Configurar Git
+:::
+
+## git init
+
+**Inicializar nuevo repositorio**
+
+```bash
+mkdir mi-proyecto
+cd mi-proyecto
+git init
+
+# Crea carpeta .git/
+```
+
+**Alternativa:** `git clone` si ya existe en GitHub
+
+## git status
+
+**Tu comando más usado**
+
+```bash
+git status
+```
+
+**Muestra:**
+- Archivos modificados
+- Archivos en staging
+- Archivos sin trackear
+- Branch actual
+
+::: {.callout-tip}
+Usa `git status` CONSTANTEMENTE
+:::
+
+## git add
+
+**Agregar cambios a staging**
+
+```bash
+# Archivo específico
+git add archivo.py
+
+# Múltiples archivos
+git add archivo1.py archivo2.py
+
+# Todo
+git add .
+
+# Interactivo
+git add -p
+```
+
+## Los 3 Estados de Git
+
+```
+Working Directory → Staging Area → Repository
+  (modificado)      (git add)     (git commit)
+```
+
+## git commit
+
+**Guardar cambios en historial**
+
+```bash
+# Commit con mensaje
+git commit -m "Add baseline model"
+
+# Commit detallado (abre editor)
+git commit
+
+# Commit todos los cambios tracked
+git commit -am "Update docs"
+```
+
+## Buen Commit Message
+
+::: {.columns}
+::: {.column width="50%"}
+**❌ Malos**
+```bash
+git commit -m "fix"
+git commit -m "changes"
+git commit -m "asdf"
+```
+:::
+
+::: {.column width="50%"}
+**✅ Buenos**
+```bash
+git commit -m "Fix null 
+handling in preprocessing"
+
+git commit -m "Add temporal 
+features
+
+- Lag 7, 14, 30 days
+- Rolling mean/std
+- Improved accuracy 78%→82%"
+```
+:::
+:::
+
+## git fetch
+
+**Descargar cambios SIN integrar**
+
+```bash
+git fetch origin
+
+# Descarga commits nuevos
+# NO modifica tu código local
+```
+
+**Workflow seguro:**
+```bash
+git fetch
+# revisar cambios
+git merge
+```
+
+## git merge
+
+**Integrar cambios de otra rama**
+
+```bash
+git checkout main
+git merge feature/new-model
+```
+
+**Tipos:**
+- Fast-forward (simple)
+- Three-way merge (con merge commit)
+
+## Merge Conflicts
+
+```bash
+git merge feature/branch
+# CONFLICT in src/model.py
+
+# Git marca conflictos:
+<<<<<<< HEAD
+model = LogisticRegression(max_iter=100)
+=======
+model = LogisticRegression(max_iter=500)
+>>>>>>> feature/branch
+
+# Resolver manualmente
+# Elegir una opción o combinar
+```
+
+## git pull
+
+**fetch + merge en uno**
+
+```bash
+git pull
+
+# Equivalente a:
+git fetch origin
+git merge origin/main
+```
+
+::: {.callout-warning}
+Puede crear merge commits inesperados.
+Para más control: fetch + merge separados
+:::
+
+## git push
+
+**Enviar commits a remoto**
+
+```bash
+# Push branch actual
+git push
+
+# Push especificando remoto y rama
+git push origin main
+
+# Primera vez con nueva rama
+git push -u origin feature/new-branch
+```
+
+## git checkout
+
+**Cambiar entre branches**
+
+```bash
+# Cambiar a branch existente
+git checkout main
+
+# Crear y cambiar a nuevo branch
+git checkout -b feature/new-feature
+
+# Restaurar archivo
+git checkout -- archivo.py
+```
+
+## git branch
+
+**Gestionar branches**
+
+```bash
+# Listar branches
+git branch
+
+# Crear branch
+git branch feature/new
+
+# Eliminar branch
+git branch -d feature/old
+
+# Forzar eliminación
+git branch -D feature/experiment
+```
+
+## git tag
+
+**Marcar puntos importantes**
+
+```bash
+# Crear tag
+git tag -a v1.0 -m "Release 1.0"
+
+# Listar tags
+git tag
+
+# Push tags (no automático)
+git push origin v1.0
+git push origin --tags
+```
+
+## git config
+
+**Configurar Git (una vez)**
+
+```bash
+# Tu nombre
+git config --global user.name "Tu Nombre"
+
+# Tu email
+git config --global user.email "tu@email.com"
+
+# Editor
+git config --global core.editor "code --wait"
+
+# Ver configuración
+git config --list
+```
+
+# Workflow Típico {background-color="#2a2a2a"}
+
+## Setup Inicial
+
+```bash
+# 1. Crear repo en GitHub (web)
+
+# 2. Clonar
+git clone https://github.com/user/proyecto.git
+
+# 3. Configurar
+git config user.name "Nombre"
+git config user.email "email"
+
+# 4. Crear estructura
+mkdir data notebooks src tests
+
+# 5. Primer commit
+git add .
+git commit -m "Initial structure"
+git push
+```
+
+## Trabajo Diario
+
+```bash
+# Inicio: actualizar
+git pull
+
+# Crear branch
+git checkout -b feature/analysis
+
+# Trabajar...
+git status
+git add notebooks/eda.ipynb
+git commit -m "Add EDA analysis"
+
+# Push
+git push -u origin feature/analysis
+
+# En GitHub: crear Pull Request
+```
+
+## Antes de Hitos
+
+```bash
+# Actualizar main
+git checkout main
+git pull
+
+# Merge features
+git merge feature/branch-1
+git merge feature/branch-2
+
+# Tag hito
+git tag -a hito-1 -m "Hito 1: EDA"
+git push origin hito-1
+```
+
+# .gitignore {background-color="#1a1a1a"}
+
+## ¿Qué es?
+
+**Archivos que Git debe ignorar**
+
+```gitignore
+# Python
+__pycache__/
+*.pyc
+venv/
+
+# Jupyter
+.ipynb_checkpoints
+
+# Data (NO versionar grandes)
+data/raw/*
+data/processed/*
+*.csv
+*.parquet
+
+# Models
+models/*.pkl
+models/*.h5
+
+# Credentials
+.env
+secrets.json
+```
+
+## Por Qué .gitignore
+
+::: {.incremental}
+- Datasets grandes (usar DVC)
+- Archivos temporales
+- Credenciales y secrets
+- Archivos generados
+- Archivos del OS
+:::
+
+# Buenas Prácticas {background-color="#2a2a2a"}
+
+## 1. Commits Frecuentes
+
+**❌ Malo:**
+```bash
+# Un commit gigante al final del día
+git add .
+git commit -m "Trabajo del día"
+```
+
+**✅ Bueno:**
+```bash
+git commit -m "Load customer data"
+# ... trabajar ...
+git commit -m "Handle missing values"
+# ... trabajar ...
+git commit -m "Create age groups"
+```
+
+## 2. Mensajes Descriptivos
+
+**Formato:**
+```
+<tipo>: <resumen corto>
+
+<descripción detallada>
+```
+
+**Tipos:**
+- `feat`: Nueva funcionalidad
+- `fix`: Corrección
+- `docs`: Documentación
+- `refactor`: Refactorización
+- `test`: Tests
+
+## 3. Branching Strategy
+
+```
+main
+├── feature/eda
+├── feature/preprocessing
+├── feature/baseline
+├── feature/advanced-model
+└── fix/data-validation
+```
+
+**Naming:**
+- `feature/nombre`: Nuevas funcionalidades
+- `fix/nombre`: Correcciones
+- `experiment/nombre`: Experimentos
+
+## 4. README Completo
+
+```markdown
+# Proyecto Churn
+
+## Descripción
+Breve descripción y objetivos
+
+## Equipo
+- Ana, Pedro, María
+
+## Setup
+```bash
+git clone ...
+pip install -r requirements.txt
+```
+
+## Estructura
+## Resultados
+## Licencia
+```
+
+## 5. No Versionar Datos Grandes
+
+**Git NO está diseñado para archivos >100MB**
+
+**Soluciones:**
+- Git LFS (Large File Storage)
+- DVC (Data Version Control) ⭐
+- Link a datos externos
+
+## 6. Pull Requests
+
+```bash
+# 1. Crear feature branch
+git checkout -b feature/analysis
+
+# 2. Trabajar y commit
+git commit -m "Add analysis"
+
+# 3. Push
+git push -u origin feature/analysis
+
+# 4. GitHub: Crear PR
+
+# 5. Code review
+
+# 6. Merge
+```
+
+# Troubleshooting {background-color="#1a1a1a"}
+
+## Error: Cannot Push
+
+```bash
+git push
+# error: Updates were rejected
+
+# Solución
+git pull --rebase
+git push
+```
+
+## Merge Conflicts
+
+```bash
+git merge feature
+# CONFLICT in file.py
+
+# Ver conflictos
+git status
+
+# Resolver manualmente en archivo
+
+# Marcar resuelto
+git add file.py
+git commit
+```
+
+## Detached HEAD
+
+```bash
+git checkout abc123
+# You are in 'detached HEAD' state
+
+# Volver a branch
+git checkout main
+
+# O crear branch desde aquí
+git checkout -b recover-work
+```
+
+## Committed to Wrong Branch
+
+```bash
+# Oops, commit en main
+git log
+# abc123 "Should be in feature"
+
+# Mover a feature branch
+git checkout feature-branch
+git cherry-pick abc123
+
+# Eliminar de main
+git checkout main
+git reset --hard HEAD~1
+```
+
+# Recursos {background-color="#2a2a2a"}
+
+## Tutoriales
+
+- [Pro Git Book](https://git-scm.com/book) - Oficial gratis
+- [Git for Beginners - freeCodeCamp](https://www.youtube.com/watch?v=RGOj5yH7evk)
+- [Git for Professionals](https://www.youtube.com/watch?v=Uszj_k0DGsg)
+- [Tutorial Git en español](https://www.youtube.com/watch?v=h0wSb2n7PkY)
+
+## Cheat Sheet
+
+```bash
+# Esenciales
+git clone <url>
+git status
+git add <file>
+git commit -m "msg"
+git push
+git pull
+
+# Branches
+git branch
+git checkout -b <branch>
+git merge <branch>
+
+# Ver historial
+git log
+git diff
+```
+
+## Herramientas
+
+- [GitHub Desktop](https://desktop.github.com/)
+- [GitKraken](https://www.gitkraken.com/)
+- [nbdime](https://github.com/jupyter/nbdime) - Notebooks
+- [BFG Repo Cleaner](https://rtyley.github.io/bfg-repo-cleaner/)
+
+# Tarea {background-color="#1a1a1a"}
+
+## Tarea Obligatoria
+
+::: {.callout-important}
+**Fecha límite: Próxima clase**
+
+1. Crear cuenta GitHub
+2. Subir Proyecto 1 a repo público
+3. Subir Proyecto 2 a repo público
+4. Ambos con:
+   - README completo
+   - .gitignore apropiado
+   - Estructura clara
+   - Commits descriptivos
+5. Enviar links al equipo docente
+:::
+
+## De Ahora en Adelante
+
+::: {.callout-warning}
+## Obligatorio
+
+**TODOS tus proyectos deben usar Git**
+
+- Commits frecuentes (mínimo diario)
+- Push regular a GitHub
+- Branches para features
+- README actualizado
+
+**No usar Git = perder puntos**
+:::
+
+## Checklist README
+
+- [ ] ¿Qué hace el proyecto?
+- [ ] ¿Cómo instalar?
+- [ ] ¿Cómo ejecutar?
+- [ ] ¿Estructura del proyecto?
+- [ ] ¿Quién lo hizo?
+- [ ] ¿Resultados principales?
+
+## Criterios Evaluación
+
+- **Estructura** (20%): Carpetas organizadas
+- **README** (20%): Documentación completa
+- **Commits** (30%): Frecuentes y descriptivos
+- **.gitignore** (10%): Apropiado para DS
+- **Historial** (20%): Muestra progreso
+
+# Proceso de Aprendizaje {background-color="#2a2a2a"}
+
+## Es Normal Fallar
+
+::: {.callout-tip}
+## Curva de Aprendizaje
+
+Es normal al principio:
+- Commits accidentales
+- Push a branch equivocado
+- Merge conflicts
+- Confusión general
+
+**Proceso:**
+1. Fallar
+2. No entender
+3. Repasar
+4. Repetir
+:::
+
+## Práctica Recomendada
+
+**Semana 1-2:**
+- Comandos básicos
+- Repo simple
+- Commits diarios
+
+**Semana 3-4:**
+- Branches
+- Pull requests
+- Merge conflicts
+
+**Mes 2+:**
+- Workflow completo
+- Code reviews
+- Troubleshooting
+
+# Conclusiones {background-color="#1a1a1a"}
+
+## Lecciones Clave
+
+::: {.incremental}
+1. **Git es obligatorio**: No opcional
+2. **Commits frecuentes**: Pequeños y descriptivos
+3. **Branches para features**: Experimentar seguro
+4. **README completo**: Tu presentación
+5. **No versionar datos grandes**: Usar DVC
+6. **Practica diariamente**: Única forma
+:::
+
+## Para el Curso
+
+**Desde ahora:**
+- Git en TODOS los proyectos
+- Repos públicos en GitHub
+- Commits descriptivos frecuentes
+- Branches para features
+- README actualizado
+
+**Se evaluará:**
+- Historial de commits
+- Calidad del README
+- Uso apropiado de branches
+
+## Acción Inmediata
+
+::: {.incremental}
+1. Instalar Git
+2. Crear cuenta GitHub
+3. Configurar Git
+4. Empezar a versionar proyectos
+5. **No esperar a entenderlo todo**
+:::
+
+::: {.callout-important}
+La mejor forma de aprender Git es **usándolo**
+:::
+
+# ¿Preguntas? {background-color="#2a2a2a"}

@@ -1,0 +1,345 @@
+---
+title: "Visualización de Datos"
+subtitle: "MDS7201 - Master of Data Science"
+author: "Universidad de Chile"
+format:
+  revealjs:
+    theme: [default, ../../custom-slides.scss]
+    slide-number: true
+    chalkboard: true
+    preview-links: auto
+    code-fold: false
+    code-tools: true
+    transition: slide
+    background-transition: fade
+  beamer:
+    theme: Madrid
+    colortheme: default
+    fonttheme: professionalfonts
+    aspectratio: 169
+    navigation: horizontal
+    section-titles: true
+    toc: true
+---
+
+# ¿Por Qué Visualizar? {background-color="#1a1a1a"}
+
+## Visión: el canal más eficiente
+
+::: {.columns}
+::: {.column width="55%"}
+Nervio óptico: **770.000 – 1.700.000 axones**
+
+La visión transmite más información por segundo que cualquier otro sentido humano.
+
+![](images/viz/image1.png){width="90%"}
+:::
+::: {.column width="45%"}
+![](images/viz/image16.png){width="80%"}
+:::
+:::
+
+## La brecha datos/cognición
+
+![HiPEAC Vision 2015](images/viz/image11.png){fig-align="center" width="75%"}
+
+Los datos crecen exponencialmente. La capacidad cognitiva es constante. La visualización es el puente.
+
+## Ley de Stevenson
+
+![Stevenson & Kording 2011](images/viz/image14.png){fig-align="center" width="60%"}
+
+Neuronas registradas simultáneamente se duplican cada **7.4 años**.
+
+$$100 \times 2^{100/7.4} \sim 10^6 \text{ conexiones del nervio óptico}$$
+
+## Una buena visualización puede salvar vidas
+
+![Borkin et al. 2011 — diagnóstico de arterias coronarias](images/viz/image9.png){fig-align="center" width="85%"}
+
+## El mapa de colores importa
+
+![91% de precisión con esquema divergente 2D vs 56% con arcoíris 3D](images/viz/image3.png){fig-align="center" width="85%"}
+
+# Mapas de Colores {background-color="#2a2a2a"}
+
+## Requisitos para un buen mapa de colores
+
+::: {.incremental}
+- **Perceptualmente uniforme**: cambio igual en datos → cambio igual en percepción
+- **Legible en blanco y negro**: no depende del color
+- **Amigable con personas daltónicas**
+:::
+
+Basado en el modelo **CIECAM02-UCS** (Comisión Internacional de Iluminación)
+
+## Jet ❌ — El peor mapa de colores
+
+![](images/viz/image15.png){fig-align="center" width="90%"}
+
+No uniforme, no legible en B&N, problemático para daltónicos. El más popular, el peor.
+
+## Viridis ✅ — El mejor
+
+![](images/viz/image13.png){fig-align="center" width="90%"}
+
+Diseñado para ser perceptualmente uniforme, legible en B&N y accesible.
+
+## Jet vs Viridis en práctica
+
+![Simulación astrofísica — jet (izq) vs viridis (der)](images/viz/image17.jpg){fig-align="center" width="85%"}
+
+## Tipos de mapas de colores
+
+![](images/viz/image24.png){fig-align="center" width="80%"}
+
+::: {.incremental}
+- **Secuenciales** (viridis, plasma…): datos con una dirección, mínimo → máximo
+- **Divergentes** (RdBu, coolwarm…): datos con punto neutro significativo
+:::
+
+## Paletas para daltonismo
+
+![Wong 2011, Nature — paletas IBM, Wong y Tol](images/viz/image20.png){fig-align="center" width="90%"}
+
+Máximo de **7 colores** para datos categóricos
+
+# Datos Multidimensionales {background-color="#1a1a1a"}
+
+## El desafío
+
+Datasets con muchas dimensiones. Humanos perciben 2D (con esfuerzo, 3D).
+
+::: {.incremental}
+- Bubble plot — 4 dimensiones
+- Pair plot — hasta ~10 dimensiones
+- Parallel coordinates — muchas dimensiones
+- Radar / RadViz — perfiles
+- Reducción de dimensionalidad — n → 2D
+:::
+
+## Bubble plot — 4 dimensiones
+
+![GDP per cápita × expectativa de vida × población × tasa natalidad](images/viz/image32.png){fig-align="center" width="80%"}
+
+## Pair plot — hasta ~10 dimensiones
+
+![Iris dataset — distribuciones + scatter de todos los pares](images/viz/image38.png){fig-align="center" width="75%"}
+
+Primera aproximación cuando n_dim < ~10
+
+## Parallel coordinates
+
+![Diferencias entre autos europeos, japoneses y estadounidenses](images/viz/image36.png){fig-align="center" width="85%"}
+
+Cada observación = una línea que conecta sus valores en ejes paralelos
+
+## Radar plots y RadViz
+
+::: {.columns}
+::: {.column width="50%"}
+**Radar**
+
+![](images/viz/image42.png){width="90%"}
+
+Polígono por observación
+:::
+::: {.column width="50%"}
+**RadViz**
+
+![](images/viz/image34.png){width="90%"}
+
+Equilibrio de tensiones de resortes
+:::
+:::
+
+## Chernoff faces — no recomendado
+
+![Hasta 18 dimensiones como atributos faciales (Chernoff, 1973)](images/viz/image40.png){fig-align="center" width="65%"}
+
+Subjetivo, no intuitivo, sin orden natural de magnitud.
+
+## Reducción de dimensionalidad
+
+![UMAP — objetos astronómicos ALeRCE, coloreados por clase](images/viz/image41.png){fig-align="center" width="70%"}
+
+PCA · t-SNE · UMAP · PaCMAP · SOMs → ver capítulo de EDA
+
+# Information Visualization {background-color="#2a2a2a"}
+
+## ¿Qué hace buena a una visualización?
+
+![Data + Function + Design](images/viz/image48.png){fig-align="center" width="60%"}
+
+## Hitos históricos
+
+**William Playfair, 1786** — Primeros gráficos de líneas y barras de la historia
+
+![](images/viz/image49.png){fig-align="center" width="80%"}
+
+## John Snow, 1854
+
+![Mapa de casos de cólera en Londres — identificó la bomba de agua contaminada](images/viz/image55.png){fig-align="center" width="75%"}
+
+Una visualización que salvó vidas.
+
+## Charles Joseph Minard, 1869
+
+![La campaña de Napoleón a Rusia — 6 dimensiones en un solo gráfico](images/viz/image43.png){fig-align="center" width="100%"}
+
+# Principios de Tufte {background-color="#1a1a1a"}
+
+## 6 Principios
+
+::: {.incremental}
+1. **Realizar comparaciones** — mostrar contrastes y diferencias
+2. **Mostrar causalidad** — mecanismo y estructura sistemática
+3. **Mostrar datos multivariados** — más de 1-2 variables
+4. **Anotar los gráficos** — integrar palabras, números e imágenes
+5. **Documentar** — título, autores, fuentes, escala
+6. **Calidad e integridad** — el contenido sobrevivirá al tiempo
+:::
+
+## Realizar comparaciones
+
+![Variwide chart — CO₂ per cápita con ancho proporcional a la población](images/viz/image66.png){fig-align="center" width="80%"}
+
+## Mostrar datos multivariados
+
+![GDP per cápita vs fertilidad con población como tamaño](images/viz/image37.png){fig-align="center" width="80%"}
+
+## Anotar los gráficos
+
+![Tasa de habla e información por idioma — anotado directamente](images/viz/image35.png){fig-align="center" width="80%"}
+
+## Escoger el formato adecuado — Mackinlay 1987
+
+::: {.columns}
+::: {.column width="50%"}
+![Jerarquía de precisión perceptual](images/viz/image46.png){width="90%"}
+:::
+::: {.column width="50%"}
+**Más preciso → Menos preciso**
+
+Posición > Longitud > Ángulo > Pendiente > Área > Volumen > Color
+:::
+:::
+
+## Jerarquía para distintos tipos de datos
+
+![Cuantitativo, Ordinal, Nominal](images/viz/image57.png){fig-align="center" width="85%"}
+
+## Combinar datos y texto
+
+![Financial Times — precio de Twitter con anotaciones de eventos](images/viz/image47.png){fig-align="center" width="80%"}
+
+Los gráficos son párrafos sobre datos.
+
+# Recomendaciones Prácticas {background-color="#2a2a2a"}
+
+## Razón datos/tinta ~80%
+
+![Low vs high data-ink ratio](images/viz/image58.png){fig-align="center" width="85%"}
+
+Eliminar: grillas innecesarias, fondos de colores, sombras, decoraciones.
+
+## No usar barras para promedios
+
+![20% cree que las barras muestran el rango de valores](images/viz/image67.png){fig-align="center" width="75%"}
+
+Ocultan la distribución. Mostrar los datos individuales.
+
+## Mostrar los datos
+
+![Pasos para mostrar la distribución real: jitter, transparencia, tamaño](images/viz/image64.png){fig-align="center" width="85%"}
+
+## Usar violin plots
+
+![Violin vs barras — el violin muestra la distribución real](images/viz/image61.png){fig-align="center" width="80%"}
+
+## No usar pie charts ni 3D
+
+![Pie 3D vs gráfico de puntos — la posición es más precisa que el ángulo](images/viz/image63.png){fig-align="center" width="80%"}
+
+## Treemaps para clases desbalanceadas
+
+![Barras vs treemap — el área transmite mejor las diferencias grandes](images/viz/image65.png){fig-align="center" width="85%"}
+
+El área es mejor que la longitud cuando hay desbalance.
+
+## No cortar los ejes
+
+::: {.incremental}
+- Ejes deben empezar desde cero cuando se habla de cantidad
+- No usar barras para promedios
+- Evitar información que distraiga del mensaje principal
+:::
+
+## No usar muchos colores
+
+![Demasiados colores vs 2 colores + etiquetas directas](images/viz/image79.png){fig-align="center" width="85%"}
+
+Máximo **7 colores**. Si hay más clases: agrupar en "otros". Excepción: etiquetas directas.
+
+## Escala y proporción
+
+::: {.incremental}
+- Razón ancho/alto entre **1.4 y 1.8** (proporción áurea = 1.6)
+- Eje x = **causa**, eje y = **efecto**
+- Texto suficientemente grande para ser **legible proyectado**
+:::
+
+## Revisitar los principios
+
+::: {.callout-tip}
+A veces romper las reglas produce visualizaciones más efectivas.
+Ver: [Why you sometimes need to break the rules in data viz](https://medium.economist.com/why-you-sometimes-need-to-break-the-rules-in-data-viz-4d8ece284919)
+:::
+
+![Gráfico de hielo ártico 3D — viola la regla del 3D pero es intuitivo](images/viz/image69.png){fig-align="center" width="55%"}
+
+# Gráficos Avanzados {background-color="#1a1a1a"}
+
+## Sankey diagram
+
+![Presupuesto nacional de Omán 2019](images/viz/image83.png){fig-align="center" width="85%"}
+
+Flujos entre categorías con ancho proporcional a la cantidad.
+
+## Chord diagram
+
+![Menciones cruzadas entre candidatos políticos](images/viz/image76.png){fig-align="center" width="65%"}
+
+Relaciones bidireccionales en layout circular.
+
+## Streamgraph
+
+![Popularidad de artistas musicales en el tiempo](images/viz/image88.png){fig-align="center" width="90%"}
+
+Evolución temporal de categorías, área proporcional a magnitud.
+
+## Contar una historia
+
+![Metano — múltiples gráficos integrados en una narrativa](images/viz/image75.png){fig-align="center" width="85%"}
+
+Combinar tipos de gráficos para construir una narrativa completa.
+
+# Referencias {background-color="#2a2a2a"}
+
+## Bibliografía
+
+- Tufte, E. R. (1983). *The Visual Display of Quantitative Information*
+- Tufte, E. R. (2006). *Beautiful Evidence*
+- Mackinlay, J. (1987). Automating the Design of Graphical Presentations. *ACM TOG*
+- Borkin, M. A., et al. (2011). Evaluation of Artery Visualizations. *IEEE TVCG*
+- Wong, B. (2011). Color blindness. *Nature Methods*
+
+## Recursos en línea
+
+- [Santiago Lombeyda, Visualización, FCFM, 2021](https://www.youtube.com/watch?v=oY7vzhiBF70)
+- [Why you sometimes need to break the rules in data viz](https://medium.economist.com/why-you-sometimes-need-to-break-the-rules-in-data-viz-4d8ece284919)
+- [A better default colormap for matplotlib](https://www.youtube.com/watch?v=xAoljeRJ3lU)
+- [Coloring for Colorblindness](https://davidmathlogic.com/colorblind/)
+- [bids.github.io/colormap](https://bids.github.io/colormap/)
+
+# ¿Preguntas? {background-color="#1a1a1a"}
