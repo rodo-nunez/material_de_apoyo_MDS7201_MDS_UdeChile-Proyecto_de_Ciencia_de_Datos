@@ -26,30 +26,30 @@ book:
       chapters: 
         - chapters/07-intro-git-libro.qmd
         - chapters/08-git-intermedio-libro.qmd
-    - part: "Linux"
-      chapters:         
-        - chapters/09-intro-linux-libro.qmd
-        - chapters/10-intro-cloud-libro.qmd
     - part: "EDA, Visualización, Storytelling, Comunicación"
       chapters:         
-        - chapters/11-eda-libro.qmd
-        - chapters/12-visualizacion-libro.qmd
-        - chapters/13-storytelling-libro.qmd
-        - chapters/14-presentacion-libro.qmd
+        - chapters/09-eda-libro.qmd
+        - chapters/10-visualizacion-libro.qmd
+        - chapters/11-storytelling-libro.qmd
+        - chapters/12-presentacion-libro.qmd
     - part: "Linux, Cloud, Modularización y Ambientes virtuales"
       chapters:         
-        - chapters/15-intro-linux-libro.qmd
-        - chapters/16-intro-cloud-libro.qmd
-        - chapters/17-modularizacion-libro.qmd
+        - chapters/13-intro-linux-libro.qmd
+        - chapters/14-intro-cloud-libro.qmd
+        - chapters/15-modularizacion-libro.qmd
     - part: "Preprocessing, data curation, feature engineering, training and data leakage"
       chapters:    
-        - chapters/18-preprocessing-libro.qmd
-        - chapters/19-interpretabilidad-libro.qmd
-        - chapters/20-causalidad-libro.qmd
+        - chapters/16-preprocessing-libro.qmd
+        - chapters/17-interpretabilidad-libro.qmd
+        - chapters/18-causalidad-libro.qmd
     - part: "LLMs y Agentes"
       chapters:    
-        - chapters/21-llms-libro.qmd
-        - chapters/22-agentes-libro.qmd
+        - chapters/19-llms-libro.qmd
+        - chapters/20-agentes-libro.qmd
+    - part: "Documentación, Comunicación y traspaso del proyecto, y Seguimiento de métricas"
+      chapters:    
+        - chapters/21-documentacion-traspaso-libro.qmd
+        - chapters/22-metricas-calidad-libro.qmd
 
 # bibliography: references.bib  # Comentado hasta tener citas reales
 
