@@ -6,7 +6,7 @@ requires-python = ">=3.11,<3.14"
 dependencies = [
     "dataclasses>=0.8",
     "dowhy>=0.14",
-    "dvc>=3.67.1",
+    "dvc[gdrive]>=3.67.1",
     "imblearn",
     "jupyter",
     "lightgbm>=4.6.0",
