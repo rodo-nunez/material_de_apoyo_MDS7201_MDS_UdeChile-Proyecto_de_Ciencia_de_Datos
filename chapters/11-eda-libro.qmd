@@ -232,7 +232,7 @@ import matplotlib.pyplot as plt
 try:
     df = pd.read_pickle("../chapter_files/data/pkls/features_small.pickle")
 except:
-    df = pd.read_pickle("MDS7201/libro/chapter_files/data/pkls/features_small.pickle")
+    df = pd.read_pickle("chapter_files/data/pkls/features_small.pickle")
 ```
 
 ```{python}
@@ -402,7 +402,7 @@ from sklearn.impute import KNNImputer
 try:
     df = pd.read_pickle("../chapter_files/data/pkls/features_small.pickle")
 except:
-    df = pd.read_pickle("MDS7201/libro/chapter_files/data/pkls/features_small.pickle")
+    df = pd.read_pickle("chapter_files/data/pkls/features_small.pickle")
 
 df = df.reset_index()
 df["fname"] = df.name + "_" + df.fid.astype(str)
@@ -435,7 +435,7 @@ Recargamos el dataset para el análisis estadístico:
 try:
     df = pd.read_pickle("../chapter_files/data/pkls/features_small.pickle")
 except:
-    df = pd.read_pickle("MDS7201/libro/chapter_files/data/pkls/features_small.pickle")
+    df = pd.read_pickle("chapter_files/data/pkls/features_small.pickle")
 
 df = df.reset_index()
 df["fname"] = df.name + "_" + df.fid.astype(str)
@@ -864,7 +864,7 @@ Para las visualizaciones estratificadas por clase, cargamos las etiquetas del da
 try:
     labels = pd.read_pickle("../chapter_files/data/pkls/dfcrossmatches_small.pickle")
 except:
-    labels = pd.read_pickle("MDS7201/libro/chapter_files/data/pkls/dfcrossmatches_small.pickle")
+    labels = pd.read_pickle("chapter_files/data/pkls/dfcrossmatches_small.pickle")
 
 labels
 ```

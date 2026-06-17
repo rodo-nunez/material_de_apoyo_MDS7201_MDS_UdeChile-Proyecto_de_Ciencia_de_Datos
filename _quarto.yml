@@ -44,7 +44,12 @@ book:
     - part: "Preprocessing, data curation, feature engineering, training and data leakage"
       chapters:    
         - chapters/18-preprocessing-libro.qmd
-
+        - chapters/19-interpretabilidad-libro.qmd
+        - chapters/20-causalidad-libro.qmd
+    - part: "LLMs y Agentes"
+      chapters:    
+        - chapters/21-llms-libro.qmd
+        - chapters/22-agentes-libro.qmd
 
 # bibliography: references.bib  # Comentado hasta tener citas reales
 

@@ -30,10 +30,10 @@ Comenzamos haciendo las cosas de la manera obvia-pero-incorrecta para ver con qu
 
 ```{python}
 featfile = "../chapter_files/data/pkls/features_small.pickle"
-featfile_alternative = "MDS7201/libro/chapter_files/data/pkls/features_small.pickle"
+featfile_alternative = "chapter_files/data/pkls/features_small.pickle"
 
 xmatchfile = "../chapter_files/data/pkls/dfcrossmatches_small.pickle"
-xmatchfile_alternative = "MDS7201/libro/chapter_files/data/pkls/dfcrossmatches_small.pickle"
+xmatchfile_alternative = "chapter_files/data/pkls/dfcrossmatches_small.pickle"
 ```
 
 ```{python}
