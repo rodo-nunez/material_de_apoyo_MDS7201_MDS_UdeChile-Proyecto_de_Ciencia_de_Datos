@@ -1,10 +1,8 @@
 # Normalizar todos los archivos de texto a LF en el repositorio
 * text=auto eol=lf
-
 # Archivos principales del libro
 *.md  text eol=lf
 *.qmd text eol=lf
-
 # Otros archivos comunes
 *.yml  text eol=lf
 *.yaml text eol=lf
@@ -14,14 +12,11 @@
 *.py   text eol=lf
 *.R    text eol=lf
 *.r    text eol=lf
-
 # Scripts de Linux
 *.sh text eol=lf
-
 # Scripts de Windows (si llegas a tener alguno)
 *.bat text eol=crlf
 *.cmd text eol=crlf
-
 # Archivos binarios
 *.png  binary
 *.jpg  binary
@@ -31,3 +26,4 @@
 *.xlsx binary
 *.docx binary
 *.pptx binary
+chapter_files/** filter=lfs diff=lfs merge=lfs -text
