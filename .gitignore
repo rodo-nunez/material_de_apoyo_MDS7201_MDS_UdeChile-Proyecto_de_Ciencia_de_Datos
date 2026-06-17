@@ -1,5 +1,6 @@
 # Quarto ----------------------------------------
 _book/
+_book_bak/
 _site/
 site_libs
 *.qmd.html
