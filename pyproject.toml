@@ -19,6 +19,7 @@ dependencies = [
     "pathlib>=1.0.1",
     "pydantic>=2.13.4",
     "pydantic-ai>=1.107.0",
+    "pygraphviz>=1.14",
     "python-dotenv>=1.2.2",
     "scipy",
     "seaborn>=0.13.2",
