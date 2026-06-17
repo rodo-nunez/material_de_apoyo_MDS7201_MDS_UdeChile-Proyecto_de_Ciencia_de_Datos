@@ -1,0 +1,209 @@
+# Seguimiento de Métricas y Calidad
+
+Un modelo en producción no es estático. Los datos cambian, el comportamiento del usuario evoluciona, y los patrones que el modelo aprendió durante el entrenamiento pueden dejar de ser válidos. El seguimiento de métricas es la práctica que permite detectar cuándo esto ocurre — y actuar antes de que el deterioro sea visible para los usuarios finales.
+
+## Tipos de Métricas
+
+El seguimiento de un proyecto de ciencia de datos requiere monitorear dos capas distintas de métricas: las métricas de negocio y las métricas analíticas.
+
+### Métricas de Negocio
+
+Son las que importan al cliente o contraparte. Miden el valor real que entrega el proyecto:
+
+- **Dinero generado o ahorrado**: el impacto financiero directo del modelo.
+- **CTR (Click-Through Rate)**: fracción de impresiones que generan un clic. Relevante en sistemas de recomendación y publicidad.
+- **LTV (Lifetime Value)**: valor total que un cliente genera durante su relación con la empresa.
+- **Tasa de retención / churn**: proporción de clientes que se mantienen o abandonan.
+
+La conexión entre métricas analíticas y métricas de negocio no siempre es obvia. Un modelo con mejor F1-score no necesariamente genera más ingresos. Parte del trabajo del científico de datos es entender y articular esa conexión.
+
+### Métricas Analíticas de Clasificación
+
+Para modelos de clasificación, las métricas estándar son:
+
+| Métrica | Descripción | Cuándo priorizarla |
+|---|---|---|
+| **Accuracy** | Fracción de predicciones correctas | Clases balanceadas |
+| **Precision** | De los positivos predichos, cuántos son realmente positivos | Minimizar falsos positivos (ej. spam) |
+| **Recall** | De los positivos reales, cuántos fueron detectados | Minimizar falsos negativos (ej. diagnóstico médico) |
+| **F$\beta$-Score** | Media armónica ponderada de precision y recall | Cuando precision y recall no tienen el mismo peso |
+| **ROC-AUC** | Área bajo la curva ROC — capacidad discriminativa del modelo | Comparar modelos independientemente del umbral |
+| **Lift** | Mejora sobre un clasificador aleatorio en el top-N | Campañas de marketing, scoring |
+| **Cross-entropy** | Log-loss — calidad de las probabilidades predichas | Cuando se necesita calibración |
+
+La elección de métrica depende del problema. En problemas de detección de fraude, minimizar falsos negativos (recall alto) es más importante que la accuracy general. En filtros de spam, minimizar falsos positivos (precision alta) suele ser prioritario.
+
+### Métricas Analíticas de Regresión y Series de Tiempo
+
+Para modelos de regresión:
+
+| Métrica | Descripción | Característica |
+|---|---|---|
+| **R²** | Proporción de varianza explicada | Sensible a outliers |
+| **MAE** | Error absoluto medio | Interpretable en unidades del target |
+| **MSE / RMSE** | Error cuadrático medio / raíz | Penaliza errores grandes |
+| **MAPE** | Error porcentual absoluto medio | Relativo — comparable entre escalas |
+| **SMAPE** | MAPE simétrico | Maneja mejor targets cercanos a cero |
+| **MASE** | Error escalado por un naive forecast | Robusto a datos estacionales |
+| **Cosine Similarity** | Similitud de dirección entre vectores | Series de tiempo normalizadas |
+
+Para series de tiempo, la elección importa más aún: MAPE falla cuando el target es cero o cercano a cero; MASE es más robusto porque escala el error respecto a un modelo de referencia naive.
+
+Referencias: [métricas de series de tiempo (TDS)](https://towardsdatascience.com/time-series-forecast-error-metrics-you-should-know-cc88b8c67f27) · [métricas de regresión (ML Mastery)](https://machinelearningmastery.com/regression-metrics-for-machine-learning/)
+
+### Métricas Adaptadas
+
+A veces ninguna métrica estándar captura exactamente lo que importa. En ese caso, es válido diseñar una métrica a medida — siempre que esté bien justificada y sea reproducible. Por ejemplo:
+
+- Una métrica que combina recall y latencia para un sistema de alerta temprana.
+- Una métrica de precisión ponderada por el costo del error en cada clase.
+- Una métrica que penaliza más los errores en los extremos de la distribución.
+
+Documentar la métrica y sus justificaciones es tan importante como implementarla.
+
+## Logging de Métricas
+
+El seguimiento no es útil si los resultados no se almacenan de forma estructurada. Un buen sistema de logging permite:
+
+- Comparar el desempeño del modelo a lo largo del tiempo.
+- Identificar cuándo una métrica empieza a degradarse.
+- Reproducir cualquier experimento o versión del modelo.
+
+### Convenciones de Naming
+
+Los logs deben tener nombres claros o un hash reconocible que permita identificar exactamente qué modelo, qué datos y qué parámetros corresponden a cada entrada:
+
+```
+# Malo — no se puede reproducir ni identificar
+log_2024.csv
+
+# Bueno — incluye modelo, versión, fecha y hash corto
+lgbm_v3_20240312_a1b2c3_metrics.json
+```
+
+### MLflow para Experiment Tracking
+
+MLflow es la herramienta más usada para registrar experimentos de ML. Permite loggear parámetros, métricas y artefactos, y comparar experimentos desde una interfaz web:
+
+```python
+import mlflow
+
+with mlflow.start_run(run_name="lgbm_v3"):
+    mlflow.log_params({
+        "n_estimators": 300,
+        "learning_rate": 0.05,
+        "num_leaves": 63,
+    })
+    mlflow.log_metrics({
+        "f1_macro": 0.82,
+        "roc_auc": 0.91,
+    })
+    mlflow.sklearn.log_model(model, "model")
+```
+
+Cada run queda registrado con un ID único, los parámetros usados, las métricas obtenidas y el artefacto del modelo. Puedes comparar cientos de experimentos en la UI de MLflow.
+
+Referencia: [mlflow.org/docs/latest/tracking](https://mlflow.org/docs/latest/tracking.html)
+
+## Dashboard de Seguimiento
+
+Un dashboard de métricas permite visualizar la evolución del desempeño del modelo en producción. Su función principal es detectar **degradación**: cuándo las predicciones empiezan a empeorar respecto a la línea base.
+
+Un buen dashboard de seguimiento muestra al menos:
+
+- Evolución temporal de las métricas clave (una línea por métrica)
+- Distribución de predicciones vs. distribución de targets reales
+- Tasa de datos faltantes o anómalos en la entrada
+- Alertas visuales cuando una métrica cruza un umbral definido
+
+Herramientas comunes: Grafana, Metabase, Streamlit, Looker. Para ML específicamente: Evidently AI, Fiddler, WhyLabs.
+
+## Alertas Automáticas
+
+El dashboard es útil para revisar de forma proactiva. Las alertas son el mecanismo reactivo: envían una notificación cuando ocurre un evento que requiere acción.
+
+Ejemplos de condiciones para alertas:
+
+- El F1-macro cae más de 5 puntos porcentuales respecto al baseline.
+- La distribución de una feature de entrada cambia significativamente (data drift).
+- La proporción de predicciones en una clase cambia más de un umbral definido (concept drift).
+- La latencia de inferencia supera un límite.
+- El porcentaje de datos faltantes en la entrada supera un umbral.
+
+Las alertas deben enviarse a canales donde el equipo realmente las vea (Slack, email, PagerDuty) y deben tener suficiente contexto para actuar: qué métrica, qué valor, qué umbral, qué período.
+
+## Calidad de Datos: Great Expectations
+
+Las métricas del modelo pueden degradarse por problemas en los datos de entrada — no necesariamente porque el modelo haya perdido validez. Por eso, el monitoreo de calidad de datos es tan importante como el monitoreo del modelo.
+
+**Great Expectations (GX)** es la librería estándar para definir y ejecutar validaciones de calidad sobre datasets. Permite definir *expectativas* sobre los datos y verificarlas automáticamente cada vez que los datos se actualizan.
+
+Ejemplos de expectativas:
+
+```python
+# La columna 'magnitud' nunca debe ser nula
+expect_column_values_to_not_be_null("magnitud")
+
+# El tipo espectral debe ser uno de los valores conocidos
+expect_column_values_to_be_in_set(
+    "tipo_espectral", ["Ia", "Ib", "Ic", "II", "IIn", "IIb"]
+)
+
+# La temperatura efectiva debe estar en un rango físicamente razonable
+expect_column_values_to_be_between(
+    "temperatura_K", min_value=2000, max_value=50000
+)
+
+# La proporción de valores nulos en 'redshift' debe ser menor al 5%
+expect_column_values_to_not_be_null("redshift", mostly=0.95)
+```
+
+El flujo completo de GX tiene cuatro etapas:
+
+1. **Connect**: conectar GX a la fuente de datos (CSV, base de datos, S3, etc.).
+2. **Create**: definir las expectativas sobre los datos.
+3. **Validate**: ejecutar las validaciones contra los datos actuales.
+4. **Share**: generar un reporte de resultados legible por el equipo.
+
+Referencia: [docs.greatexpectations.io](https://docs.greatexpectations.io/docs/home/)
+
+### ¿Por Qué GX en Producción?
+
+Sin validaciones automáticas de datos, errores de calidad pueden pasar desapercibidos durante días o semanas. Un pipeline que ingesta datos con una nueva columna renombrada, valores fuera de rango o proporciones de nulos inusuales puede producir predicciones incorrectas sin ninguna señal de error en los logs del modelo.
+
+GX hace que esos problemas sean detectables y auditables de forma sistemática.
+
+## Manifiesto de Programación: Puntos Clave para Producción
+
+El manifiesto de programación (cubierto en detalle en el capítulo 6) tiene implicaciones directas para el seguimiento de métricas en producción:
+
+- **Reproducibilidad**: cada experimento debe poder re-ejecutarse con los mismos resultados. Fijar semillas aleatorias, versionar datasets y modelos.
+- **Versionamiento**: usar Git para el código, DVC para datos y modelos. Cada versión en producción debe tener un tag o hash identificable.
+- **Testing**: incluir tests de calidad de datos como parte del pipeline de CI/CD, no solo tests unitarios de funciones.
+- **Documentación**: registrar cada decisión metodológica. Un cambio de métrica o de umbral de alerta debe quedar documentado con su justificación.
+
+## Resumen
+
+| Componente | Herramientas | Propósito |
+|---|---|---|
+| Métricas de negocio | Dashboard de BI (Metabase, Looker) | Conectar el modelo con el valor real |
+| Métricas analíticas | MLflow, W&B, Neptune | Comparar experimentos y versiones |
+| Logging | MLflow, archivos JSON estructurados | Reproducibilidad y trazabilidad |
+| Dashboard de seguimiento | Grafana, Streamlit, Evidently | Detectar degradación visual |
+| Alertas | Slack, PagerDuty, email | Reacción ante eventos críticos |
+| Calidad de datos | Great Expectations | Detectar problemas en la entrada |
+
+::: {.callout-tip}
+## El Ciclo Completo
+
+Definir métricas → loggear resultados → visualizar en dashboard → disparar alertas → validar calidad de datos → actuar → documentar. Repetir con cada versión del modelo y con cada ciclo de re-entrenamiento.
+:::
+
+## Referencias
+
+- [MLflow Tracking](https://mlflow.org/docs/latest/tracking.html)
+- [Great Expectations Docs](https://docs.greatexpectations.io/docs/home/)
+- [Métricas de series de tiempo](https://towardsdatascience.com/time-series-forecast-error-metrics-you-should-know-cc88b8c67f27)
+- [Métricas de regresión](https://machinelearningmastery.com/regression-metrics-for-machine-learning/)
+- [Evaluación de modelos ML](https://www.aiacceleratorinstitute.com/evaluating-machine-learning-models-metrics-and-techniques/)
+- [Video: seguimiento de modelos en producción](https://www.youtube.com/watch?v=3si6p6KTsbI)
