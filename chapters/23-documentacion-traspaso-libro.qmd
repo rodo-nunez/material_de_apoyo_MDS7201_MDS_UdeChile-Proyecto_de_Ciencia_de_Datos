@@ -1,0 +1,335 @@
+# Documentación y Traspaso de Proyectos
+
+Un proyecto de ciencia de datos no termina cuando el modelo funciona. Termina cuando otra persona puede entenderlo, ejecutarlo y continuarlo sin necesitar al autor original. Este capítulo cubre las prácticas que hacen posible ese traspaso.
+
+## ¿Por Qué Es Importante?
+
+Cuando un proyecto no está bien documentado ni estructurado, ocurren dos cosas predecibles:
+
+- El equipo que recibe el código no sabe cómo continuarlo ni aplicarlo.
+- Se generan atrasos y falsas expectativas sobre lo que el proyecto puede hacer.
+
+Ambos son problemas evitables. La documentación no es un extra que se hace al final — es parte del proyecto desde el primer día, y debe mantenerse viva mientras el proyecto evoluciona.
+
+::: {.callout-important}
+## El Objetivo del Traspaso
+
+Hay que arreglárselas para salir del proyecto sin que algo (o alguien) se queme. Incluir a la contraparte técnica desde el comienzo, hacer que el proceso les haga sentido y que estén involucrados en todo. Esto evita traspasos apresurados y caóticos a última hora.
+:::
+
+## Público Objetivo de la Documentación
+
+No toda la documentación es para la misma audiencia. Antes de escribir, pregúntate: ¿para quién es esto?
+
+**Audiencia técnica:** necesita instrucciones de instalación, estructura del código, cómo contribuir, cómo hacer cambios a producción, cómo funciona la arquitectura.
+
+**Audiencia no técnica:** necesita entender qué hace el proyecto, qué valor entrega, cuáles son sus limitaciones y cómo interpretar los resultados.
+
+Sobre el formato: para documentación técnica, las presentaciones no son eficientes. Un documento bien detallado, fácil de leer y con código copiable es mucho más útil. Para comunicación de alto nivel, una presentación puede bastar — pero no es suficiente para documentar el proyecto.
+
+## Data Product Canvas
+
+El Canvas de Producto de Datos es una herramienta visual para planificar y comunicar proyectos de datos. Es útil para:
+
+- Forzar claridad sobre el problema que se está resolviendo antes de escribir código
+- Alinear expectativas con stakeholders no técnicos
+- Documentar de forma compacta el propósito y alcance del proyecto
+
+Preguntas clave que responde un buen canvas:
+
+- ¿Cuál es el problema de negocio?
+- ¿Quiénes son los usuarios del producto?
+- ¿Qué datos se usan y de dónde vienen?
+- ¿Cuál es la métrica de éxito?
+- ¿Cuáles son las limitaciones o riesgos?
+
+Referencia: [Data Product Canvas](https://medium.com/@leandroscarvalho/data-product-canvas-a-practical-framework-for-building-high-performance-data-products-7a1717f79f0)
+
+## Clean Code
+
+El código limpio no es una preferencia estética — es una condición para que el proyecto pueda ser mantenido y continuado. Tres propiedades fundamentales:
+
+- **Reusable**: las funciones hacen una cosa bien y pueden usarse en distintos contextos.
+- **Composable**: los componentes se pueden combinar sin efectos inesperados.
+- **Fácil de entender**: quien lee el código puede entender qué hace sin necesitar al autor.
+
+### Nombres Descriptivos
+
+Los nombres de variables, funciones y archivos deben comunicar su propósito sin necesitar comentarios aclaratorios:
+
+```python
+# Malo
+x = df[df['col1'] > 0.5]
+
+# Bueno
+clientes_activos = clientes[clientes['probabilidad_churn'] > 0.5]
+```
+
+La consistencia también importa: si una variable se llama `fecha_evaluacion` en un archivo, debe mantener ese nombre en todos los archivos del proyecto.
+
+### Cuándo y Cómo Comentar
+
+Los buenos comentarios explican el **por qué**, no el qué. El qué debería ser legible del propio código:
+
+```python
+# Malo — explica lo obvio
+i = i + 1  # suma 1 a i
+
+# Bueno — explica la intención
+# Desplazamos el índice en 1 porque el catálogo ALeRCE usa indexación basada en 1
+i = i + 1
+```
+
+Evita el código comentado (`# df = df.dropna()`) — es ruido que genera la pregunta "¿debo descomentar esto o no?". Si ya no se usa, bórralo; el historial de Git lo conserva.
+
+### Evitar Side Effects
+
+Una función con side effects modifica estado externo a ella misma — una variable global, un archivo en disco, una conexión — de forma no obvia para quien la llama. Esto dificulta el testing y el razonamiento sobre el código.
+
+```python
+# Con side effect oculto
+resultados = []
+
+def procesar(fila):
+    resultado = modelo.predict(fila)
+    resultados.append(resultado)  # modifica lista externa
+    return resultado
+
+# Sin side effect
+def procesar(fila):
+    return modelo.predict(fila)
+
+resultados = [procesar(fila) for fila in datos]
+```
+
+### Rutas Relativas y Configuración
+
+Nunca uses rutas absolutas en el código:
+
+```python
+# Malo — solo funciona en tu máquina
+df = pd.read_csv('/Users/rodo/proyectos/alerce/data/features.csv')
+
+# Bueno — funciona en cualquier máquina si el proyecto está en la raíz
+df = pd.read_csv('data/features.csv')
+```
+
+Otras convenciones de entorno:
+
+- Usa ambientes virtuales (`venv`, `conda`) con todas las librerías necesarias y un `requirements.txt` actualizado.
+- Usa archivos `.env` para credenciales — **nunca** las escribas en el código ni las commits.
+- Usa archivos de configuración de IDE (`.editorconfig`, `.vscode/settings.json`) para estandarizar el entorno del equipo.
+
+### Principios SOLID
+
+Los principios SOLID son guías de diseño orientado a objetos que también aplican a funciones y módulos en data science:
+
+- **S** — Single Responsibility: cada función o clase hace una sola cosa.
+- **O** — Open/Closed: abierto para extensión, cerrado para modificación.
+- **L** — Liskov Substitution: los componentes son intercambiables si tienen la misma interfaz.
+- **I** — Interface Segregation: no forzar dependencias innecesarias.
+- **D** — Dependency Inversion: depender de abstracciones, no de implementaciones concretas.
+
+En la práctica, lo más relevante para proyectos del curso es la S: cada script, función y módulo debe tener un propósito claro y único.
+
+Referencias: [SOLID principles (freeCodeCamp)](https://www.freecodecamp.org/news/solid-principles-for-better-software-design/) · [SOLID en DigitalOcean](https://www.digitalocean.com/community/conceptual-articles/s-o-l-i-d-the-first-five-principles-of-object-oriented-design)
+
+## Pull Requests
+
+Un **Pull Request (PR)** es una solicitud para integrar cambios de una rama al código principal. Son útiles por tres razones:
+
+**En proyectos académicos:**
+
+- Obligan a revisar el código antes de que entre al branch principal.
+- Crean un registro de qué cambios se hicieron y por qué.
+- Facilitan la distribución del trabajo entre miembros del equipo.
+
+**En la industria:**
+
+- Son la unidad de revisión de código en la mayoría de los equipos.
+- Permiten que otros detecten errores antes de que lleguen a producción.
+- Generan documentación automática del historial de cambios.
+
+Un buen PR es pequeño y tiene un propósito claro. Un PR que cambia 20 archivos por razones distintas es difícil de revisar y de revertir si algo sale mal.
+
+## README.md
+
+El README es la puerta de entrada al proyecto. Debe responder las preguntas de alguien que llega al repositorio por primera vez. Un buen README tiene al menos:
+
+**Para el usuario:**
+
+- Qué es el proyecto y qué problema resuelve
+- Cómo descargarlo y configurarlo
+- Cómo instalarlo (dependencias, ambientes)
+- Cómo ejecutarlo
+- Cómo contribuir
+
+**Para el operador / técnico:**
+
+- Arquitectura: cómo cada sección se comunica con las otras
+- Ambiente de trabajo y dependencias del sistema
+- Workflow de desarrollo (ramas, convenciones)
+- CI/CD pipelines si los hay
+- Dónde y cómo se ejecutan tests automáticos
+
+::: {.callout-tip}
+## READMEs Parcelados
+
+No es necesario documentar todo en un solo README gigante. Es mejor tener un README por carpeta relevante: uno en la raíz del proyecto, uno en `pipeline/`, uno en `models/`, etc. Cada uno documenta solo su propio alcance.
+:::
+
+## Estructura de Carpetas y Archivos
+
+Una estructura de carpetas estandarizada permite que cualquier persona nueva al proyecto sepa dónde buscar cada cosa sin preguntar:
+
+```
+proyecto/
+├── README.md
+├── requirements.txt
+├── .env.example          # plantilla sin credenciales reales
+├── data/
+│   ├── raw/              # datos originales, no modificar
+│   ├── processed/        # datos limpios y transformados
+│   └── external/         # datos de fuentes externas
+├── notebooks/            # exploración — no van en el pipeline
+├── src/
+│   ├── preprocessing/    # scripts de preprocesamiento
+│   ├── models/           # entrenamiento y evaluación
+│   ├── prediction/       # inferencia
+│   └── utils/            # funciones compartidas
+├── pipeline/             # scripts que orquestan el flujo completo
+├── reports/              # outputs para stakeholders
+└── tests/                # tests unitarios e integración
+```
+
+Los archivos en `preprocessing/`, `models/`, `prediction/` y `pipeline/` deben tener IDs únicos que indiquen su orden de ejecución:
+
+```
+pipeline/
+├── 01_ingest_data.py
+├── 02_preprocess.py
+├── 03_train_model.py
+└── 04_generate_report.py
+```
+
+Referencia: [Ejemplo de modularización](https://github.com/rodo-nunez/ejemplo_de_modularizacion_de_proyecto.git)
+
+## Operación Backup
+
+La **Operación Backup** es una práctica para medir qué tan bien documentado y ejecutable está un proyecto. La premisa: si alguien se enferma, se va de vacaciones o deja la empresa, otra persona del equipo debe poder tomar el proyecto y ejecutarlo en una mañana.
+
+### Consideraciones para Preparar el Proyecto
+
+**1. El README debe tener lo mínimo para comenzar**
+
+No es necesario leer todo el README antes de ejecutar, pero sí debe haber una sección claramente marcada con las instrucciones de ejecución. Se recomienda indicar al inicio del README: *"Para ejecutar en modo de prueba, ir a la sección X"*.
+
+**2. Escribe para alguien que no conoce nada**
+
+Al redactar las instrucciones, imagina que tú mismo llegas al proyecto por primera vez. Escríbelas, síguelas al pie de la letra sin asumir nada, y si algo falla, actualiza las instrucciones. Itera hasta que sean a prueba de novatos.
+
+**3. Máximo 60 minutos de ejecución**
+
+El proyecto debe poder ejecutarse de inicio a fin en máximo 60 minutos. El resto del tiempo del backup se ocupa leyendo código, entendiendo la estructura y evaluando calidad. Si tarda más de 60 minutos, debes tener una rama `modo_de_prueba` con adaptaciones que lo hagan más rápido.
+
+**4. Credenciales**
+
+El dueño del proyecto debe pasar las credenciales necesarias directamente al backup, cargadas como variables de entorno — nunca commiteadas en el repositorio. Si hay credenciales que no pueden revelarse, debe haber una muestra de datos en S3 o similar que permita ejecutar sin ellas.
+
+**5. Modo de prueba explícito**
+
+Es recomendable tener un parámetro en el pipeline que active un modo de prueba: leer solo las primeras N filas, leer desde un archivo local en vez de una base de datos, etc. Esto reduce el tiempo de ejecución sin cambiar la lógica.
+
+**6. Rama `modo_de_prueba`**
+
+Si el proyecto tarda más de 60 minutos, debe existir una rama `modo_de_prueba` que salga de `master` y contenga las adaptaciones necesarias. El nombre puede variar, pero debe estar documentado en el README de `master`.
+
+**7. Múltiples pipelines**
+
+Si el proyecto tiene varios pipelines, el README debe indicar explícitamente cuáles son los fundamentales y en qué orden ejecutarlos. El tiempo total de ejecución de los pipelines fundamentales en modo de prueba debe ser máximo 60 minutos.
+
+### Rúbrica de Evaluación
+
+Durante la Operación Backup, el backup evalúa el proyecto usando la siguiente rúbrica (escala 1–5):
+
+| # | Criterio | 1 (Deficiente) | 5 (Excelente) |
+|---|---|---|---|
+| 1 | Tiempo de `git clone` | Más de 10 minutos | Menos de 10 segundos |
+| 2 | Canvas del proyecto | No existe | Claro, completo e incluye información adicional relevante |
+| 3 | README para ejecutar | No especifica cómo ejecutar | Funciona y tiene información de apoyo adicional |
+| 4 | Rama `modo_de_prueba` | No existe | Existe, funciona y tiene información adicional de apoyo |
+| 5 | Estructura de carpetas | No usa estructura estándar | Estructura estándar adaptada con carpetas adicionales justificadas |
+| 6 | Estructura de archivos con IDs | Sin IDs en archivos | IDs únicos en todas las carpetas relevantes |
+| 7 | Claridad del pipeline a ejecutar | No se encuentra | Pipeline identificado inmediatamente con instrucciones claras |
+| 8 | Instalación de librerías | No es posible instalar | Proyecto dockerizado, sin acción necesaria |
+| 9 | Credenciales | No se entregaron | Entregadas en formato listo para usar (`.env`, `.bashrc`) |
+| 10 | Modularización | Todo en un archivo | Archivos bien separados, fácil agregar o cambiar componentes |
+| 11 | Nombres descriptivos | Incomprensibles | Descriptivos y consistentes en todo el proyecto |
+| 12 | Comentarios | Sin comentarios | Comentarios sobre el "por qué", sin redundancias ni código comentado |
+| 13 | Uso de funciones | Sin funciones | Funciones sin redundancias, claras, con docstrings |
+| 14 | Uso de librerías existentes | Reinventa funciones básicas | No hay funciones que puedan reemplazarse con librerías conocidas |
+| 15 | Sin notebooks en el pipeline | Notebook en el pipeline que falla | Sin notebooks en el pipeline; notebooks de análisis en `reports/` |
+| 16 | Sin credenciales en el código | Credenciales en el código | Sin credenciales en el código |
+| 17 | Tiempo de ejecución < 60 min | No se pudo terminar | Menos de 30 minutos |
+| 18 | Claridad general para novatos | No entendió casi nada | Sin dudas, todo funcionó a la primera |
+
+::: {.callout-note}
+## Cómo Usar la Rúbrica
+
+Mientras esperas que el código corra, revisa los scripts siguiendo la rúbrica. Cada ítem tiene descriptores para cada nivel de la escala — no es subjetivo. El objetivo no es castigar, sino identificar qué mejorar antes del traspaso real.
+:::
+
+## Algunas Fuentes de Error Frecuentes
+
+Más allá de lo que cubre la rúbrica, hay errores de configuración que aparecen repetidamente en proyectos de ciencia de datos:
+
+**Rutas absolutas vs. relativas:** una ruta como `/Users/rodo/proyecto/data/` solo funciona en tu máquina. Siempre usa rutas relativas.
+
+**Rutas relativas al archivo vs. al proyecto:** en Python, `open('data/file.csv')` es relativo al directorio de trabajo actual (donde lanzas el proceso), no al archivo que lo contiene. Esto puede causar errores dependiendo de cómo se ejecuta el script. Usar `pathlib` y anclar al directorio del proyecto resuelve esto:
+
+```python
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).parent.parent
+df = pd.read_csv(PROJECT_ROOT / 'data' / 'features.csv')
+```
+
+**Ambientes virtuales:** si no usas un ambiente virtual, las versiones de librerías en tu máquina pueden diferir de las del servidor o del equipo del backup. Siempre trabaja en un ambiente virtual con un `requirements.txt` actualizado.
+
+**Variables de ambiente:** las credenciales y configuraciones que varían entre entornos (desarrollo, producción) deben vivir en variables de entorno, no en el código. Usa `python-dotenv` para cargarlas desde un archivo `.env` que no se commitea:
+
+```python
+from dotenv import load_dotenv
+import os
+
+load_dotenv()  # carga variables desde .env
+API_KEY = os.environ["MI_API_KEY"]
+```
+
+**Configuración transversal del IDE:** archivos como `.editorconfig` (indentación, encoding) y `.vscode/settings.json` (formateador, linter) garantizan que todos los miembros del equipo trabajen con la misma configuración, evitando diff diffs inútiles por espacios vs. tabs.
+
+## Lista de Verificación para el Traspaso
+
+Antes de entregar un proyecto, verifica:
+
+- [ ] El README tiene instrucciones claras para ejecutar desde cero
+- [ ] El Canvas del proyecto está actualizado
+- [ ] Existe una rama `modo_de_prueba` que corre en menos de 60 minutos
+- [ ] Las credenciales están en variables de entorno, no en el código
+- [ ] El `requirements.txt` está actualizado y el ambiente es reproducible
+- [ ] La estructura de carpetas sigue el estándar del equipo
+- [ ] Los archivos de pipeline tienen IDs únicos y están en orden
+- [ ] No hay notebooks en el pipeline
+- [ ] No hay rutas absolutas en el código
+- [ ] Las funciones tienen docstrings
+- [ ] No hay credenciales commiteadas en el repositorio
+
+## Referencias y Recursos
+
+- [Ejemplo de modularización de proyecto](https://github.com/rodo-nunez/ejemplo_de_modularizacion_de_proyecto.git)
+- [MLOps y buenas prácticas](https://github.com/rodo-nunez/MLOps_La_clave_de_la_reproducibilidad_y_buenas_practicas_para_modelos_efectivos)
+- [SOLID principles — freeCodeCamp](https://www.freecodecamp.org/news/solid-principles-for-better-software-design/)
+- [SOLID principles — DigitalOcean](https://www.digitalocean.com/community/conceptual-articles/s-o-l-i-d-the-first-five-principles-of-object-oriented-design)
+- [Data Product Canvas](https://medium.com/@leandroscarvalho/data-product-canvas-a-practical-framework-for-building-high-performance-data-products-7a1717f79f0)
+- [Cómo hacer un buen traspaso (video)](https://www.youtube.com/watch?v=bEir1fAcDNw&ab_channel=Praxent)
+- [Clean code en Python (video)](https://www.youtube.com/watch?v=LbX4X71-TFI&ab_channel=AssemblyAI)
