@@ -1,0 +1,6 @@
+outs:
+- md5: 6a8fe35ed7d36d83b0e0b4c989525b54.dir
+  size: 1222067544
+  nfiles: 514
+  hash: md5
+  path: chapter_files

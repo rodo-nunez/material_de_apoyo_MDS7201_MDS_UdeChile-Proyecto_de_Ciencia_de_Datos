@@ -73,3 +73,4 @@ site_libs
 /.quarto/
 MDS7201/pautas_y_rubricas
 .vdoc.*
+/chapter_files
