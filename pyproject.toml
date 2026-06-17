@@ -4,6 +4,7 @@ version = "0.1.0"
 requires-python = ">=3.11,<3.14"
 
 dependencies = [
+    "dataclasses>=0.8",
     "dowhy>=0.14",
     "imblearn",
     "jupyter",
@@ -15,11 +16,14 @@ dependencies = [
     "optuna>=4.9.0",
     "pacmap",
     "pandas",
+    "pydantic>=2.13.4",
+    "pydantic-ai>=1.107.0",
     "scipy",
     "seaborn>=0.13.2",
     "shap>=0.51.0",
     "transformers>=5.12.1",
     "tsfresh>=0.21.2",
+    "typing>=3.10.0.0",
     "umap-learn>=0.5.12",
     "xgboost>=3.2.0",
     "ydata-profiling",
