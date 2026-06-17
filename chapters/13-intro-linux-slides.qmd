@@ -444,7 +444,7 @@ rm -rf directorio/
 Considerar: `alias rm='rm -i'`
 :::
 
-![sudo meme](https://i.kym-cdn.com/photos/images/newsfeed/000/089/026/sandwich.png)
+![sudo meme](chapter_files/images/linux/sandwich.png)
 
 ## Copiar y Mover
 

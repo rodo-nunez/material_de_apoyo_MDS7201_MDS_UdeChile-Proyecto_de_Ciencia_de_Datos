@@ -1001,7 +1001,7 @@ vim archivo.txt
 # n: Siguiente resultado
 ```
 
-![exit vim meme](https://i.kym-cdn.com/photos/images/newsfeed/000/089/026/sandwich.png)
+![exit vim meme](chapter_files/images/linux/sandwich.png)
 
 ::: {.callout-tip}
 ## Aprender Vim

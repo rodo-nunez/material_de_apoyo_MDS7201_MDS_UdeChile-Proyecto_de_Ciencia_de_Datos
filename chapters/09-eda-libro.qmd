@@ -18,7 +18,7 @@ El marco SMART define objetivos que son:
 - **Relevant** (Relevantes): alineados con el negocio
 - **Time-bound** (Acotados en el tiempo): con plazos definidos
 
-![SMART Goals](../chapter_files/mediabag/smart.png)
+![SMART Goals](../chapter_files/images/eda/smart.png)
 
 ### Marco FAST
 
@@ -29,7 +29,7 @@ El marco FAST es una alternativa más orientada a organizaciones ágiles:
 - **Specific** (Específicos)
 - **Transparent** (Transparentes)
 
-![FAST Goals](../chapter_files/mediabag/fast.png)
+![FAST Goals](../chapter_files/images/eda/fast.png)
 
 ### Preguntas Clave para el EDA
 
@@ -551,13 +551,13 @@ Power transforms son transformaciones paramétricas y monótonas que hacen los d
 - **Box-Cox**: requiere datos estrictamente positivos
 - **Yeo-Johnson**: soporta datos positivos y negativos
 
-![Box-Cox Transform](../chapter_files/mediabag/boxcox.png)
+![Box-Cox Transform](../chapter_files/images/eda/boxcox.png)
 
-![Yeo-Johnson Transform](../chapter_files/mediabag/yeo-johnson.png)
+![Yeo-Johnson Transform](../chapter_files/images/eda/yeo-johnson.png)
 
-![PowerTransform Comparison](../chapter_files/mediabag/powertransform.png)
+![PowerTransform Comparison](../chapter_files/images/eda/powertransform.png)
 
-![sklearn PowerTransformer](../chapter_files/mediabag/sklearn_powertransform.png)
+![sklearn PowerTransformer](../chapter_files/images/eda/sklearn_powertransform.png)
 
 ```{python}
 from sklearn.preprocessing import PowerTransformer
