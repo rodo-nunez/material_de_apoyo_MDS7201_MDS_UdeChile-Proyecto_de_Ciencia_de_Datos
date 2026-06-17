@@ -4,6 +4,7 @@ version = "0.1.0"
 requires-python = ">=3.11,<3.14"
 
 dependencies = [
+    "dowhy>=0.14",
     "imblearn",
     "jupyter",
     "lightgbm>=4.6.0",
