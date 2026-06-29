@@ -14,21 +14,30 @@ El resultado: outputs de LLMs que se comportan como objetos Python bien tipados,
 Documentación oficial: [ai.pydantic.dev](https://ai.pydantic.dev/) · [Pydantic v2](https://docs.pydantic.dev/) · [GitHub](https://github.com/pydantic/pydantic-ai)
 :::
 
-## Instalación y Configuración
-
-```{python}
-# Instalar PydanticAI con soporte para Anthropic
-# %pip install "pydantic-ai[anthropic]" --quiet
-```
+## Configuración
 
 ```{python}
 import os
+from pathlib import Path
 
-# Cargar la clave de API desde una variable de entorno o archivo
-# Nunca escribas claves directamente en el código
-os.environ["ANTHROPIC_API_KEY"] = open("claude_FF.key").read().strip()
+_key_file = Path("claude.key")
 
-print("Entorno configurado.")
+if _key_file.exists():
+    os.environ["ANTHROPIC_API_KEY"] = _key_file.read_text().strip()
+    MODEL = "anthropic:claude-sonnet-4-6"
+    print("Usando Anthropic Claude (clave cargada desde archivo).")
+elif os.environ.get("ANTHROPIC_API_KEY"):
+    MODEL = "anthropic:claude-sonnet-4-6"
+    print("Usando Anthropic Claude (clave cargada desde variable de entorno).")
+else:
+    from pydantic_ai.models.openai import OpenAIChatModel
+    from pydantic_ai.providers.ollama import OllamaProvider
+    MODEL = OpenAIChatModel(
+        "llama3.2:latest",
+        provider=OllamaProvider(base_url="http://localhost:11434/v1"),
+    )
+    print("Clave de Anthropic no encontrada. Usando Ollama local como fallback.")
+    print(f"Modelo: {MODEL}")
 ```
 
 ::: {.callout-tip}
@@ -36,11 +45,12 @@ print("Entorno configurado.")
 
 PydanticAI usa el formato `"proveedor:nombre-modelo"`:
 
-- `"anthropic:claude-sonnet-4-6"`
-- `"openai:gpt-4o"`
-- `"google-gla:gemini-1.5-pro"`
+- `"anthropic:claude-sonnet-4-6"` — requiere clave de API
+- `"openai:gpt-4o"` — requiere clave de API
+- `"google-gla:gemini-1.5-pro"` — requiere clave de API
+- `"ollama:llama3.2"` — **gratuito, corre localmente** con Ollama
 
-Puedes cambiar de proveedor modificando solo este string — el resto del código permanece igual.
+Puedes cambiar de proveedor modificando solo este string — el resto del código permanece igual. El código de este capítulo usa la variable `MODEL` que se configura automáticamente según lo que esté disponible en tu entorno.
 :::
 
 ## §1 — Agentes Básicos y Outputs Estructurados
@@ -52,17 +62,11 @@ Un `Agent` envuelve un LLM, un conjunto de instrucciones y opcionalmente un esqu
 ```{python}
 from pydantic_ai import Agent
 
-# El primer argumento es el string de modelo.
-# `instructions` es el system prompt — le dice al LLM qué rol juega.
-simple_agent = Agent(
-    "anthropic:claude-sonnet-4-6",
+simple_agent = Agent(MODEL,
     instructions="You are a knowledgeable astronomy assistant. Be concise.",
 )
 
-# `agent.run(...)` envía un mensaje de usuario y retorna un objeto resultado;
-# el texto vive en `.output`.
 result = await simple_agent.run("What is a pulsar?")
-
 print(result.output)
 ```
 
@@ -117,8 +121,7 @@ class StellarClassification(BaseModel):
 # Fijar `output_type` le dice a PydanticAI que valide la respuesta del LLM
 # contra este esquema. Si la validación falla, el agente automáticamente
 # le pide al LLM que lo intente de nuevo.
-classifier_agent = Agent(
-    "anthropic:claude-sonnet-4-6",
+classifier_agent = Agent(MODEL,
     output_type=StellarClassification,
     instructions=(
         "You are an expert stellar classifier. "
@@ -171,11 +174,31 @@ PydanticAI viene con herramientas por defecto que el agente puede decidir usar:
 | `FileSearchTool` | Búsqueda vectorial sobre archivos (RAG) |
 
 ```{python}
-from pydantic_ai import Agent, WebSearchTool
+from pydantic_ai import Agent
 
-agent = Agent('anthropic:claude-sonnet-4-6', builtin_tools=[WebSearchTool()])
+if isinstance(MODEL, str) and MODEL.startswith("anthropic:"):
+    from pydantic_ai import WebSearchTool
+    agent = Agent(MODEL, builtin_tools=[WebSearchTool()])
+    result = await agent.run('Dame una oración con la noticia más importante de Chile esta semana.')
+else:
+    import httpx
+    from xml.etree import ElementTree as ET
 
-result = await agent.run('Dame una oración con la noticia más importante de Chile esta semana.')
+    resp = httpx.get(
+        "https://news.google.com/rss/search?q=Chile&hl=es-419&gl=CL&ceid=CL:es-419",
+        follow_redirects=True,
+        timeout=10,
+    )
+    root = ET.fromstring(resp.text)
+    items = root.findall(".//item")[:5]
+    snippets = [f"- {item.findtext('title')}" for item in items if item.findtext('title')]
+    contexto = "\n".join(snippets) if snippets else "No se encontraron resultados."
+
+    agent = Agent(MODEL, instructions="Eres un asistente de noticias. Usa el contexto provisto para responder.")
+    result = await agent.run(
+        f"Contexto de búsqueda:\n{contexto}\n\nDame una oración con la noticia más importante de Chile esta semana."
+    )
+
 print(result.output)
 ```
 
@@ -215,8 +238,7 @@ class GalaxyReport(BaseModel):
     summary: str
 
 
-galaxy_agent = Agent(
-    "anthropic:claude-sonnet-4-6",
+galaxy_agent = Agent(MODEL,
     output_type=GalaxyReport,
     instructions=(
         "You are an extragalactic astronomy assistant. "
@@ -311,8 +333,7 @@ class ObservationPlan(BaseModel):
 
 
 # Paso 2: Crear el agente declarando el tipo de dependencia
-planner_agent = Agent(
-    "anthropic:claude-sonnet-4-6",
+planner_agent = Agent(MODEL,
     deps_type=ObservatoryDeps,
     output_type=ObservationPlan,
     instructions=(
@@ -478,8 +499,7 @@ class SourceType(BaseModel):
     reasoning: str
 
 
-classifier_agent = Agent(
-    "anthropic:claude-sonnet-4-6",
+classifier_agent = Agent(MODEL,
     output_type=SourceType,
     instructions="You are a source classification expert. Be concise.",
 )
@@ -496,8 +516,7 @@ class PhotometryStrategy(BaseModel):
     caveats: str
 
 
-photometry_agent = Agent(
-    "anthropic:claude-sonnet-4-6",
+photometry_agent = Agent(MODEL,
     output_type=PhotometryStrategy,
     instructions=(
         "You are a photometric data reduction expert. Be concise. "
@@ -516,8 +535,7 @@ class PipelineReport(BaseModel):
     executive_summary: str
 
 
-coordinator_agent = Agent(
-    "anthropic:claude-sonnet-4-6",
+coordinator_agent = Agent(MODEL,
     output_type=PipelineReport,
     instructions=(
         "Pipeline coordinator. Use the tools to classify the source and "

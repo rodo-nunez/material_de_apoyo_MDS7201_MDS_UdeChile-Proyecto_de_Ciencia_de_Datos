@@ -26,7 +26,7 @@ jupyter: python3
 ```{python}
 #| include: false
 import os
-os.environ["ANTHROPIC_API_KEY"] = open("claude_FF.key").read().strip()
+os.environ["ANTHROPIC_API_KEY"] = open("claude.key").read().strip()
 ```
 
 # ¿Qué es PydanticAI? {background-color="#1a1a1a"}
