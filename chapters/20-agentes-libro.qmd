@@ -240,9 +240,11 @@ class GalaxyReport(BaseModel):
 
 galaxy_agent = Agent(MODEL,
     output_type=GalaxyReport,
+    retries=5,
     instructions=(
         "You are an extragalactic astronomy assistant. "
-        "Use the catalog tool to look up galaxy data, then compute derived quantities."
+        "Use the catalog tool to look up galaxy data, then compute derived quantities. "
+        "Always respond with valid JSON matching the required schema."
     ),
 )
 
@@ -276,11 +278,17 @@ result = await galaxy_agent.run("Give me a report on M87.")
 report = result.output
 
 print(f"Objeto      : {report.common_name} ({report.catalog_id.upper()})")
+
 print(f"Tipo        : {report.galaxy_type}")
+
 print(f"Distancia   : {report.distance_mpc:.1f} Mpc")
+
 print(f"Redshift    : {report.redshift}")
+
 print(f"Velocidad   : {report.recessional_velocity_km_s:.1f} km/s")
+
 print(f"Resumen     : {report.summary}")
+
 ```
 
 **¿Qué ocurrió internamente?**
