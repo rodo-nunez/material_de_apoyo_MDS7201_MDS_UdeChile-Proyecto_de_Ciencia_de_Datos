@@ -41,6 +41,23 @@ else:
     print(f"Modelo: {MODEL}")
 
 use_structured = isinstance(MODEL, str) and MODEL.startswith("anthropic:")
+
+
+def _parse_json(text):
+    """Extrae y parsea el primer objeto JSON del texto."""
+    match = re.search(r'\{.*\}', text, re.DOTALL)
+    if not match:
+        return None
+    try:
+        return json.loads(match.group())
+    except json.JSONDecodeError:
+        clean = match.group().encode('utf-8', errors='replace').decode('utf-8')
+        try:
+            return json.loads(clean)
+        except json.JSONDecodeError as e:
+            print(f"No se pudo parsear JSON: {e}")
+            print(f"Raw: {match.group()[:300]}")
+            return None
 ```
 
 ::: {.callout-tip}
@@ -321,17 +338,14 @@ def _make_galaxy_agent(output_type=None):
     return agent
 
 
-# Claude soporta output_type directamente; Ollama requiere parseo manual
-use_structured = isinstance(MODEL, str) and MODEL.startswith("anthropic:")
-
 galaxy_agent = _make_galaxy_agent(output_type=GalaxyReport if use_structured else None)
 raw = await galaxy_agent.run("Give me a report on M87.")
 
 if use_structured:
     report = raw.output
 else:
-    match = re.search(r'\{.*\}', raw.output, re.DOTALL)
-    report = GalaxyReport(**json.loads(match.group())) if match else None
+    parsed = _parse_json(raw.output)
+    report = GalaxyReport(**parsed) if parsed else None
 
 if report:
     print(f"Objeto      : {report.common_name} ({report.catalog_id.upper()})")
@@ -392,8 +406,6 @@ class ObservationPlan(BaseModel):
     limiting_magnitude: float = Field(description="Magnitud límite V alcanzada a SNR=5")
     notes: str
 
-
-use_structured = isinstance(MODEL, str) and MODEL.startswith("anthropic:")
 
 _instructions = (
     "You are an observation planning assistant for optical telescopes. "
@@ -485,10 +497,8 @@ raw = await planner_agent.run(
 if use_structured:
     plan = raw.output
 else:
-    match = re.search(r'\{.*\}', raw.output, re.DOTALL)
-    raw_json = match.group()
-    raw_json = raw_json.encode('utf-8').decode('unicode_escape', errors='replace')
-    plan = ObservationPlan(**json.loads(raw_json)) if match else None
+    parsed = _parse_json(raw.output)
+    plan = ObservationPlan(**parsed) if parsed else None
 
 if plan:
     print(f"Target              : {plan.target}")
@@ -559,8 +569,6 @@ from pydantic import BaseModel, Field
 from pydantic_ai import Agent, RunContext
 from typing import Literal
 import json, re
-
-use_structured = isinstance(MODEL, str) and MODEL.startswith("anthropic:")
 
 
 # ============================================================
@@ -651,24 +659,6 @@ else:
     coordinator_agent = Agent(MODEL, retries=5, instructions=_coord_instructions)
 
 
-def _parse_json(text):
-    """Extrae y parsea el primer objeto JSON del texto."""
-    match = re.search(r'\{.*\}', text, re.DOTALL)
-    if not match:
-        return None
-    try:
-        return json.loads(match.group())
-    except json.JSONDecodeError:
-        # Intentar limpiar caracteres problemáticos
-        clean = match.group().encode('utf-8', errors='replace').decode('utf-8')
-        try:
-            return json.loads(clean)
-        except json.JSONDecodeError as e:
-            print(f"No se pudo parsear JSON: {e}")
-            print(f"Raw: {match.group()[:300]}")
-            return None
-
-
 @coordinator_agent.tool
 async def classify_source(ctx: RunContext[None], description: str) -> dict:
     """Clasifica una fuente astronómica a partir de una descripción."""
@@ -697,7 +687,35 @@ pipeline_result = await coordinator_agent.run(
 if use_structured:
     report = pipeline_result.output
 else:
-    parsed = _parse_json(pipeline_result.output)
+    raw_parsed = _parse_json(pipeline_result.output)
+
+    # Caso 1: JSON bien formado con estructura anidada correcta
+    if raw_parsed and "classification" in raw_parsed:
+        parsed = raw_parsed
+
+    # Caso 2: Ollama devolvió la clasificación directamente en el nivel raíz
+    elif raw_parsed and "source_class" in raw_parsed:
+        all_matches = re.findall(r'\{[^{}]*\}', pipeline_result.output, re.DOTALL)
+        phot_data = {}
+        for m in all_matches[1:]:
+            try:
+                candidate = json.loads(m)
+                if "photometry_strategy" in candidate:
+                    phot_data = candidate.get("photometry_strategy") or {}
+                    break
+                elif "method" in candidate:
+                    phot_data = candidate
+                    break
+            except json.JSONDecodeError:
+                continue
+        parsed = {
+            "classification": raw_parsed,
+            "photometry_strategy": phot_data,
+            "executive_summary": None,
+        }
+    else:
+        parsed = None
+
     if parsed:
         if not parsed.get("photometry_strategy"):
             phot_result = await photometry_agent.run(
@@ -706,7 +724,6 @@ else:
             )
             phot_parsed = _parse_json(phot_result.output)
             parsed["photometry_strategy"] = phot_parsed or {}
-
         report = PipelineReport(
             classification=SourceType(**parsed["classification"]),
             photometry_strategy=PhotometryStrategy(**parsed["photometry_strategy"]),
@@ -726,7 +743,7 @@ if report:
     print()
     print(f"Resumen     : {report.executive_summary}")
     print()
-    print(f"Uso total   : {pipeline_result.usage}")
+    print(f"Uso total   : {pipeline_result.usage()}")
 else:
     print("No se pudo parsear el output. Respuesta cruda:")
     print(pipeline_result.output)
@@ -743,12 +760,47 @@ pipeline_result = await coordinator_agent.run(
 if use_structured:
     report = pipeline_result.output
 else:
-    parsed = _parse_json(pipeline_result.output)
+    raw_parsed = _parse_json(pipeline_result.output)
+
+    # Caso 1: JSON bien formado con estructura anidada correcta
+    if raw_parsed and "classification" in raw_parsed:
+        parsed = raw_parsed
+
+    # Caso 2: Ollama devolvió la clasificación directamente en el nivel raíz
+    elif raw_parsed and "source_class" in raw_parsed:
+        all_matches = re.findall(r'\{[^{}]*\}', pipeline_result.output, re.DOTALL)
+        phot_data = {}
+        for m in all_matches[1:]:
+            try:
+                candidate = json.loads(m)
+                if "photometry_strategy" in candidate:
+                    phot_data = candidate.get("photometry_strategy") or {}
+                    break
+                elif "method" in candidate:
+                    phot_data = candidate
+                    break
+            except json.JSONDecodeError:
+                continue
+        parsed = {
+            "classification": raw_parsed,
+            "photometry_strategy": phot_data,
+            "executive_summary": None,
+        }
+    else:
+        parsed = None
+
     if parsed:
+        if not parsed.get("photometry_strategy"):
+            phot_result = await photometry_agent.run(
+                f"Source type: {parsed['classification']['source_class']}. "
+                "Instrument: 1-m telescope with a CCD camera in BVRI filters."
+            )
+            phot_parsed = _parse_json(phot_result.output)
+            parsed["photometry_strategy"] = phot_parsed or {}
         report = PipelineReport(
             classification=SourceType(**parsed["classification"]),
             photometry_strategy=PhotometryStrategy(**parsed["photometry_strategy"]),
-            executive_summary=parsed["executive_summary"],
+            executive_summary=parsed.get("executive_summary") or "Sin resumen disponible.",
         )
     else:
         report = None
@@ -764,10 +816,12 @@ if report:
     print()
     print(f"Resumen     : {report.executive_summary}")
     print()
-    print(f"Uso total   : {pipeline_result.usage}")
+    print(f"Uso total   : {pipeline_result.usage()}")
 else:
     print("No se pudo parsear el output. Respuesta cruda:")
     print(pipeline_result.output)
+    print("parsed:", parsed)
+
 ```
 
 **Notas sobre patrones multi-agente:**
