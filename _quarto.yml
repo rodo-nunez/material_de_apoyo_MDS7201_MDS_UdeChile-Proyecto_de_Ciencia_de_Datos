@@ -50,6 +50,9 @@ book:
       chapters:    
         - chapters/21-documentacion-traspaso-libro.qmd
         - chapters/22-metricas-calidad-libro.qmd
+    - part: "Harness Engineering y SDD"
+      chapters:    
+        - chapters/23-harness-engineering-libro.qmd
 
 # bibliography: references.bib  # Comentado hasta tener citas reales
 
