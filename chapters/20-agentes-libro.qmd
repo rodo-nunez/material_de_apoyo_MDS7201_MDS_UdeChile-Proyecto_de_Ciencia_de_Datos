@@ -211,7 +211,7 @@ El ejemplo a continuación muestra un flujo de herramientas de múltiples pasos:
 ```{python}
 from pydantic_ai import Agent
 from pydantic import BaseModel, Field
-from typing import Optional
+import json, re
 
 # Catálogo simulado (en la práctica sería una consulta a BD o astroquery)
 CATALOG = {
@@ -238,57 +238,70 @@ class GalaxyReport(BaseModel):
     summary: str
 
 
-galaxy_agent = Agent(MODEL,
-    output_type=GalaxyReport,
-    retries=5,
-    instructions=(
+def _make_galaxy_agent(output_type=None):
+    instructions = (
         "You are an extragalactic astronomy assistant. "
-        "Use the catalog tool to look up galaxy data, then compute derived quantities. "
-        "Always respond with valid JSON matching the required schema."
-    ),
-)
+        "Use the catalog tool to look up galaxy data, then use redshift_to_velocity "
+        "to compute the velocity. "
+    )
+    if output_type is None:
+        instructions += (
+            "Return ONLY a JSON object with these exact keys: "
+            "catalog_id, common_name, galaxy_type, distance_mpc, redshift, "
+            "recessional_velocity_km_s, summary. "
+            "No extra text, no markdown, no code blocks. Only the raw JSON object."
+        )
+    if output_type is None:
+        agent = Agent(MODEL, retries=5, instructions=instructions)
+    else:
+        agent = Agent(MODEL, output_type=output_type, retries=5, instructions=instructions)
+    @agent.tool_plain
+    def lookup_galaxy(catalog_id: str) -> dict:
+        """Busca una galaxia en el catálogo local por su ID.
+
+        Args:
+            catalog_id: El identificador de catálogo (ej. 'm31', 'ngc4889').
+                        Usar minúsculas sin espacios.
+        """
+        key = catalog_id.lower().replace(" ", "")
+        if key not in CATALOG:
+            return {"error": f"Objeto '{catalog_id}' no encontrado en el catálogo."}
+        return CATALOG[key]
+
+    @agent.tool_plain
+    def redshift_to_velocity(redshift: float) -> float:
+        """Calcula la velocidad recesional no-relativista en km/s desde el redshift z.
+
+        Args:
+            redshift: El redshift espectroscópico z (adimensional).
+        """
+        return redshift * 299_792.458
+
+    return agent
 
 
-@galaxy_agent.tool_plain
-def lookup_galaxy(catalog_id: str) -> dict:
-    """Busca una galaxia en el catálogo local por su ID.
-    
-    Args:
-        catalog_id: El identificador de catálogo (ej. 'm31', 'ngc4889').
-                    Usar minúsculas sin espacios.
-    """
-    key = catalog_id.lower().replace(" ", "")
-    if key not in CATALOG:
-        return {"error": f"Objeto '{catalog_id}' no encontrado en el catálogo."}
-    return CATALOG[key]
+# Claude soporta output_type directamente; Ollama requiere parseo manual
+use_structured = isinstance(MODEL, str) and MODEL.startswith("anthropic:")
 
+galaxy_agent = _make_galaxy_agent(output_type=GalaxyReport if use_structured else None)
+raw = await galaxy_agent.run("Give me a report on M87.")
 
-@galaxy_agent.tool_plain
-def redshift_to_velocity(redshift: float) -> float:
-    """Calcula la velocidad recesional no-relativista en km/s desde el redshift z.
-    
-    Args:
-        redshift: El redshift espectroscópico z (adimensional).
-    """
-    C_KM_S = 299_792.458  # velocidad de la luz en km/s
-    return redshift * C_KM_S
+if use_structured:
+    report = raw.output
+else:
+    match = re.search(r'\{.*\}', raw.output, re.DOTALL)
+    report = GalaxyReport(**json.loads(match.group())) if match else None
 
-
-result = await galaxy_agent.run("Give me a report on M87.")
-report = result.output
-
-print(f"Objeto      : {report.common_name} ({report.catalog_id.upper()})")
-
-print(f"Tipo        : {report.galaxy_type}")
-
-print(f"Distancia   : {report.distance_mpc:.1f} Mpc")
-
-print(f"Redshift    : {report.redshift}")
-
-print(f"Velocidad   : {report.recessional_velocity_km_s:.1f} km/s")
-
-print(f"Resumen     : {report.summary}")
-
+if report:
+    print(f"Objeto      : {report.common_name} ({report.catalog_id.upper()})")
+    print(f"Tipo        : {report.galaxy_type}")
+    print(f"Distancia   : {report.distance_mpc:.1f} Mpc")
+    print(f"Redshift    : {report.redshift}")
+    print(f"Velocidad   : {report.recessional_velocity_km_s:.1f} km/s")
+    print(f"Resumen     : {report.summary}")
+else:
+    print("No se pudo parsear el output. Respuesta cruda:")
+    print(raw.output)
 ```
 
 **¿Qué ocurrió internamente?**
@@ -317,20 +330,19 @@ En tiempo de ejecución, pasa una instancia de `MisDeps` a `await agent.run(...,
 from dataclasses import dataclass
 from pydantic import BaseModel, Field
 from pydantic_ai import Agent, RunContext
+import json, re
 
 
-# Paso 1: Definir dependencias
-# Contexto compartido disponible para cada herramienta durante una ejecución del agente.
 @dataclass
 class ObservatoryDeps:
     observer_name: str
-    telescope_aperture_m: float        # diámetro del espejo primario (m)
-    read_noise_e: float                # ruido de lectura por píxel (electrones)
-    pixel_scale_arcsec: float          # escala de placa (arcsec / píxel)
-    seeing_fwhm_arcsec: float          # FWHM de seeing típico (arcsec)
-    sky_mag_v_per_arcsec2: float       # brillo del cielo banda V (mag / arcsec²)
-    system_throughput: float           # eficiencia total (óptica × QE × filtro × atm)
-    log: list                          # las herramientas pueden agregar entradas aquí
+    telescope_aperture_m: float
+    read_noise_e: float
+    pixel_scale_arcsec: float
+    seeing_fwhm_arcsec: float
+    sky_mag_v_per_arcsec2: float
+    system_throughput: float
+    log: list
 
 
 class ObservationPlan(BaseModel):
@@ -340,20 +352,35 @@ class ObservationPlan(BaseModel):
     notes: str
 
 
-# Paso 2: Crear el agente declarando el tipo de dependencia
-planner_agent = Agent(MODEL,
-    deps_type=ObservatoryDeps,
-    output_type=ObservationPlan,
-    instructions=(
-        "You are an observation planning assistant for optical telescopes. "
-        "Use the tool to estimate the limiting magnitude for trial exposure "
-        "times and converge on what the observer needs."
-    ),
+use_structured = isinstance(MODEL, str) and MODEL.startswith("anthropic:")
+
+_instructions = (
+    "You are an observation planning assistant for optical telescopes. "
+    "Use the tool to estimate the limiting magnitude for trial exposure "
+    "times and converge on what the observer needs. "
 )
+if not use_structured:
+    _instructions += (
+        "Return ONLY a JSON object with these exact keys: "
+        "target, recommended_exposure_s, limiting_magnitude, notes. "
+        "No extra text, no markdown, no code blocks. Only the raw JSON object."
+    )
+
+if use_structured:
+    planner_agent = Agent(MODEL,
+        deps_type=ObservatoryDeps,
+        output_type=ObservationPlan,
+        retries=5,
+        instructions=_instructions,
+    )
+else:
+    planner_agent = Agent(MODEL,
+        deps_type=ObservatoryDeps,
+        retries=5,
+        instructions=_instructions,
+    )
 
 
-# Paso 3: Instrucción dinámica que lee las dependencias
-# Se ejecuta antes de cada turno del agente e inyecta contexto en el system prompt.
 @planner_agent.instructions
 def telescope_context(ctx: RunContext[ObservatoryDeps]) -> str:
     d = ctx.deps
@@ -366,7 +393,6 @@ def telescope_context(ctx: RunContext[ObservatoryDeps]) -> str:
     )
 
 
-# Paso 4: Herramienta que lee de ctx.deps
 @planner_agent.tool
 def estimate_limiting_magnitude(
     ctx: RunContext[ObservatoryDeps],
@@ -376,69 +402,65 @@ def estimate_limiting_magnitude(
     """Estima la magnitud límite en banda V alcanzada en `exposure_s` segundos
     usando la ecuación CCD.
 
-    Considera ruido de la fuente, ruido de fondo de cielo y ruido de lectura
-    integrados sobre una apertura fotométrica de radio 1.5 × FWHM de seeing.
-
     Args:
         exposure_s: Tiempo de exposición en segundos.
         snr_threshold: SNR requerido (por defecto 5, es decir, detección a 5σ).
     """
     import math
     d = ctx.deps
-
-    F0_PHOT = 8.8e4  # fotones / s / cm² para m = 0 (Vega zero point, banda V)
+    F0_PHOT = 8.8e4
     A_cm2 = math.pi * (d.telescope_aperture_m * 100.0 / 2.0) ** 2
-    zp_rate = F0_PHOT * d.system_throughput * A_cm2  # e-/s para m=0
-
-    # Fondo de cielo por píxel (e-/s/pix)
+    zp_rate = F0_PHOT * d.system_throughput * A_cm2
     B = zp_rate * d.pixel_scale_arcsec**2 * 10 ** (-0.4 * d.sky_mag_v_per_arcsec2)
-
-    # Apertura fotométrica en píxeles (radio = 1.5 × FWHM)
     r_arcsec = 1.5 * d.seeing_fwhm_arcsec
     n_pix = math.pi * (r_arcsec / d.pixel_scale_arcsec) ** 2
-
-    # Resolver la ecuación CCD para encontrar el flujo mínimo detectable S
     SNR = snr_threshold
     t = exposure_s
     noise = n_pix * (B * t + d.read_noise_e**2)
     S = SNR * (SNR + math.sqrt(SNR**2 + 4 * noise)) / (2 * t)
-
     m_lim = -2.5 * math.log10(S / zp_rate)
-    d.log.append(
-        f"t={t:.0f}s → m_lim={m_lim:.2f}  "
-        f"(n_pix={n_pix:.0f}, B={B:.3f} e/s/pix)"
-    )
+    d.log.append(f"t={t:.0f}s → m_lim={m_lim:.2f}  (n_pix={n_pix:.0f}, B={B:.3f} e/s/pix)")
     return round(m_lim, 2)
 
 
-# Paso 5: Ejecutar el agente pasando una instancia concreta de deps
 session_log = []
 deps = ObservatoryDeps(
     observer_name="Edwin Hubble",
-    telescope_aperture_m=1.0,        # telescopio de 1 metro
+    telescope_aperture_m=1.0,
     read_noise_e=5.0,
     pixel_scale_arcsec=0.5,
     seeing_fwhm_arcsec=1.2,
-    sky_mag_v_per_arcsec2=21.0,      # sitio oscuro
-    system_throughput=0.25,          # 25% eficiencia total
+    sky_mag_v_per_arcsec2=21.0,
+    system_throughput=0.25,
     log=session_log,
 )
 
-result = await planner_agent.run(
+raw = await planner_agent.run(
     "I want to detect V = 21 point sources at 5σ in a single exposure. "
     "What exposure time should I use?",
     deps=deps,
 )
 
-plan = result.output
-print(f"Target              : {plan.target}")
-print(f"Exposición          : {plan.recommended_exposure_s:.0f} s")
-print(f"Magnitud límite     : {plan.limiting_magnitude}")
-print(f"Notas               : {plan.notes}")
-print()
-print("Log de sesión:")
-for entry in session_log:
-    print(f"  - {entry}")
+if use_structured:
+    plan = raw.output
+else:
+    match = re.search(r'\{.*\}', raw.output, re.DOTALL)
+    raw_json = match.group()
+    raw_json = raw_json.encode('utf-8').decode('unicode_escape', errors='replace')
+    plan = ObservationPlan(**json.loads(raw_json)) if match else None
+
+if plan:
+    print(f"Target              : {plan.target}")
+    print(f"Exposición          : {plan.recommended_exposure_s:.0f} s")
+    print(f"Magnitud límite     : {plan.limiting_magnitude}")
+    print(f"Notas               : {plan.notes}")
+    print()
+    print("Log de sesión:")
+    for entry in session_log:
+        print(f"  - {entry}")
+else:
+    print("No se pudo parsear el output. Respuesta cruda:")
+    print(raw.output)
 ```
 
 **Qué aporta la inyección de dependencias:**
@@ -495,6 +517,9 @@ Construimos un pipeline con tres agentes: un clasificador, un asesor de fotometr
 from pydantic import BaseModel, Field
 from pydantic_ai import Agent, RunContext
 from typing import Literal
+import json, re
+
+use_structured = isinstance(MODEL, str) and MODEL.startswith("anthropic:")
 
 
 # ============================================================
@@ -506,11 +531,19 @@ class SourceType(BaseModel):
     confidence: float = Field(ge=0.0, le=1.0)
     reasoning: str
 
+_cls_instructions = "You are a source classification expert. Be concise. "
+if not use_structured:
+    _cls_instructions += (
+        "Return ONLY a JSON object with keys: source_class, confidence, reasoning. "
+        "source_class must be one of: star, galaxy, nebula, quasar, transient, unknown. "
+        "confidence must be a float between 0 and 1. No extra text, no markdown."
+    )
 
-classifier_agent = Agent(MODEL,
-    output_type=SourceType,
-    instructions="You are a source classification expert. Be concise.",
-)
+if use_structured:
+    classifier_agent = Agent(MODEL, output_type=SourceType, retries=5,
+                             instructions=_cls_instructions)
+else:
+    classifier_agent = Agent(MODEL, retries=5, instructions=_cls_instructions)
 
 
 # ============================================================
@@ -518,19 +551,33 @@ classifier_agent = Agent(MODEL,
 # ============================================================
 
 class PhotometryStrategy(BaseModel):
-    method: str
-    required_calibrations: list[str]
-    estimated_precision_mag: float
-    caveats: str
+    method: str = "Aperture Photometry"
+    required_calibrations: list[str] = Field(default_factory=list)
+    estimated_precision_mag: float = 0.0
+    caveats: str | list[str] = ""
 
+    @property
+    def caveats_str(self) -> str:
+        if isinstance(self.caveats, list):
+            return "; ".join(self.caveats)
+        return self.caveats
 
-photometry_agent = Agent(MODEL,
-    output_type=PhotometryStrategy,
-    instructions=(
-        "You are a photometric data reduction expert. Be concise. "
-        "Given a source type and instrument, recommend a photometry strategy."
-    ),
+_phot_instructions = (
+    "You are a photometric data reduction expert. Be concise. "
+    "Given a source type and instrument, recommend a photometry strategy. "
 )
+if not use_structured:
+    _phot_instructions += (
+        "Return ONLY a JSON object with keys: method, required_calibrations, "
+        "estimated_precision_mag, caveats. "
+        "required_calibrations must be a list of strings. No extra text, no markdown."
+    )
+
+if use_structured:
+    photometry_agent = Agent(MODEL, output_type=PhotometryStrategy, retries=5,
+                             instructions=_phot_instructions)
+else:
+    photometry_agent = Agent(MODEL, retries=5, instructions=_phot_instructions)
 
 
 # ============================================================
@@ -542,30 +589,62 @@ class PipelineReport(BaseModel):
     photometry_strategy: PhotometryStrategy
     executive_summary: str
 
-
-coordinator_agent = Agent(MODEL,
-    output_type=PipelineReport,
-    instructions=(
-        "Pipeline coordinator. Use the tools to classify the source and "
-        "design a photometry strategy, then produce a concise report."
-    ),
+_coord_instructions = (
+    "Pipeline coordinator. Use the tools to classify the source and "
+    "design a photometry strategy, then produce a concise report. "
 )
+if not use_structured:
+    _coord_instructions += (
+        "Return ONLY a JSON object with keys: classification, photometry_strategy, "
+        "executive_summary. "
+        "classification must have keys: source_class, confidence, reasoning. "
+        "photometry_strategy must have keys: method, required_calibrations, "
+        "estimated_precision_mag, caveats. "
+        "No extra text, no markdown, no code blocks."
+    )
+
+if use_structured:
+    coordinator_agent = Agent(MODEL, output_type=PipelineReport, retries=5,
+                              instructions=_coord_instructions)
+else:
+    coordinator_agent = Agent(MODEL, retries=5, instructions=_coord_instructions)
+
+
+def _parse_json(text):
+    """Extrae y parsea el primer objeto JSON del texto."""
+    match = re.search(r'\{.*\}', text, re.DOTALL)
+    if not match:
+        return None
+    try:
+        return json.loads(match.group())
+    except json.JSONDecodeError:
+        # Intentar limpiar caracteres problemáticos
+        clean = match.group().encode('utf-8', errors='replace').decode('utf-8')
+        try:
+            return json.loads(clean)
+        except json.JSONDecodeError as e:
+            print(f"No se pudo parsear JSON: {e}")
+            print(f"Raw: {match.group()[:300]}")
+            return None
 
 
 @coordinator_agent.tool
 async def classify_source(ctx: RunContext[None], description: str) -> dict:
     """Clasifica una fuente astronómica a partir de una descripción."""
-    # Propagar el uso de tokens hacia arriba vía ctx.usage
     result = await classifier_agent.run(description, usage=ctx.usage)
-    return result.output.model_dump()
+    if use_structured:
+        return result.output.model_dump()
+    return _parse_json(result.output)
 
 
 @coordinator_agent.tool
 async def get_photometry_strategy(ctx: RunContext[None], source_type: str, instrument: str) -> dict:
     """Recomienda una estrategia fotométrica para el tipo de fuente e instrumento dados."""
-    prompt = f"Source type: {source_type}. Instrument: {instrument}."
-    result = await photometry_agent.run(prompt, usage=ctx.usage)
-    return result.output.model_dump()
+    result = await photometry_agent.run(
+        f"Source type: {source_type}. Instrument: {instrument}.", usage=ctx.usage)
+    if use_structured:
+        return result.output.model_dump()
+    return _parse_json(result.output)
 
 
 # Ejecutar el pipeline completo
@@ -574,18 +653,42 @@ pipeline_result = await coordinator_agent.run(
     "Instrument: 1-m telescope with a CCD camera in BVRI filters."
 )
 
-report = pipeline_result.output
-print("=== REPORTE DEL PIPELINE ===")
-print(f"Clase       : {report.classification.source_class} ({report.classification.confidence:.0%})")
-print(f"Razonamiento: {report.classification.reasoning}")
-print()
-print(f"Método      : {report.photometry_strategy.method}")
-print(f"Calibraciones: {', '.join(report.photometry_strategy.required_calibrations)}")
-print(f"Precisión   : ±{report.photometry_strategy.estimated_precision_mag:.3f} mag")
-print()
-print(f"Resumen     : {report.executive_summary}")
-print()
-print(f"Uso total   : {pipeline_result.usage()}")
+if use_structured:
+    report = pipeline_result.output
+else:
+    parsed = _parse_json(pipeline_result.output)
+    if parsed:
+        if not parsed.get("photometry_strategy"):
+            phot_result = await photometry_agent.run(
+                f"Source type: {parsed['classification']['source_class']}. "
+                "Instrument: 1-m telescope with a CCD camera in BVRI filters."
+            )
+            phot_parsed = _parse_json(phot_result.output)
+            parsed["photometry_strategy"] = phot_parsed or {}
+
+        report = PipelineReport(
+            classification=SourceType(**parsed["classification"]),
+            photometry_strategy=PhotometryStrategy(**parsed["photometry_strategy"]),
+            executive_summary=parsed.get("executive_summary") or "Sin resumen disponible.",
+        )
+    else:
+        report = None
+
+if report:
+    print("=== REPORTE DEL PIPELINE ===")
+    print(f"Clase       : {report.classification.source_class} ({report.classification.confidence:.0%})")
+    print(f"Razonamiento: {report.classification.reasoning}")
+    print()
+    print(f"Método      : {report.photometry_strategy.method}")
+    print(f"Calibraciones: {', '.join(report.photometry_strategy.required_calibrations)}")
+    print(f"Precisión   : ±{report.photometry_strategy.estimated_precision_mag:.3f} mag")
+    print()
+    print(f"Resumen     : {report.executive_summary}")
+    print()
+    print(f"Uso total   : {pipeline_result.usage}")
+else:
+    print("No se pudo parsear el output. Respuesta cruda:")
+    print(pipeline_result.output)
 ```
 
 Ahora con una fuente diferente:
@@ -596,18 +699,34 @@ pipeline_result = await coordinator_agent.run(
     "Instrument: 1-m telescope with a CCD camera in BVRI filters."
 )
 
-report = pipeline_result.output
-print("=== REPORTE DEL PIPELINE ===")
-print(f"Clase       : {report.classification.source_class} ({report.classification.confidence:.0%})")
-print(f"Razonamiento: {report.classification.reasoning}")
-print()
-print(f"Método      : {report.photometry_strategy.method}")
-print(f"Calibraciones: {', '.join(report.photometry_strategy.required_calibrations)}")
-print(f"Precisión   : ±{report.photometry_strategy.estimated_precision_mag:.3f} mag")
-print()
-print(f"Resumen     : {report.executive_summary}")
-print()
-print(f"Uso total   : {pipeline_result.usage()}")
+if use_structured:
+    report = pipeline_result.output
+else:
+    parsed = _parse_json(pipeline_result.output)
+    if parsed:
+        report = PipelineReport(
+            classification=SourceType(**parsed["classification"]),
+            photometry_strategy=PhotometryStrategy(**parsed["photometry_strategy"]),
+            executive_summary=parsed["executive_summary"],
+        )
+    else:
+        report = None
+
+if report:
+    print("=== REPORTE DEL PIPELINE ===")
+    print(f"Clase       : {report.classification.source_class} ({report.classification.confidence:.0%})")
+    print(f"Razonamiento: {report.classification.reasoning}")
+    print()
+    print(f"Método      : {report.photometry_strategy.method}")
+    print(f"Calibraciones: {', '.join(report.photometry_strategy.required_calibrations)}")
+    print(f"Precisión   : ±{report.photometry_strategy.estimated_precision_mag:.3f} mag")
+    print()
+    print(f"Resumen     : {report.executive_summary}")
+    print()
+    print(f"Uso total   : {pipeline_result.usage}")
+else:
+    print("No se pudo parsear el output. Respuesta cruda:")
+    print(pipeline_result.output)
 ```
 
 **Notas sobre patrones multi-agente:**
