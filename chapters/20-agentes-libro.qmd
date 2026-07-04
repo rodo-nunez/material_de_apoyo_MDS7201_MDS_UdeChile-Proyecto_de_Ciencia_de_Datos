@@ -19,6 +19,7 @@ Documentación oficial: [ai.pydantic.dev](https://ai.pydantic.dev/) · [Pydantic
 ```{python}
 import os
 from pathlib import Path
+import re, json
 
 _key_file = Path("claude.key")
 
@@ -38,6 +39,8 @@ else:
     )
     print("Clave de Anthropic no encontrada. Usando Ollama local como fallback.")
     print(f"Modelo: {MODEL}")
+
+use_structured = isinstance(MODEL, str) and MODEL.startswith("anthropic:")
 ```
 
 ::: {.callout-tip}
@@ -97,46 +100,74 @@ Para extraer los valores relevantes tendríamos que escribir nuestro propio pars
 La solución: definir un **modelo Pydantic** — una clase que declara exactamente qué campos esperamos y qué tipos deben tener.
 
 ```{python}
-from pydantic import BaseModel, Field
-from pydantic_ai import Agent
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional
 
-
-# Definir el esquema de output
-# Field(...) nos permite agregar una descripción legible que se pasa
-# al LLM para que sepa qué significa cada campo.
 class StellarClassification(BaseModel):
-    object_name: str = Field(description="Name or designation of the stellar object")
-    spectral_type: str = Field(description="Spectral type, e.g. G2V or M5III")
-    effective_temperature_K: int = Field(description="Effective surface temperature in Kelvin")
-    luminosity_solar: float = Field(description="Luminosity in units of solar luminosity (L_sun)")
-    is_main_sequence: bool = Field(description="True if the star is on the main sequence")
-    notable_feature: Optional[str] = Field(
-        default=None,
-        description="One interesting or unusual feature of the object, if any"
+    object_name: str = Field(default="Unknown", description="Name or designation of the stellar object")
+    spectral_type: str = Field(default="Unknown", description="Spectral type, e.g. G2V or M5III")
+    effective_temperature_K: Optional[int] = Field(default=None, description="Effective surface temperature in Kelvin")
+    luminosity_solar: Optional[float] = Field(default=None, description="Luminosity in units of solar luminosity (L_sun)")
+    is_main_sequence: Optional[bool] = Field(default=None, description="True if the star is on the main sequence")
+    notable_feature: Optional[str] = Field(default=None, description="One interesting or unusual feature of the object, if any")
+
+    @field_validator('luminosity_solar', 'effective_temperature_K', mode='before')
+    @classmethod
+    def coerce_numeric(cls, v):
+        if v == '' or v is None:
+            return None
+        try:
+            return v
+        except (ValueError, TypeError):
+            return None
+
+    @field_validator('is_main_sequence', mode='before')
+    @classmethod
+    def coerce_bool(cls, v):
+        if v == '' or v is None:
+            return None
+        return v
+
+_instructions = (
+    "You are an expert stellar classifier. "
+    "Given a star name, return its classification parameters. "
+)
+if not use_structured:
+    _instructions += (
+        "Return ONLY a JSON object with these exact keys: "
+        "object_name, spectral_type, effective_temperature_K, luminosity_solar, "
+        "is_main_sequence, notable_feature. "
+        "effective_temperature_K must be an integer. "
+        "is_main_sequence must be a boolean (true or false). "
+        "notable_feature can be null. "
+        "No extra text, no markdown, no code blocks."
     )
 
+if use_structured:
+    classifier_agent = Agent(MODEL,
+        output_type=StellarClassification,
+        retries=5,
+        instructions=_instructions,
+    )
+else:
+    classifier_agent = Agent(MODEL,
+        retries=5,
+        instructions=_instructions,
+    )
 
-# Crear un agente que retorna StellarClassification.
-# Fijar `output_type` le dice a PydanticAI que valide la respuesta del LLM
-# contra este esquema. Si la validación falla, el agente automáticamente
-# le pide al LLM que lo intente de nuevo.
-classifier_agent = Agent(MODEL,
-    output_type=StellarClassification,
-    instructions=(
-        "You are an expert stellar classifier. "
-        "Given a star name, return its classification parameters."
-    ),
-)
+raw = await classifier_agent.run("Classify the star Betelgeuse.")
 
-result = await classifier_agent.run("Classify the star Betelgeuse.")
+if use_structured:
+    star = raw.output
+else:
+    match = re.search(r'\{.*\}', raw.output, re.DOTALL)
+    parsed = json.loads(match.group()) if match else {}
+    star = StellarClassification(**parsed)
 
-# `result.output` ahora es una instancia de StellarClassification, ¡no un string!
-star = result.output
 print(f"Objeto       : {star.object_name}")
 print(f"Tipo espectral: {star.spectral_type}")
-print(f"Temperatura  : {star.effective_temperature_K} K")
-print(f"Luminosidad  : {star.luminosity_solar:.0f} L_sun")
+print(f"Temperatura  : {star.effective_temperature_K or 'N/A'} K")
+print(f"Luminosidad  : {f'{star.luminosity_solar:.0f}' if star.luminosity_solar else 'N/A'} L_sun")
 print(f"Sec. principal: {star.is_main_sequence}")
 print(f"Característica: {star.notable_feature}")
 ```
@@ -210,7 +241,8 @@ El ejemplo a continuación muestra un flujo de herramientas de múltiples pasos:
 
 ```{python}
 from pydantic_ai import Agent
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+from typing import Optional
 import json, re
 
 # Catálogo simulado (en la práctica sería una consulta a BD o astroquery)
@@ -227,16 +259,25 @@ CATALOG = {
 
 
 class GalaxyReport(BaseModel):
-    catalog_id: str
-    common_name: str
-    galaxy_type: str
-    distance_mpc: float = Field(description="Distancia en megaparsecs")
-    redshift: float
-    recessional_velocity_km_s: float = Field(
-        description="Velocidad recesional en km/s, calculada desde el redshift"
+    catalog_id: str = Field(default="Unknown")
+    common_name: str = Field(default="Unknown")
+    galaxy_type: str = Field(default="Unknown")
+    distance_mpc: Optional[float] = Field(default=None, description="Distancia en megaparsecs")
+    redshift: Optional[float] = Field(default=None)
+    recessional_velocity_km_s: Optional[float] = Field(
+        default=None, description="Velocidad recesional en km/s, calculada desde el redshift"
     )
-    summary: str
+    summary: str = Field(default="")
 
+    @field_validator('distance_mpc', 'redshift', 'recessional_velocity_km_s', mode='before')
+    @classmethod
+    def coerce_numeric(cls, v):
+        if v == '' or v is None:
+            return None
+        try:
+            return float(v)
+        except (ValueError, TypeError):
+            return None
 
 def _make_galaxy_agent(output_type=None):
     instructions = (
@@ -295,9 +336,9 @@ else:
 if report:
     print(f"Objeto      : {report.common_name} ({report.catalog_id.upper()})")
     print(f"Tipo        : {report.galaxy_type}")
-    print(f"Distancia   : {report.distance_mpc:.1f} Mpc")
-    print(f"Redshift    : {report.redshift}")
-    print(f"Velocidad   : {report.recessional_velocity_km_s:.1f} km/s")
+    print(f"Distancia   : {f'{report.distance_mpc:.1f}' if report.distance_mpc else 'N/A'} Mpc")
+    print(f"Redshift    : {report.redshift if report.redshift is not None else 'N/A'}")
+    print(f"Velocidad   : {f'{report.recessional_velocity_km_s:.1f}' if report.recessional_velocity_km_s else 'N/A'} km/s")
     print(f"Resumen     : {report.summary}")
 else:
     print("No se pudo parsear el output. Respuesta cruda:")
