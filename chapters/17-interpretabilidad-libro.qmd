@@ -451,7 +451,7 @@ Los mismos principios se extienden a otros tipos de datos:
 
 Una aplicación astronómica reciente: clasificación de curvas de luz con mecanismos de atención en [Rojas et al. 2024](https://ui.adsabs.harvard.edu/abs/2024arXiv240705751R/abstract).
 
-![Pesos de atención en clasificación de curvas de luz astronómicas (Rojas et al. 2024)](images/attention.png)
+![Pesos de atención en clasificación de curvas de luz astronómicas (Rojas et al. 2024)](../chapter_files/images/interpretabilidad/attention.png)
 
 ## Resumen
 

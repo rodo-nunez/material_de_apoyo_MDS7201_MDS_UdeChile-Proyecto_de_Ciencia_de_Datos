@@ -128,7 +128,7 @@ Cada token "pregunta" (Q) qué tokens son relevantes para él (K), y agrega sus 
 
 ## Self-Attention — Diagrama
 
-![](images/llm/selfattention.png){fig-align="center" width="75%"}
+![](../chapter_files/images/llm/selfattention.png){fig-align="center" width="75%"}
 
 ## Cross-Attention
 
@@ -145,13 +145,13 @@ $$Q = X_1 W^Q \quad K = X_2 W^K \quad V = X_2 W^V$$
 
 ## Cross-Attention — Diagrama
 
-![](images/llm/cross-attention-summary.png){fig-align="center" width="75%"}
+![](../chapter_files/images/llm/cross-attention-summary.png){fig-align="center" width="75%"}
 
 ## El Transformer Completo
 
 Un transformer encadena múltiples capas de **multi-head attention** en paralelo:
 
-![](images/llm/transformer.png){fig-align="center" width="65%"}
+![](../chapter_files/images/llm/transformer.png){fig-align="center" width="65%"}
 
 ::: {.fragment}
 Para predicción del siguiente token (GPT), solo se usa la parte **decoder**.
@@ -228,11 +228,11 @@ Arquitectura: **T-DMCA** ([Transformer-Decoder Memory-Compressed Attention](http
 
 ## T-DMCA
 
-![](images/llm/TDMCA.png){fig-align="center" width="70%"}
+![](../chapter_files/images/llm/TDMCA.png){fig-align="center" width="70%"}
 
 ## Fase 2: Fine-tuning Supervisado
 
-![](images/llm/GPT.png){fig-align="center" width="75%"}
+![](../chapter_files/images/llm/GPT.png){fig-align="center" width="75%"}
 
 ::: {.fragment}
 El modelo pre-entrenado se ajusta para tareas como clasificación, entailment, similitud y opción múltiple ([Radford et al. 2018](https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf)).

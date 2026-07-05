@@ -100,7 +100,7 @@ Dimensiones:
 | $W^V$ | $\mathbb{R}^{d_v \times d}$ |
 | $Z$ | $\mathbb{R}^{n \times d_v}$ |
 
-![Diagrama de self-attention](images/llm/selfattention.png)
+![Diagrama de self-attention](../chapter_files/images/llm/selfattention.png)
 
 ### Cross-Attention
 
@@ -110,11 +110,11 @@ $$Q = X_1 W^Q, \quad K = X_2 W^K, \quad V = X_2 W^V$$
 
 La salida $Z \in \mathbb{R}^{n \times d_v}$ captura cómo cada token de $X_1$ "atiende" a los tokens de $X_2$. Es el mecanismo central en tareas como traducción, donde la secuencia de entrada y la de salida son distintas.
 
-![Diagrama de cross-attention](images/llm/cross-attention-summary.png)
+![Diagrama de cross-attention](../chapter_files/images/llm/cross-attention-summary.png)
 
 Un transformer encadena múltiples capas de **multi-head attention** (varias cabezas de atención en paralelo) para realizar tareas como traducción, predicción del siguiente token o clasificación de imágenes.
 
-![Arquitectura del Transformer](images/llm/transformer.png)
+![Arquitectura del Transformer](../chapter_files/images/llm/transformer.png)
 
 ### Predicción del Siguiente Token
 
@@ -165,13 +165,13 @@ Se usa una variante del transformer llamada T-DMCA ([Transformer-Decoder Memory-
 2. **Atención con memoria comprimida**: se reduce el número de keys y values mediante una convolución con stride.
 3. **Atención local**: los tokens se dividen en bloques de longitud similar y la atención se realiza dentro de cada bloque independientemente.
 
-![Arquitectura T-DMCA](images/llm/TDMCA.png)
+![Arquitectura T-DMCA](../chapter_files/images/llm/TDMCA.png)
 
 ### 2. Fine-Tuning Supervisado
 
 El modelo pre-entrenado puede ser ajustado para resolver tareas supervisadas como clasificación (análisis de sentimiento), inferencia lógica (entailment), similitud semántica y opción múltiple ([Radford et al. 2018, GPT](https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf)).
 
-![Pipeline de GPT (fine-tuning supervisado)](images/llm/GPT.png)
+![Pipeline de GPT (fine-tuning supervisado)](../chapter_files/images/llm/GPT.png)
 
 ### 3. Reinforcement Learning with Human Feedback (RLHF)
 

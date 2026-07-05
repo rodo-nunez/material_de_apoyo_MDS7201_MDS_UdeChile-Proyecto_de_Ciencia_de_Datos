@@ -426,7 +426,7 @@ Alta atención ≠ importancia causal. Los pesos de atención son correlaciones 
 
 Clasificación de curvas de luz usando mecanismos de atención:
 
-![Pesos de atención en curvas de luz (Rojas et al. 2024)](images/attention.png){fig-align="center" width="70%"}
+![Pesos de atención en curvas de luz (Rojas et al. 2024)](../chapter_files/images/interpretabilidad/attention.png){fig-align="center" width="70%"}
 
 [Rojas et al. 2024](https://ui.adsabs.harvard.edu/abs/2024arXiv240705751R/abstract)
 
