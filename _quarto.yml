@@ -57,6 +57,9 @@ book:
 
 # bibliography: references.bib  # Comentado hasta tener citas reales
 
+execute:
+  freeze: auto
+
 format:
   html:
     theme:
