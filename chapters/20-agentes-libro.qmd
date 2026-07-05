@@ -408,10 +408,20 @@ class ObservatoryDeps:
 
 
 class ObservationPlan(BaseModel):
-    target: str
-    recommended_exposure_s: float
-    limiting_magnitude: float = Field(description="Magnitud límite V alcanzada a SNR=5")
-    notes: str
+    target: str = Field(default="Unknown target")
+    recommended_exposure_s: float = Field(default=0.0)
+    limiting_magnitude: float = Field(default=0.0, description="Magnitud límite V alcanzada a SNR=5")
+    notes: str = Field(default="")
+
+    @field_validator('recommended_exposure_s', 'limiting_magnitude', mode='before')
+    @classmethod
+    def coerce_numeric(cls, v):
+        if v is None or v == '':
+            return 0.0
+        try:
+            return float(v)
+        except (ValueError, TypeError):
+            return 0.0
 
 
 _instructions = (
@@ -463,10 +473,12 @@ def estimate_limiting_magnitude(
     usando la ecuación CCD.
 
     Args:
-        exposure_s: Tiempo de exposición en segundos.
+        exposure_s: Tiempo de exposición en segundos. Debe ser mayor que 0.
         snr_threshold: SNR requerido (por defecto 5, es decir, detección a 5σ).
     """
     import math
+    if exposure_s <= 0:
+        return -99.0  # valor centinela que indica exposición inválida
     d = ctx.deps
     F0_PHOT = 8.8e4
     A_cm2 = math.pi * (d.telescope_aperture_m * 100.0 / 2.0) ** 2
@@ -504,8 +516,8 @@ raw = await planner_agent.run(
 if use_structured:
     plan = raw.output
 else:
-    parsed = _parse_json(raw.output)
-    plan = ObservationPlan(**parsed) if parsed else None
+    parsed = _parse_json(raw.output) or {}
+    plan = ObservationPlan(**parsed)
 
 if plan:
     print(f"Target              : {plan.target}")
@@ -572,7 +584,7 @@ Construimos un pipeline con tres agentes: un clasificador, un asesor de fotometr
 ```
 
 ```{python}
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from pydantic_ai import Agent, RunContext
 from typing import Literal
 import json, re
@@ -583,23 +595,32 @@ import json, re
 # ============================================================
 
 class SourceType(BaseModel):
-    source_class: Literal["star", "galaxy", "nebula", "quasar", "transient", "unknown"]
-    confidence: float = Field(ge=0.0, le=1.0)
-    reasoning: str
+    source_class: Literal["star", "galaxy", "nebula", "quasar", "transient", "unknown"] = "unknown"
+    confidence: float = 0.5
+    reasoning: str = ""
 
-_cls_instructions = "You are a source classification expert. Be concise. "
-if not use_structured:
-    _cls_instructions += (
-        "Return ONLY a JSON object with keys: source_class, confidence, reasoning. "
-        "source_class must be one of: star, galaxy, nebula, quasar, transient, unknown. "
-        "confidence must be a float between 0 and 1. No extra text, no markdown."
-    )
+    @field_validator('source_class', mode='before')
+    @classmethod
+    def coerce_source_class(cls, v):
+        allowed = {"star", "galaxy", "nebula", "quasar", "transient", "unknown"}
+        if isinstance(v, str) and v.lower() in allowed:
+            return v.lower()
+        return "unknown"
 
-if use_structured:
-    classifier_agent = Agent(MODEL, output_type=SourceType, retries=5,
-                             instructions=_cls_instructions)
-else:
-    classifier_agent = Agent(MODEL, retries=5, instructions=_cls_instructions)
+    @field_validator('confidence', mode='before')
+    @classmethod
+    def coerce_confidence(cls, v):
+        if v is None or v == '':
+            return 0.5
+        try:
+            return max(0.0, min(1.0, float(v)))
+        except (ValueError, TypeError):
+            return 0.5
+
+    @field_validator('reasoning', mode='before')
+    @classmethod
+    def coerce_reasoning(cls, v):
+        return str(v) if v else ""
 
 
 # ============================================================
@@ -612,11 +633,72 @@ class PhotometryStrategy(BaseModel):
     estimated_precision_mag: float = 0.0
     caveats: str | list[str] = ""
 
+    @field_validator('estimated_precision_mag', mode='before')
+    @classmethod
+    def coerce_precision(cls, v):
+        if v is None or v == '':
+            return 0.0
+        try:
+            return float(v)
+        except (ValueError, TypeError):
+            return 0.0
+
+    @field_validator('required_calibrations', mode='before')
+    @classmethod
+    def coerce_calibrations(cls, v):
+        if v is None:
+            return []
+        if isinstance(v, str):
+            return [v] if v else []
+        return v
+
     @property
     def caveats_str(self) -> str:
         if isinstance(self.caveats, list):
             return "; ".join(self.caveats)
         return self.caveats
+
+
+# ============================================================
+# Agente Coordinador: orquesta los especialistas
+# ============================================================
+# Estrategia: el coordinador delega clasificación y fotometría a los
+# especialistas directamente desde las tools. El coordinador solo
+# produce el executive_summary — evitando que Ollama tenga que
+# ensamblar un JSON anidado complejo.
+
+class PipelineReport(BaseModel):
+    classification: SourceType
+    photometry_strategy: PhotometryStrategy
+    executive_summary: str = "Sin resumen disponible."
+
+    @field_validator('executive_summary', mode='before')
+    @classmethod
+    def coerce_summary(cls, v):
+        return str(v) if v else "Sin resumen disponible."
+
+
+def _build_source_type(data: dict) -> SourceType:
+    """Construye un SourceType de forma robusta desde un dict arbitrario."""
+    if not data:
+        return SourceType()
+    return SourceType(**{k: v for k, v in data.items() if k in SourceType.model_fields})
+
+
+def _build_photometry(data: dict) -> PhotometryStrategy:
+    """Construye un PhotometryStrategy de forma robusta desde un dict arbitrario."""
+    if not data:
+        return PhotometryStrategy()
+    return PhotometryStrategy(**{k: v for k, v in data.items() if k in PhotometryStrategy.model_fields})
+
+
+_cls_instructions = "You are a source classification expert. Be concise. "
+if not use_structured:
+    _cls_instructions += (
+        "Return ONLY a JSON object with keys: source_class, confidence, reasoning. "
+        "source_class must be one of: star, galaxy, nebula, quasar, transient, unknown. "
+        "confidence must be a float between 0 and 1. No extra text, no markdown."
+    )
 
 _phot_instructions = (
     "You are a photometric data reduction expert. Be concise. "
@@ -629,40 +711,23 @@ if not use_structured:
         "required_calibrations must be a list of strings. No extra text, no markdown."
     )
 
-if use_structured:
-    photometry_agent = Agent(MODEL, output_type=PhotometryStrategy, retries=5,
-                             instructions=_phot_instructions)
-else:
-    photometry_agent = Agent(MODEL, retries=5, instructions=_phot_instructions)
-
-
-# ============================================================
-# Agente Coordinador: orquesta los especialistas
-# ============================================================
-
-class PipelineReport(BaseModel):
-    classification: SourceType
-    photometry_strategy: PhotometryStrategy
-    executive_summary: str
-
 _coord_instructions = (
-    "Pipeline coordinator. Use the tools to classify the source and "
-    "design a photometry strategy, then produce a concise report. "
+    "Pipeline coordinator. Use classify_source and get_photometry_strategy tools, "
+    "then write a one-sentence executive_summary of the findings. "
 )
 if not use_structured:
     _coord_instructions += (
-        "Return ONLY a JSON object with keys: classification, photometry_strategy, "
-        "executive_summary. "
-        "classification must have keys: source_class, confidence, reasoning. "
-        "photometry_strategy must have keys: method, required_calibrations, "
-        "estimated_precision_mag, caveats. "
+        "Return ONLY a JSON object with a single key: executive_summary. "
         "No extra text, no markdown, no code blocks."
     )
 
 if use_structured:
-    coordinator_agent = Agent(MODEL, output_type=PipelineReport, retries=5,
-                              instructions=_coord_instructions)
+    classifier_agent  = Agent(MODEL, output_type=SourceType,         retries=5, instructions=_cls_instructions)
+    photometry_agent  = Agent(MODEL, output_type=PhotometryStrategy,  retries=5, instructions=_phot_instructions)
+    coordinator_agent = Agent(MODEL, output_type=PipelineReport,      retries=5, instructions=_coord_instructions)
 else:
+    classifier_agent  = Agent(MODEL, retries=5, instructions=_cls_instructions)
+    photometry_agent  = Agent(MODEL, retries=5, instructions=_phot_instructions)
     coordinator_agent = Agent(MODEL, retries=5, instructions=_coord_instructions)
 
 
@@ -672,7 +737,12 @@ async def classify_source(ctx: RunContext[None], description: str) -> dict:
     result = await classifier_agent.run(description, usage=ctx.usage)
     if use_structured:
         return result.output.model_dump()
-    return _parse_json(result.output)
+    parsed = _parse_json(result.output) or {}
+    return {
+        "source_class": parsed.get("source_class", "unknown"),
+        "confidence": parsed.get("confidence", 0.5),
+        "reasoning": parsed.get("reasoning", result.output[:200]),
+    }
 
 
 @coordinator_agent.tool
@@ -682,7 +752,48 @@ async def get_photometry_strategy(ctx: RunContext[None], source_type: str, instr
         f"Source type: {source_type}. Instrument: {instrument}.", usage=ctx.usage)
     if use_structured:
         return result.output.model_dump()
-    return _parse_json(result.output)
+    parsed = _parse_json(result.output) or {}
+    return {
+        "method": parsed.get("method", "Aperture Photometry"),
+        "required_calibrations": parsed.get("required_calibrations", ["bias", "flat", "dark"]),
+        "estimated_precision_mag": parsed.get("estimated_precision_mag", 0.01),
+        "caveats": parsed.get("caveats", ""),
+    }
+
+
+def _assemble_report(pipeline_result, cls_data: dict = None, phot_data: dict = None) -> PipelineReport:
+    """Ensambla PipelineReport de forma robusta independientemente del formato de output."""
+    if use_structured:
+        return pipeline_result.output
+
+    raw = pipeline_result.output
+    parsed = _parse_json(raw) or {}
+
+    # Extraer clasificación — puede estar anidada o en el nivel raíz
+    if "classification" in parsed:
+        cls_dict = parsed["classification"]
+    elif "source_class" in parsed:
+        cls_dict = parsed
+    else:
+        cls_dict = cls_data or {}
+
+    # Extraer fotometría — puede estar anidada o en el nivel raíz
+    if "photometry_strategy" in parsed:
+        phot_dict = parsed["photometry_strategy"]
+    elif "method" in parsed:
+        phot_dict = parsed
+    else:
+        phot_dict = phot_data or {}
+
+    summary = (parsed.get("executive_summary")
+               or parsed.get("summary")
+               or "Sin resumen disponible.")
+
+    return PipelineReport(
+        classification=_build_source_type(cls_dict),
+        photometry_strategy=_build_photometry(phot_dict),
+        executive_summary=str(summary) if summary else "Sin resumen disponible.",
+    )
 
 
 # Ejecutar el pipeline completo
@@ -691,69 +802,19 @@ pipeline_result = await coordinator_agent.run(
     "Instrument: 1-m telescope with a CCD camera in BVRI filters."
 )
 
-if use_structured:
-    report = pipeline_result.output
-else:
-    raw_parsed = _parse_json(pipeline_result.output)
+report = _assemble_report(pipeline_result)
 
-    # Caso 1: JSON bien formado con estructura anidada correcta
-    if raw_parsed and "classification" in raw_parsed:
-        parsed = raw_parsed
-
-    # Caso 2: Ollama devolvió la clasificación directamente en el nivel raíz
-    elif raw_parsed and "source_class" in raw_parsed:
-        all_matches = re.findall(r'\{[^{}]*\}', pipeline_result.output, re.DOTALL)
-        phot_data = {}
-        for m in all_matches[1:]:
-            try:
-                candidate = json.loads(m)
-                if "photometry_strategy" in candidate:
-                    phot_data = candidate.get("photometry_strategy") or {}
-                    break
-                elif "method" in candidate:
-                    phot_data = candidate
-                    break
-            except json.JSONDecodeError:
-                continue
-        parsed = {
-            "classification": raw_parsed,
-            "photometry_strategy": phot_data,
-            "executive_summary": None,
-        }
-    else:
-        parsed = None
-
-    if parsed:
-        if not parsed.get("photometry_strategy"):
-            phot_result = await photometry_agent.run(
-                f"Source type: {parsed['classification']['source_class']}. "
-                "Instrument: 1-m telescope with a CCD camera in BVRI filters."
-            )
-            phot_parsed = _parse_json(phot_result.output)
-            parsed["photometry_strategy"] = phot_parsed or {}
-        report = PipelineReport(
-            classification=SourceType(**parsed["classification"]),
-            photometry_strategy=PhotometryStrategy(**parsed["photometry_strategy"]),
-            executive_summary=parsed.get("executive_summary") or "Sin resumen disponible.",
-        )
-    else:
-        report = None
-
-if report:
-    print("=== REPORTE DEL PIPELINE ===")
-    print(f"Clase       : {report.classification.source_class} ({report.classification.confidence:.0%})")
-    print(f"Razonamiento: {report.classification.reasoning}")
-    print()
-    print(f"Método      : {report.photometry_strategy.method}")
-    print(f"Calibraciones: {', '.join(report.photometry_strategy.required_calibrations)}")
-    print(f"Precisión   : ±{report.photometry_strategy.estimated_precision_mag:.3f} mag")
-    print()
-    print(f"Resumen     : {report.executive_summary}")
-    print()
-    print(f"Uso total   : {pipeline_result.usage()}")
-else:
-    print("No se pudo parsear el output. Respuesta cruda:")
-    print(pipeline_result.output)
+print("=== REPORTE DEL PIPELINE ===")
+print(f"Clase       : {report.classification.source_class} ({report.classification.confidence:.0%})")
+print(f"Razonamiento: {report.classification.reasoning}")
+print()
+print(f"Método      : {report.photometry_strategy.method}")
+print(f"Calibraciones: {', '.join(report.photometry_strategy.required_calibrations)}")
+print(f"Precisión   : ±{report.photometry_strategy.estimated_precision_mag:.3f} mag")
+print()
+print(f"Resumen     : {report.executive_summary}")
+print()
+print(f"Uso total   : {pipeline_result.usage}")
 ```
 
 Ahora con una fuente diferente:
@@ -764,70 +825,19 @@ pipeline_result = await coordinator_agent.run(
     "Instrument: 1-m telescope with a CCD camera in BVRI filters."
 )
 
-if use_structured:
-    report = pipeline_result.output
-else:
-    raw_parsed = _parse_json(pipeline_result.output)
+report = _assemble_report(pipeline_result)
 
-    # Caso 1: JSON bien formado con estructura anidada correcta
-    if raw_parsed and "classification" in raw_parsed:
-        parsed = raw_parsed
-
-    # Caso 2: Ollama devolvió la clasificación directamente en el nivel raíz
-    elif raw_parsed and "source_class" in raw_parsed:
-        all_matches = re.findall(r'\{[^{}]*\}', pipeline_result.output, re.DOTALL)
-        phot_data = {}
-        for m in all_matches[1:]:
-            try:
-                candidate = json.loads(m)
-                if "photometry_strategy" in candidate:
-                    phot_data = candidate.get("photometry_strategy") or {}
-                    break
-                elif "method" in candidate:
-                    phot_data = candidate
-                    break
-            except json.JSONDecodeError:
-                continue
-        parsed = {
-            "classification": raw_parsed,
-            "photometry_strategy": phot_data,
-            "executive_summary": None,
-        }
-    else:
-        parsed = None
-
-    if parsed:
-        if not parsed.get("photometry_strategy"):
-            phot_result = await photometry_agent.run(
-                f"Source type: {parsed['classification']['source_class']}. "
-                "Instrument: 1-m telescope with a CCD camera in BVRI filters."
-            )
-            phot_parsed = _parse_json(phot_result.output)
-            parsed["photometry_strategy"] = phot_parsed or {}
-        report = PipelineReport(
-            classification=SourceType(**parsed["classification"]),
-            photometry_strategy=PhotometryStrategy(**parsed["photometry_strategy"]),
-            executive_summary=parsed.get("executive_summary") or "Sin resumen disponible.",
-        )
-    else:
-        report = None
-
-if report:
-    print("=== REPORTE DEL PIPELINE ===")
-    print(f"Clase       : {report.classification.source_class} ({report.classification.confidence:.0%})")
-    print(f"Razonamiento: {report.classification.reasoning}")
-    print()
-    print(f"Método      : {report.photometry_strategy.method}")
-    print(f"Calibraciones: {', '.join(report.photometry_strategy.required_calibrations)}")
-    print(f"Precisión   : ±{report.photometry_strategy.estimated_precision_mag:.3f} mag")
-    print()
-    print(f"Resumen     : {report.executive_summary}")
-    print()
-    print(f"Uso total   : {pipeline_result.usage()}")
-else:
-    print("No se pudo parsear el output. Respuesta cruda:")
-    print(pipeline_result.output)
-    print("parsed:", parsed)
+print("=== REPORTE DEL PIPELINE ===")
+print(f"Clase       : {report.classification.source_class} ({report.classification.confidence:.0%})")
+print(f"Razonamiento: {report.classification.reasoning}")
+print()
+print(f"Método      : {report.photometry_strategy.method}")
+print(f"Calibraciones: {', '.join(report.photometry_strategy.required_calibrations)}")
+print(f"Precisión   : ±{report.photometry_strategy.estimated_precision_mag:.3f} mag")
+print()
+print(f"Resumen     : {report.executive_summary}")
+print()
+print(f"Uso total   : {pipeline_result.usage}")
 
 ```
 
