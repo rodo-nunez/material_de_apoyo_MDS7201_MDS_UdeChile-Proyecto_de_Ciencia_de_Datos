@@ -179,6 +179,8 @@ Contenido 2
 - **HTML**: Interactivas con RevealJS, pizarra, navegación
 - **PDF**: Formato Beamer profesional para impresión
 
+Al momento de escribir esto, las slides no reflejan 100% el contenido del libro, ya que las iteraciones para corregir detalles fueron hechas solo en el libro. En el futuro, esos cambias los actualizaré a las slides, cuando tengamos una versión más estable.
+
 ## 📚 Contenido Planificado
 
 ### Parte I: Fundamentos
