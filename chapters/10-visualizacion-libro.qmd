@@ -299,7 +299,12 @@ Los violin plots combinan la información del boxplot (mediana, cuartiles) con l
 
 ![Violin plots vs barras — el violin revela diferencias de distribución que la barra oculta](../chapter_files/images/vizualizacion/image61.png){fig-align="center" width="80%"}
 
-![Comparación raw data, boxplot y violin plot para el mismo dataset](../chapter_files/images/vizualizacion/image84.gif){fig-align="center" width="80%"}
+::: {.content-visible unless-format="pdf"}
+![Comparación entre raw data, boxplot y violin plot para distintos dataset, con boxplot constante](../chapter_files/images/vizualizacion/image84.gif){fig-align="center" width="80%"}
+:::
+::: {.content-visible when-format="pdf"}
+![Comparación entre raw data, boxplot y violin plot para distintos dataset, con boxplot constante.](../chapter_files/images/vizualizacion/image84.png){fig-align="center" width="80%"}
+:::
 
 ### No Usar Pie Charts ni Gráficos 3D
 
