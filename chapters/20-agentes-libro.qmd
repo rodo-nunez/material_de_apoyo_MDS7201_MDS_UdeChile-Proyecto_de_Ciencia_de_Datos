@@ -389,6 +389,7 @@ El sistema de **inyección de dependencias** de PydanticAI resuelve esto limpiam
 En tiempo de ejecución, pasa una instancia de `MisDeps` a `await agent.run(..., deps=deps)`.
 
 ```{python}
+#| eval: false
 from dataclasses import dataclass
 from pydantic import BaseModel, Field
 from pydantic_ai import Agent, RunContext
@@ -584,6 +585,7 @@ Construimos un pipeline con tres agentes: un clasificador, un asesor de fotometr
 ```
 
 ```{python}
+#| eval: false
 from pydantic import BaseModel, Field, field_validator
 from pydantic_ai import Agent, RunContext
 from typing import Literal
@@ -820,6 +822,8 @@ print(f"Uso total   : {pipeline_result.usage}")
 Ahora con una fuente diferente:
 
 ```{python}
+#| eval: false
+
 pipeline_result = await coordinator_agent.run(
     "Rapidly rising source next to a nearby galaxy. "
     "Instrument: 1-m telescope with a CCD camera in BVRI filters."
