@@ -1,5 +1,12 @@
 # Agentes con LLMs: PydanticAI
 
+::: {.callout-note}
+# Créditos
+
+Este capítulo fue modificado con IA en base a una clase diseñada por Francisco Föster. Luego de eso, fue transformado a .qmd e integrado a este libro por Rodolfo Núñez. Para hacerlo funcionar con ollama (modelo gratuito, para que cualquier estudiante pruebe), Rodolfo Núñez lo adaptó rápidamente. Aún puede que queden problemas por resolver para Claude o alguna otra inconsistencia. Para cualquier otra modificación, pueden revisar los commits del repositorio en donde se encuestra este libro.
+
+:::
+
 Cuando llamamos a un Large Language Model (LLM) como GPT o Claude, normalmente obtenemos texto plano de vuelta. Esto es suficiente para un chatbot, pero problemático cuando necesitamos datos estructurados y confiables: una entrada de catálogo con campos específicos, unidades validadas y formato consistente.
 
 **PydanticAI** resuelve esto combinando dos ideas:

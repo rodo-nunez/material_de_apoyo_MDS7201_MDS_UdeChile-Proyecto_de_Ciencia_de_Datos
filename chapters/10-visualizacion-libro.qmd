@@ -1,5 +1,12 @@
 # Visualización de Datos
 
+::: {.callout-note}
+# Créditos
+
+Este capítulo fue modificado con IA en base a una clase diseñada por Francisco Föster. Luego de eso, fue transformado a .qmd e integrado a este libro por Rodolfo Núñez. Para cualquier otra modificación, pueden revisar los commits del repositorio en donde se encuestra este libro.
+
+:::
+
 La visualización es una de las herramientas más poderosas en Ciencia de Datos. No se trata solo de hacer gráficos bonitos: una buena visualización comunica información compleja de manera inmediata, revela patrones ocultos, y puede incluso salvar vidas. Una mala visualización puede engañar, confundir o simplemente desperdiciar la atención del lector.
 
 Este capítulo cubre los fundamentos de la visualización efectiva: por qué importa, cómo funciona la percepción humana, principios para datos multidimensionales, y las reglas prácticas que distinguen una visualización que comunica de una que no lo hace.

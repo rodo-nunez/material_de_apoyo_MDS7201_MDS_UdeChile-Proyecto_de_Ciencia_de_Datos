@@ -1,5 +1,12 @@
 # Seguimiento de Métricas y Calidad
 
+::: {.callout-note}
+# Créditos
+
+Este capítulo fue modificado con IA en base a una clase diseñada por Rodolfo Núñez. Luego de eso, fue transformado a .qmd e integrado a este libro por Rodolfo Núñez. Para cualquier otra modificación, pueden revisar los commits del repositorio en donde se encuestra este libro.
+
+:::
+
 Un modelo en producción no es estático. Los datos cambian, el comportamiento del usuario evoluciona, y los patrones que el modelo aprendió durante el entrenamiento pueden dejar de ser válidos. El seguimiento de métricas es la práctica que permite detectar cuándo esto ocurre — y actuar antes de que el deterioro sea visible para los usuarios finales.
 
 ## Tipos de Métricas

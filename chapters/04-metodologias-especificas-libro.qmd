@@ -1,5 +1,12 @@
 # Metodologías Ágiles Específicas
 
+::: {.callout-note}
+# Créditos
+
+Este capítulo fue modificado con IA en base a una clase diseñada por Rodolfo Núñez. Luego de eso, fue transformado a .qmd e integrado a este libro por Rodolfo Núñez. Para cualquier otra modificación, pueden revisar los commits del repositorio en donde se encuestra este libro.
+
+:::
+
 ## Introducción
 
 En el capítulo anterior exploramos los valores y principios del Manifiesto Ágil. Ahora veremos las **implementaciones concretas** de estos principios: las metodologías ágiles específicas.

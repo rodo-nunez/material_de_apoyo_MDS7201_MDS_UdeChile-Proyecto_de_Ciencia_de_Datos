@@ -1,5 +1,12 @@
 # Harness Engineering
 
+::: {.callout-note}
+# Créditos
+
+Este capítulo fue modificado con IA en base a una clase diseñada por Rodolfo Núñez. Luego de eso, fue transformado a .qmd e integrado a este libro por Rodolfo Núñez. Para cualquier otra modificación, pueden revisar los commits del repositorio en donde se encuestra este libro.
+
+:::
+
 ## ¿Qué es un AI Harness?
 
 En el capítulo anterior construimos agentes con PydanticAI — una librería que ya resuelve muchos problemas de estructura y validación. Pero ¿qué hay debajo? ¿Qué pasa cuando necesitas construir tu propia infraestructura de agentes desde cero, intercambiable entre proveedores y adaptable a cualquier dominio?

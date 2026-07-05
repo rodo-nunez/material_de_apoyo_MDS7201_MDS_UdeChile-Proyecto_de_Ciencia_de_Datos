@@ -1,5 +1,12 @@
 # Documentación y Traspaso de Proyectos
 
+::: {.callout-note}
+# Créditos
+
+Este capítulo fue modificado con IA en base a una clase diseñada por Rodolfo Núñez. Luego de eso, fue transformado a .qmd e integrado a este libro por Rodolfo Núñez. Para cualquier otra modificación, pueden revisar los commits del repositorio en donde se encuestra este libro.
+
+:::
+
 Un proyecto de ciencia de datos no termina cuando el modelo funciona. Termina cuando otra persona puede entenderlo, ejecutarlo y continuarlo sin necesitar al autor original. Este capítulo cubre las prácticas que hacen posible ese traspaso.
 
 ## ¿Por Qué Es Importante?

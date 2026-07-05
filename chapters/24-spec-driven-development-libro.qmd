@@ -1,5 +1,12 @@
 # Spec-Driven Development
 
+::: {.callout-note}
+# Créditos
+
+Este capítulo fue creado con IA en base a ideas y especificaciones dadas por Rodolfo Núñez. Luego de eso, fue transformado a .qmd e integrado a este libro por Rodolfo Núñez. Para cualquier otra modificación, pueden revisar los commits del repositorio en donde se encuestra este libro.
+
+:::
+
 ## El Problema del Vibe Coding
 
 Cuando un desarrollador o científico de datos trabaja con un asistente de IA sin estructura, el flujo habitual se parece a esto: se describe lo que se quiere en lenguaje natural, el modelo genera código, se revisa parcialmente, se acepta, se pide la siguiente cosa, y así sucesivamente. A este modo de trabajo se le ha llamado **vibe coding**: desarrollo guiado por la intuición del momento, sin especificaciones formales, sin contrato sobre qué debe producir el sistema, y sin validación sistemática de que lo producido es lo correcto.

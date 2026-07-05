@@ -1,5 +1,12 @@
 # Análisis Exploratorio de Datos (EDA)
 
+::: {.callout-note}
+# Créditos
+
+Este capítulo fue modificado con IA en base a una clase diseñada por Francisco Föster. Luego de eso, fue transformado a .qmd e integrado a este libro por Rodolfo Núñez. Para cualquier otra modificación, pueden revisar los commits del repositorio en donde se encuestra este libro.
+
+:::
+
 El Análisis Exploratorio de Datos (EDA, por su sigla en inglés) es una etapa fundamental en cualquier proyecto de Ciencia de Datos. Antes de construir modelos, debemos entender profundamente los datos con los que trabajamos: su estructura, calidad, distribuciones, relaciones entre variables y anomalías. Un buen EDA no es solo un paso preliminar — es el proceso que determina si el análisis posterior tendrá sentido.
 
 Este capítulo cubre el EDA de datos tabulares. Los datos de imágenes, series de tiempo y texto tienen técnicas propias que se verán en otros capítulos.

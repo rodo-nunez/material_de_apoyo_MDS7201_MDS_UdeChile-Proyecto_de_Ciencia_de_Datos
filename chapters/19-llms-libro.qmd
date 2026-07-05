@@ -1,5 +1,12 @@
 # Introducción a los Large Language Models (LLMs)
 
+::: {.callout-note}
+# Créditos
+
+Este capítulo fue modificado con IA en base a una clase diseñada por Francisco Föster. Luego de eso, fue transformado a .qmd e integrado a este libro por Rodolfo Núñez. Para cualquier otra modificación, pueden revisar los commits del repositorio en donde se encuestra este libro.
+
+:::
+
 Los **Large Language Models (LLMs)** son modelos de deep learning entrenados sobre corpus masivos de texto. Son capaces de comprender y generar texto similar al humano, y se han convertido en una de las tecnologías más influyentes de la última década.
 
 Modelos populares:

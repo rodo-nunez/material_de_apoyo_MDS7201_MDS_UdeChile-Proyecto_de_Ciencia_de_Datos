@@ -1,5 +1,12 @@
 # Storytelling con Datos
 
+::: {.callout-note}
+# Créditos
+
+Este capítulo fue modificado con IA en base a una clase diseñada por Rodolfo Núñez. Luego de eso, fue transformado a .qmd e integrado a este libro por Rodolfo Núñez. Para cualquier otra modificación, pueden revisar los commits del repositorio en donde se encuestra este libro.
+
+:::
+
 Saber analizar datos no es suficiente. Si no puedes comunicar tus hallazgos de manera clara y convincente, el análisis pierde su valor. El storytelling — contar historias con datos — es la habilidad que transforma un análisis correcto en un mensaje que mueve a las personas a actuar.
 
 Este capítulo está basado principalmente en el libro **Storytelling with Data** de Cole Nussbaumer Knaflic (2015), considerado una referencia fundamental en visualización y comunicación de datos para contextos profesionales.

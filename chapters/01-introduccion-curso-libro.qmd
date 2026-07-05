@@ -1,5 +1,12 @@
 # Introducción al Curso
 
+::: {.callout-note}
+# Créditos
+
+Este capítulo fue modificado con IA en base a una clase diseñada por Francisco Föster y Rodolfo Núñez. Luego de eso, fue transformado a .qmd e integrado a este libro por Rodolfo Núñez. Para cualquier otra modificación, pueden revisar los commits del repositorio en donde se encuestra este libro.
+
+:::
+
 ## Propósito del Curso
 
 El curso **Proyecto de Ciencia de Datos (MDS7201)** tiene como objetivo principal que los estudiantes apliquen los conceptos fundamentales de la Ciencia de Datos en un proyecto práctico real. A través de este curso, obtendrás una visión integral de lo que implica llevar a cabo un proyecto de datos desde su concepción hasta la presentación de resultados.

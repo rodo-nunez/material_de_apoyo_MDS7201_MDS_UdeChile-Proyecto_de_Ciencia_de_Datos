@@ -1,5 +1,12 @@
 # Modularización y Estructura de Proyectos
 
+::: {.callout-note}
+# Créditos
+
+Este capítulo fue modificado con IA en base a una clase diseñada por Rodolfo Núñez. Luego de eso, fue transformado a .qmd e integrado a este libro por Rodolfo Núñez. Para cualquier otra modificación, pueden revisar los commits del repositorio en donde se encuestra este libro.
+
+:::
+
 Un proyecto de ciencia de datos que empieza como un notebook de exploración tiende a crecer rápidamente en complejidad. Si no se estructura desde el principio con criterios claros, el código se vuelve difícil de mantener, de reutilizar y de compartir con otros. La modularización es la práctica de organizar el código en unidades independientes, cohesivas y reutilizables. Una estructura de carpetas consistente es su complemento natural.
 
 Este capítulo cubre por qué modularizar, cómo hacerlo en Python, y por qué un equipo necesita acordar una plantilla de estructura de proyecto antes de comenzar a trabajar.

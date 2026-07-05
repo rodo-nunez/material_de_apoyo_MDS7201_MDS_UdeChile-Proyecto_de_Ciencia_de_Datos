@@ -1,5 +1,12 @@
 # Interpretabilidad en Machine Learning
 
+::: {.callout-note}
+# Créditos
+
+Este capítulo fue modificado con IA en base a una clase diseñada por Francisco Föster. Luego de eso, fue transformado a .qmd e integrado a este libro por Rodolfo Núñez. Para cualquier otra modificación, pueden revisar los commits del repositorio en donde se encuestra este libro.
+
+:::
+
 Un aspecto importante y muchas veces ignorado del machine learning es la interpretabilidad. ¿Podemos entender cómo decide un modelo de clasificación o regresión para una muestra dada? ¿Está esa decisión de acuerdo con nuestra intuición?
 
 Es importante que un modelo sea capaz de explicar sus decisiones para comprobar lo siguiente:
