@@ -1,5 +1,12 @@
 # Preprocesamiento, Feature Engineering y Data Leakage
 
+::: {.callout-note}
+# Créditos
+
+Este capítulo fue modificado con IA en base a una clase diseñada por Francisco Föster. Luego de eso, fue transformado a .qmd e integrado a este libro por Rodolfo Núñez. Para cualquier otra modificación, pueden revisar los commits del repositorio en donde se encuestra este libro.
+
+:::
+
 > **La regla de oro.** Ninguna estadística, parámetro, modelo, decisión ni feature derivada de los datos de validación o test puede influir en el entrenamiento. Cada paso ajustable (imputador, scaler, encoder, selector, resampler, …) pertenece *dentro* de un pipeline validado con CV.
 
 Este capítulo sigue el hilo de esa regla a través de todas las técnicas de preprocesamiento habituales: primero mostramos cómo es fácil engañarse con un pipeline descuidado, luego construimos la infraestructura correcta con `Pipeline` y `ColumnTransformer`, y después aplicamos esa infraestructura a datos faltantes, escalado, encoding, feature engineering, splitting, desbalance de clases y tuning de hiperparámetros.
@@ -30,10 +37,10 @@ Comenzamos haciendo las cosas de la manera obvia-pero-incorrecta para ver con qu
 
 ```{python}
 featfile = "../chapter_files/data/pkls/features_small.pickle"
-featfile_alternative = "MDS7201/libro/chapter_files/data/pkls/features_small.pickle"
+featfile_alternative = "chapter_files/data/pkls/features_small.pickle"
 
 xmatchfile = "../chapter_files/data/pkls/dfcrossmatches_small.pickle"
-xmatchfile_alternative = "MDS7201/libro/chapter_files/data/pkls/dfcrossmatches_small.pickle"
+xmatchfile_alternative = "chapter_files/data/pkls/dfcrossmatches_small.pickle"
 ```
 
 ```{python}

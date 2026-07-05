@@ -1,0 +1,351 @@
+---
+title: "Documentación y Traspaso de Proyectos"
+subtitle: "MDS7201 - Master of Data Science"
+author: "Universidad de Chile"
+format:
+  revealjs:
+    theme: [default, ../custom-slides.scss]
+    slide-number: true
+    chalkboard: true
+    preview-links: auto
+    code-fold: false
+    code-tools: true
+    transition: slide
+    background-transition: fade
+  beamer:
+    theme: Madrid
+    colortheme: default
+    fonttheme: professionalfonts
+    aspectratio: 169
+    navigation: horizontal
+    section-titles: true
+    toc: true
+---
+
+# ¿Por Qué Importa? {background-color="#1a1a1a"}
+
+## El Proyecto No Termina Cuando el Modelo Funciona
+
+::: {.incremental}
+- Termina cuando **otra persona puede entenderlo, ejecutarlo y continuarlo** sin el autor original
+- Un proyecto mal documentado genera atrasos y falsas expectativas
+- La documentación no es un extra al final — es parte del proyecto desde el día uno
+:::
+
+::: {.callout-important}
+## El Objetivo
+
+Salir del proyecto sin que algo (o alguien) se queme. Incluir a la contraparte técnica desde el comienzo, hacer que el proceso les haga sentido y que estén involucrados en todo.
+:::
+
+## Público Objetivo
+
+::: {.columns}
+::: {.column width="50%"}
+**Audiencia técnica**
+
+- Instrucciones de instalación
+- Estructura del código
+- Cómo contribuir
+- Arquitectura del sistema
+- CI/CD y tests
+:::
+::: {.column width="50%"}
+**Audiencia no técnica**
+
+- Qué hace el proyecto
+- Qué valor entrega
+- Cuáles son sus limitaciones
+- Cómo interpretar resultados
+:::
+:::
+
+::: {.fragment}
+::: {.callout-tip}
+Para documentación técnica, **los documentos son más útiles que las presentaciones**. Para alto nivel, una presentación puede bastar — pero no es suficiente.
+:::
+:::
+
+# Data Product Canvas {background-color="#2a2a2a"}
+
+## ¿Para Qué Sirve?
+
+::: {.incremental}
+- Forzar claridad sobre el problema **antes** de escribir código
+- Alinear expectativas con stakeholders no técnicos
+- Documentar de forma compacta el propósito y alcance del proyecto
+:::
+
+::: {.fragment}
+**Preguntas que responde:**
+
+- ¿Cuál es el problema de negocio?
+- ¿Quiénes son los usuarios del producto?
+- ¿Qué datos se usan y de dónde vienen?
+- ¿Cuál es la métrica de éxito?
+- ¿Cuáles son las limitaciones o riesgos?
+:::
+
+# Clean Code {background-color="#1a1a1a"}
+
+## Tres Propiedades Fundamentales
+
+::: {.incremental}
+- **Reusable**: las funciones hacen una cosa bien y pueden usarse en distintos contextos
+- **Composable**: los componentes se combinan sin efectos inesperados
+- **Fácil de entender**: quien lee puede entender qué hace sin el autor
+:::
+
+## Nombres Descriptivos
+
+```python
+# Malo
+x = df[df['col1'] > 0.5]
+
+# Bueno
+clientes_activos = clientes[clientes['probabilidad_churn'] > 0.5]
+```
+
+::: {.fragment}
+La consistencia también importa: si una variable se llama `fecha_evaluacion` en un archivo, debe mantener ese nombre en todo el proyecto.
+:::
+
+## Cuándo y Cómo Comentar
+
+Los buenos comentarios explican el **por qué**, no el qué:
+
+```python
+# Malo — explica lo obvio
+i = i + 1  # suma 1 a i
+
+# Bueno — explica la intención
+# El catálogo ALeRCE usa indexación basada en 1
+i = i + 1
+```
+
+::: {.fragment}
+Evita el código comentado (`# df = df.dropna()`) — genera ambigüedad. Si ya no se usa, bórralo; Git lo conserva.
+:::
+
+## Side Effects y Rutas
+
+::: {.columns}
+::: {.column width="50%"}
+**Evitar side effects**
+```python
+# Con side effect oculto
+resultados = []
+def procesar(fila):
+    r = modelo.predict(fila)
+    resultados.append(r)  # ⚠️
+    return r
+
+# Sin side effect
+def procesar(fila):
+    return modelo.predict(fila)
+```
+:::
+::: {.column width="50%"}
+**Rutas relativas**
+```python
+# Malo
+pd.read_csv('/Users/rodo/data/f.csv')
+
+# Bueno
+from pathlib import Path
+ROOT = Path(__file__).parent.parent
+pd.read_csv(ROOT / 'data' / 'f.csv')
+```
+:::
+:::
+
+## Principios SOLID
+
+| Letra | Principio | En la práctica |
+|---|---|---|
+| **S** | Single Responsibility | Cada función / módulo hace una sola cosa |
+| **O** | Open/Closed | Extensible sin modificar lo que ya funciona |
+| **L** | Liskov Substitution | Componentes intercambiables con la misma interfaz |
+| **I** | Interface Segregation | Sin dependencias innecesarias |
+| **D** | Dependency Inversion | Depender de abstracciones, no de implementaciones |
+
+::: {.fragment}
+En proyectos del curso, la **S** es la más relevante: cada script tiene un propósito claro y único.
+:::
+
+# Pull Requests y README {background-color="#2a2a2a"}
+
+## Pull Requests
+
+::: {.columns}
+::: {.column width="50%"}
+**En el curso**
+
+- Revisar código antes de que entre al branch principal
+- Registro de qué cambios se hicieron y por qué
+- Facilita distribución del trabajo en equipo
+:::
+::: {.column width="50%"}
+**En la industria**
+
+- Unidad de revisión de código en la mayoría de los equipos
+- Detectar errores antes de producción
+- Documentación automática del historial
+:::
+:::
+
+::: {.fragment}
+Un buen PR es **pequeño y tiene un propósito claro**. Un PR que cambia 20 archivos por razones distintas es difícil de revisar y de revertir.
+:::
+
+## README.md
+
+::: {.incremental}
+**Para el usuario:**
+- Qué es el proyecto y qué problema resuelve
+- Cómo descargarlo, instalarlo y ejecutarlo
+- Cómo contribuir
+
+**Para el operador técnico:**
+- Arquitectura: cómo cada sección se comunica con otras
+- Workflow de desarrollo (ramas, convenciones)
+- CI/CD y dónde se ejecutan tests automáticos
+:::
+
+::: {.callout-tip}
+## READMEs Parcelados
+Un README por carpeta relevante: uno en la raíz, uno en `pipeline/`, uno en `models/`. Cada uno documenta solo su propio alcance.
+:::
+
+# Estructura del Proyecto {background-color="#1a1a1a"}
+
+## Estructura Estándar
+
+```
+proyecto/
+├── README.md
+├── requirements.txt
+├── .env.example
+├── data/
+│   ├── raw/          # datos originales, no modificar
+│   ├── processed/    # datos limpios y transformados
+│   └── external/
+├── notebooks/        # exploración — NO van en el pipeline
+├── src/
+│   ├── preprocessing/
+│   ├── models/
+│   ├── prediction/
+│   └── utils/
+├── pipeline/         # orquesta el flujo completo
+├── reports/
+└── tests/
+```
+
+## IDs en el Pipeline
+
+Los archivos de pipeline llevan IDs que indican orden de ejecución:
+
+```
+pipeline/
+├── 01_ingest_data.py
+├── 02_preprocess.py
+├── 03_train_model.py
+└── 04_generate_report.py
+```
+
+::: {.fragment}
+Cualquier persona nueva al proyecto sabe inmediatamente qué ejecutar y en qué orden, sin preguntar.
+:::
+
+# Operación Backup {background-color="#2a2a2a"}
+
+## ¿Qué Es?
+
+::: {.incremental}
+- Una práctica para medir qué tan ejecutable está un proyecto para un traspaso
+- La premisa: si alguien se enferma, se va o deja la empresa, **otra persona debe poder tomar el proyecto y ejecutarlo en una mañana**
+- No es un castigo — es una forma de detectar qué mejorar antes del traspaso real
+:::
+
+## Las 7 Consideraciones
+
+::: {.incremental}
+1. El README debe tener lo mínimo para comenzar
+2. Escribe las instrucciones para alguien que no conoce nada
+3. **Máximo 60 minutos** de ejecución de inicio a fin
+4. Credenciales entregadas como variables de entorno, nunca commiteadas
+5. Modo de prueba explícito (parámetro o rama)
+6. Rama `modo_de_prueba` si el proyecto tarda más de 60 min
+7. Si hay múltiples pipelines, especificar cuáles son fundamentales
+:::
+
+## Rúbrica — Infraestructura
+
+| # | Criterio | 1 | 5 |
+|---|---|---|---|
+| 1 | `git clone` | > 10 minutos | < 10 segundos |
+| 2 | Canvas | No existe | Claro y completo |
+| 3 | README para ejecutar | No especifica | Funciona a la primera |
+| 4 | Rama `modo_de_prueba` | No existe | Existe y funciona |
+| 5 | Estructura de carpetas | Sin estándar | Estándar + adaptaciones justificadas |
+| 6 | IDs en archivos | Sin IDs | IDs únicos en todas las carpetas |
+| 7 | Claridad del pipeline | No se encuentra | Identificado inmediatamente |
+| 8 | Instalación de librerías | Imposible | Dockerizado, sin acción necesaria |
+
+## Rúbrica — Código
+
+| # | Criterio | 1 | 5 |
+|---|---|---|---|
+| 9 | Credenciales | No entregadas | En `.env`, listas para usar |
+| 10 | Modularización | Todo en un archivo | Fácil agregar o cambiar componentes |
+| 11 | Nombres descriptivos | Incomprensibles | Descriptivos y consistentes |
+| 12 | Comentarios | Sin comentarios | Explican el "por qué", sin redundancias |
+| 13 | Uso de funciones | Sin funciones | Claras, sin redundancias, con docstrings |
+| 14 | Librerías existentes | Reinventa todo | No hay funciones que reemplazar con librerías |
+| 15 | Sin notebooks en pipeline | Notebook que falla | Sin notebooks en pipeline |
+| 16 | Sin credenciales en código | Credenciales visibles | Sin credenciales en código |
+| 17 | Tiempo de ejecución | No termina | < 30 minutos |
+| 18 | Claridad para novatos | No entendió nada | Sin dudas, funcionó a la primera |
+
+# Fuentes de Error Frecuentes {background-color="#1a1a1a"}
+
+## Los Clásicos
+
+::: {.incremental}
+- **Rutas absolutas**: `/Users/rodo/proyecto/data/` solo funciona en tu máquina
+- **Rutas relativas al archivo vs. al proyecto**: anclar con `pathlib` evita sorpresas según cómo se lanza el script
+- **Sin ambiente virtual**: versiones de librerías distintas entre máquinas
+- **Credenciales en el código**: el error más grave — usa `.env` + `python-dotenv`
+- **IDE sin configurar**: diff diffs por espacios vs. tabs entre miembros del equipo
+:::
+
+## Lista de Verificación
+
+::: {.columns}
+::: {.column width="50%"}
+- [ ] README con instrucciones desde cero
+- [ ] Canvas actualizado
+- [ ] Rama `modo_de_prueba` < 60 min
+- [ ] Credenciales en variables de entorno
+- [ ] `requirements.txt` actualizado
+- [ ] Estructura de carpetas estándar
+:::
+::: {.column width="50%"}
+- [ ] IDs en archivos de pipeline
+- [ ] Sin notebooks en el pipeline
+- [ ] Sin rutas absolutas
+- [ ] Funciones con docstrings
+- [ ] Sin credenciales commiteadas
+:::
+:::
+
+# ¿Preguntas? {background-color="#2a2a2a"}
+
+## Referencias
+
+- [Ejemplo de modularización](https://github.com/rodo-nunez/ejemplo_de_modularizacion_de_proyecto.git)
+- [MLOps y buenas prácticas](https://github.com/rodo-nunez/MLOps_La_clave_de_la_reproducibilidad_y_buenas_practicas_para_modelos_efectivos)
+- [SOLID principles — freeCodeCamp](https://www.freecodecamp.org/news/solid-principles-for-better-software-design/)
+- [Data Product Canvas](https://medium.com/@leandroscarvalho/data-product-canvas-a-practical-framework-for-building-high-performance-data-products-7a1717f79f0)
+- [Cómo hacer un buen traspaso (video)](https://www.youtube.com/watch?v=bEir1fAcDNw&ab_channel=Praxent)
+- [Clean code en Python (video)](https://www.youtube.com/watch?v=LbX4X71-TFI&ab_channel=AssemblyAI)

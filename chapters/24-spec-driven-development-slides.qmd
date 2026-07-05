@@ -1,0 +1,367 @@
+---
+title: "Spec-Driven Development"
+subtitle: "MDS7201 - Master of Data Science"
+author: "Universidad de Chile"
+format:
+  revealjs:
+    theme: [default, ../custom-slides.scss]
+    slide-number: true
+    chalkboard: true
+    preview-links: auto
+    code-fold: false
+    code-tools: true
+    transition: slide
+    background-transition: fade
+  beamer:
+    theme: Madrid
+    colortheme: default
+    fonttheme: professionalfonts
+    aspectratio: 169
+    navigation: horizontal
+    section-titles: true
+    toc: true
+---
+
+# El Problema: Vibe Coding {background-color="#1a1a1a"}
+
+## ¿Qué es Vibe Coding?
+
+Desarrollo guiado por la intuición del momento:
+
+::: {.incremental}
+- Describir lo que se quiere en lenguaje natural
+- El modelo genera código
+- Se revisa parcialmente, se acepta
+- Se pide la siguiente cosa
+- Repetir...
+:::
+
+::: {.fragment}
+Rápido para prototipos. **Costoso a escala.**
+:::
+
+## Los Problemas del Vibe Coding
+
+| Problema | Consecuencia |
+|---|---|
+| Sin especificación | Cada conversación parte desde cero |
+| Sin contrato de calidad | No hay criterio para "terminado" |
+| Alucinaciones acumuladas | Errores se propagan sin detección |
+| Sin trazabilidad | No se sabe por qué se tomó cada decisión |
+| Dependencia del chat | Si se borra, se pierde el "diseño" |
+
+## La Respuesta: Spec-Driven Development
+
+::: {.callout-note}
+## La Idea Central
+
+Antes de escribir código, **acordar formalmente** — entre humanos y entre humanos y agentes — qué se va a construir, cómo y cómo se va a verificar.
+:::
+
+::: {.incremental}
+- Las especificaciones son artefactos **persistentes** — sobreviven al chat
+- El agente tiene un contrato explícito que no puede ignorar
+- Cada cambio tiene un registro de por qué se hizo
+- La validación es automatizable porque los criterios están escritos
+:::
+
+## SDD Sin IA
+
+::: {.incremental}
+- SDD es valioso **incluso sin inteligencia artificial**
+- Un contrato escrito es útil para cualquier equipo, con o sin modelos de lenguaje
+- Cuando hay nuevos integrantes: el contrato es la primera lectura
+- Cuando hay debate sobre una función: el contrato es el árbitro
+- Cuando hay deadline: el contrato ayuda a decidir qué cortar
+:::
+
+::: {.fragment}
+Lo que agrega la IA es **velocidad de implementación**. La disciplina de especificar antes de implementar es independiente del executor.
+:::
+
+# OpenSpec {background-color="#2a2a2a"}
+
+## El Framework
+
+[OpenSpec](https://github.com/Fission-AI/OpenSpec) — SDD para asistentes de IA (52k ★ en GitHub):
+
+```
+→ fluid not rigid
+→ iterative not waterfall
+→ easy not complex
+→ built for brownfield not just greenfield
+```
+
+## El Flujo OpenSpec
+
+```
+You: /opsx:propose add-dark-mode
+AI:  Created openspec/changes/add-dark-mode/
+     ✓ proposal.md  — por qué, qué cambia
+     ✓ specs/       — requisitos y escenarios
+     ✓ design.md    — enfoque técnico
+     ✓ tasks.md     — checklist de implementación
+
+You: /opsx:apply
+AI:  ✓ 1.1 Add theme context provider
+     ✓ 1.2 Create toggle component
+     ✓ 2.1 Add CSS variables
+     All tasks complete!
+
+You: /opsx:archive
+AI:  Archived. Ready for the next feature.
+```
+
+## Comandos Principales
+
+| Comando | Propósito |
+|---|---|
+| `/opsx:explore` | Explorar un problema antes de proponer |
+| `/opsx:propose` | Crear artefactos de especificación |
+| `/opsx:apply` | Implementar las tareas definidas |
+| `/opsx:verify` | Verificar que cumple las specs |
+| `/opsx:archive` | Archivar el cambio completado |
+| `/opsx:onboard` | Inicializar en proyecto existente |
+
+# El Contrato {background-color="#1a1a1a"}
+
+## El Artefacto Central
+
+Un archivo Markdown que responde tres preguntas:
+
+::: {.incremental}
+- ¿Qué **debe** tener el proyecto? → requisitos obligatorios
+- ¿Qué **sería bueno** que tuviera? → requisitos deseables
+- ¿Qué **no debe tener** bajo ninguna circunstancia? → restricciones absolutas
+:::
+
+::: {.fragment}
+Todo agente que interactúe con el proyecto **debe cumplir el contrato**. No es una recomendación — es una condición de aceptación.
+:::
+
+## Ejemplo de Contrato
+
+```markdown
+# Contrato: Sistema de Clasificación ALeRCE
+
+## Debe tener
+- Pipeline reproducible con semilla fija
+- Métricas: F1-macro, AUC-ROC por clase
+- Versioning de datos con DVC
+- Sin credenciales en el repositorio
+- Cobertura de tests ≥ 80%
+
+## Sería bueno tener
+- Dashboard MLflow
+- Validación Great Expectations
+- ADRs documentados
+
+## No debe tener bajo ninguna circunstancia
+- Rutas absolutas en el código
+- Notebooks en el pipeline de producción
+- Modelos entrenados commiteados
+```
+
+# El Flujo de Skills {background-color="#2a2a2a"}
+
+## Ocho Skills, Un Flujo
+
+```
+[1] Crear contrato
+[2] Setup del ambiente
+[3] Especificación → Diseño → Lista de tareas
+         │
+         ▼
+    ┌──────────┐
+    │  HUMANO  │  ← revisión y aprobación obligatoria
+    └────┬─────┘
+         │
+[4] Implementación
+[5] Validación (contrato)
+[6] Testgate
+[7] Seguridad (OWASP)
+         │
+    ¿Aprobado? ── NO ──→ volver a [4]
+         │
+        SÍ → Producción
+
+[8] Concept drift ← corre periódicamente en CI/CD
+```
+
+## Skill 1 — Crear el Contrato
+
+::: {.incremental}
+- El agente hace preguntas sobre el proyecto
+- El humano responde
+- Output: archivo Markdown del contrato
+- Se ejecuta **una vez** al inicio
+- Pero el contrato debe mantenerse **vivo** — actualizarse cuando evolucionan los requisitos
+:::
+
+## Skill 2 — Setup del Ambiente
+
+::: {.incremental}
+- Configura todo lo que el contrato especifica como obligatorio:
+  - Estructura de carpetas
+  - Ambiente virtual y dependencias
+  - `.env.example`, `.gitignore`
+  - Configuración del repositorio
+- Output: repositorio vacío pero completamente estructurado
+- Si el contrato dice "sin notebooks en el pipeline" → la carpeta `pipeline/` se crea sin notebooks
+:::
+
+## Skill 3 — Especificación
+
+Inspirada en `/opsx:propose`. Produce tres artefactos:
+
+::: {.incremental}
+- **`specs/`** — requisitos, escenarios de uso, criterios de aceptación
+- **`design.md`** — enfoque técnico, decisiones de arquitectura
+- **`tasks.md`** — checklist ordenado de implementación
+:::
+
+::: {.fragment}
+::: {.callout-important}
+## El Punto de Control Humano
+
+Aquí se produce la revisión humana más importante del flujo. **Nadie implementa sin que el humano haya aprobado los tres artefactos.**
+:::
+:::
+
+## Architecture Decision Records (ADRs)
+
+Durante la especificación y el diseño, el agente propone decisiones de arquitectura. Cada una genera un ADR:
+
+```markdown
+# ADR-001: Formato de almacenamiento de features
+
+## Contexto
+Features generadas una vez, usadas en múltiples experimentos.
+
+## Opciones consideradas
+- CSV: simple pero lento y sin tipos
+- Parquet: columnar, comprimido, con tipos
+- Pickle: rápido pero no portable
+
+## Decisión
+Parquet con compresión snappy.
+
+## Consecuencias
++ 10-50x más rápido que CSV para columnas seleccionadas
+- Requiere pyarrow como dependencia
+```
+
+## Skill 4 — Implementación
+
+::: {.incremental}
+- El agente ejecuta el checklist de `tasks.md`
+- Cada tarea se marca al completarse
+- Trabaja respetando el contrato en cada paso
+- Si surge una decisión no contemplada en el diseño → **crear un ADR antes de continuar**
+- No tomar decisiones silenciosamente
+:::
+
+## Skills 5, 6, 7 — Validación
+
+::: {.columns}
+::: {.column width="33%"}
+**Skill 5: Contrato**
+
+¿El resultado cumple cada requisito del contrato?
+
+Produce un reporte de conformidad.
+:::
+::: {.column width="33%"}
+**Skill 6: Testgate**
+
+¿Los tests pasan con el nivel mínimo de cobertura?
+
+Si falla → volver a implementación.
+:::
+::: {.column width="33%"}
+**Skill 7: Seguridad**
+
+OWASP Top 10 aplicado al código:
+
+- Credenciales hardcodeadas
+- Inputs sin validar
+- Dependencias vulnerables
+:::
+:::
+
+## Skill 8 — Concept Drift del Agente
+
+::: {.callout-important}
+## Concept Drift del Agente ≠ Data Drift
+
+Este **no** es el concept drift de datos de MLOps. Es la desviación del comportamiento del agente respecto al contrato, causada por la acumulación de contexto en la conversación.
+:::
+
+::: {.incremental}
+- A medida que la conversación se extiende, el agente puede desviarse del contrato
+- Convenciones distintas, decisiones inconsistentes con ADRs previos, restricciones "olvidadas"
+- La skill evalúa la coherencia entre el comportamiento reciente y el contrato
+- **Corre periódicamente en CI/CD**, no solo al final
+- Si detecta drift → reiniciar contexto del agente con el contrato como primer documento
+:::
+
+# Human in the Loop {background-color="#1a1a1a"}
+
+## Por Qué Es el Principio Central
+
+::: {.incremental}
+- El desarrollador es **responsable** de todo lo que hay en el producto
+- Esa responsabilidad es independiente de si lo escribió un humano o un agente
+- La responsabilidad requiere comprensión
+- La comprensión requiere revisión
+- La revisión de los artefactos de especificación **es el momento en que el desarrollador ejerce control real**
+:::
+
+## Lo Que la Revisión Captura
+
+::: {.incremental}
+- Un agente puede generar una lista de tareas correcta pero que resuelve el **problema equivocado**
+- Puede proponer un diseño que cumple los requisitos funcionales pero **viola una restricción del contrato**
+- Puede hacer suposiciones razonables que resultan **incorrectas para el dominio**
+:::
+
+::: {.fragment}
+Sin revisión humana, SDD es vibe coding con más documentación.
+:::
+
+# Comparación Final {background-color="#2a2a2a"}
+
+## Vibe Coding vs. SDD
+
+| Dimensión | Vibe Coding | SDD |
+|---|---|---|
+| **Velocidad inicial** | Alta | Menor |
+| **Velocidad a largo plazo** | Decrece | Estable |
+| **Trazabilidad** | Baja | Alta |
+| **Control del desarrollador** | Reactivo | Proactivo |
+| **Alucinaciones** | Se acumulan | Se detectan |
+| **Onboarding** | Difícil | Fácil |
+| **Adecuado para** | Prototipos | Proyectos reales |
+
+# Resumen {background-color="#1a1a1a"}
+
+## Lo Que Deberías Llevarte
+
+::: {.incremental}
+- SDD es valioso **con o sin IA** — el contrato es útil para cualquier equipo
+- Con IA, el contrato convierte al agente en un sistema **verificable y limitable**
+- El flujo tiene **ocho skills independientes** que pueden ejecutarse por separado o en secuencia
+- El **punto de control humano** entre especificación e implementación no es opcional
+- Los **ADRs** son la memoria de las decisiones de arquitectura
+- El **concept drift del agente** es un riesgo específico de los sistemas conversacionales — distinto al data drift
+:::
+
+# ¿Preguntas? {background-color="#2a2a2a"}
+
+## Referencias
+
+- [OpenSpec — GitHub](https://github.com/Fission-AI/OpenSpec)
+- [OpenSpec — Documentación](https://github.com/Fission-AI/OpenSpec/blob/main/docs/getting-started.md)
+- [OWASP Top 10](https://owasp.org/www-project-top-ten/)
+- [Architecture Decision Records — Michael Nygard](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions)
+- [Conventional Commits](https://www.conventionalcommits.org/)

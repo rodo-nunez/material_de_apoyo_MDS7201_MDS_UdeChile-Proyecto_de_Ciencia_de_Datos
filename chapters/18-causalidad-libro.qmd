@@ -1,5 +1,12 @@
 # Causalidad
 
+::: {.callout-note}
+# Créditos
+
+Este capítulo fue modificado con IA en base a una clase diseñada por Francisco Föster. Luego de eso, fue transformado a .qmd e integrado a este libro por Rodolfo Núñez. Para cualquier otra modificación, pueden revisar los commits del repositorio en donde se encuestra este libro.
+
+:::
+
 > Una introducción de 45 minutos al razonamiento causal para científicos de datos.
 
 **Lo que deberías llevarte de este capítulo:**
@@ -13,7 +20,12 @@
 
 Antes de hablar de causalidad formalmente, veamos un fenómeno que es a la vez famoso e inquietante. El mismo conjunto de datos puede contar dos historias opuestas dependiendo de si lo miramos agregado o dividido en grupos.
 
-![Animación de la paradoja de Simpson](images/Simpsons_paradox_-_animation.gif)
+::: {.content-visible unless-format="pdf"}
+![Animación de la paradoja de Simpson](../chapter_files/images/causalidad/Simpsons_paradox.gif)
+:::
+::: {.content-visible when-format="pdf"}
+![Paradoja de Simpson — cada subgrupo muestra tendencia positiva pero el agregado muestra negativa](../chapter_files/images/causalidad/Simpsons_paradox.png)
+:::
 
 En la animación, cada subgrupo muestra una tendencia *positiva*, pero al juntar todos los puntos la tendencia general es *negativa*. Ninguna vista es incorrecta — responden preguntas distintas.
 

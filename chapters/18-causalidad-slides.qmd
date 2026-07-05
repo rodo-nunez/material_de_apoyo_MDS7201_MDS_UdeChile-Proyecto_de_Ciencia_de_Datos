@@ -53,7 +53,12 @@ plt.rcParams['figure.figsize'] = (8, 4)
 
 ## El Mismo Dataset, Dos Historias Opuestas
 
-![Animación de la paradoja de Simpson](images/Simpsons_paradox_-_animation.gif){fig-align="center" width="60%"}
+::: {.content-visible unless-format="pdf"}
+![Animación de la paradoja de Simpson](../chapter_files/images/causalidad/Simpsons_paradox.gif)
+:::
+::: {.content-visible when-format="pdf"}
+![Paradoja de Simpson — cada subgrupo muestra tendencia positiva pero el agregado muestra negativa](../chapter_files/images/causalidad/Simpsons_paradox.png)
+:::
 
 ::: {.fragment}
 Cada subgrupo muestra tendencia *positiva* — el agregado muestra tendencia *negativa*.

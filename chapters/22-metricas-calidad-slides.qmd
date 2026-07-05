@@ -1,0 +1,272 @@
+---
+title: "Seguimiento de Métricas y Calidad"
+subtitle: "MDS7201 - Master of Data Science"
+author: "Universidad de Chile"
+format:
+  revealjs:
+    theme: [default, ../custom-slides.scss]
+    slide-number: true
+    chalkboard: true
+    preview-links: auto
+    code-fold: false
+    code-tools: true
+    transition: slide
+    background-transition: fade
+  beamer:
+    theme: Madrid
+    colortheme: default
+    fonttheme: professionalfonts
+    aspectratio: 169
+    navigation: horizontal
+    section-titles: true
+    toc: true
+---
+
+# ¿Por Qué Monitorear? {background-color="#1a1a1a"}
+
+## Un Modelo en Producción No Es Estático
+
+::: {.incremental}
+- Los datos cambian con el tiempo
+- El comportamiento del usuario evoluciona
+- Los patrones aprendidos durante el entrenamiento pueden dejar de ser válidos
+:::
+
+::: {.fragment}
+El seguimiento de métricas permite detectar cuándo esto ocurre — y **actuar antes** de que el deterioro sea visible para los usuarios finales.
+:::
+
+## Dos Capas de Métricas
+
+::: {.columns}
+::: {.column width="50%"}
+**Métricas de Negocio**
+
+Lo que importa al cliente:
+
+- Dinero generado o ahorrado
+- CTR (Click-Through Rate)
+- LTV (Lifetime Value)
+- Tasa de retención / churn
+:::
+::: {.column width="50%"}
+**Métricas Analíticas**
+
+Lo que mide el modelo:
+
+- Clasificación: F1, AUC, Precision, Recall
+- Regresión: MAE, RMSE, MAPE
+- Series de tiempo: MASE, SMAPE
+:::
+:::
+
+::: {.fragment}
+::: {.callout-important}
+Un modelo con mejor F1-score no necesariamente genera más ingresos. Parte del trabajo es articular esa conexión.
+:::
+:::
+
+# Métricas de Clasificación {background-color="#2a2a2a"}
+
+## Tabla de Referencia
+
+| Métrica | Cuándo priorizarla |
+|---|---|
+| **Accuracy** | Clases balanceadas |
+| **Precision** | Minimizar falsos positivos (ej. spam) |
+| **Recall** | Minimizar falsos negativos (ej. diagnóstico) |
+| **F$\beta$-Score** | Precision y recall con distinto peso |
+| **ROC-AUC** | Comparar modelos sin fijar umbral |
+| **Lift** | Campañas de marketing, scoring |
+| **Cross-entropy** | Cuando se necesita calibración de probabilidades |
+
+## Elegir la Métrica Correcta
+
+::: {.incremental}
+- **Detección de fraude**: recall alto — minimizar falsos negativos
+- **Filtro de spam**: precision alta — minimizar falsos positivos
+- **Diagnóstico médico**: recall alto — no perder casos reales
+- **Recomendaciones**: lift — mejorar sobre un baseline aleatorio
+:::
+
+::: {.fragment}
+La métrica debe estar alineada con el **costo de cada tipo de error** en el problema real.
+:::
+
+# Métricas de Regresión y Series de Tiempo {background-color="#1a1a1a"}
+
+## Tabla de Referencia
+
+| Métrica | Característica |
+|---|---|
+| **R²** | Varianza explicada — sensible a outliers |
+| **MAE** | Interpretable en unidades del target |
+| **RMSE** | Penaliza errores grandes |
+| **MAPE** | Relativo — comparable entre escalas; falla con targets = 0 |
+| **SMAPE** | Maneja mejor targets cercanos a cero |
+| **MASE** | Robusto a estacionalidad — escala por naive forecast |
+| **Cosine Similarity** | Para series de tiempo normalizadas |
+
+## Métricas Adaptadas
+
+A veces ninguna métrica estándar captura exactamente lo que importa:
+
+::: {.incremental}
+- Métrica que combina recall y latencia para alertas tempranas
+- Precision ponderada por el costo del error en cada clase
+- Métrica que penaliza más los errores en los extremos de la distribución
+:::
+
+::: {.fragment}
+::: {.callout-tip}
+Documenta la métrica y su justificación con el mismo rigor que el código.
+:::
+:::
+
+# Logging de Métricas {background-color="#2a2a2a"}
+
+## Convenciones de Naming
+
+El seguimiento no es útil si los logs no son identificables:
+
+```
+# Malo — no se puede reproducir ni identificar
+log_2024.csv
+
+# Bueno — modelo, versión, fecha y hash corto
+lgbm_v3_20240312_a1b2c3_metrics.json
+```
+
+## MLflow: Experiment Tracking
+
+```python
+import mlflow
+
+with mlflow.start_run(run_name="lgbm_v3"):
+    mlflow.log_params({
+        "n_estimators": 300,
+        "learning_rate": 0.05,
+        "num_leaves": 63,
+    })
+    mlflow.log_metrics({
+        "f1_macro": 0.82,
+        "roc_auc": 0.91,
+    })
+    mlflow.sklearn.log_model(model, "model")
+```
+
+::: {.fragment}
+Cada run queda registrado con ID único, parámetros, métricas y artefacto del modelo. Cientos de experimentos comparables en la UI.
+:::
+
+# Dashboard y Alertas {background-color="#1a1a1a"}
+
+## Dashboard de Seguimiento
+
+Un buen dashboard muestra al menos:
+
+::: {.incremental}
+- Evolución temporal de las métricas clave
+- Distribución de predicciones vs. targets reales
+- Tasa de datos faltantes o anómalos en la entrada
+- Alertas visuales cuando una métrica cruza un umbral
+:::
+
+::: {.fragment}
+**Herramientas:** Grafana, Metabase, Streamlit, Evidently AI, WhyLabs
+:::
+
+## Alertas Automáticas
+
+Condiciones típicas para disparar alertas:
+
+::: {.incremental}
+- F1-macro cae más de 5 puntos respecto al baseline
+- Distribución de una feature cambia significativamente → **data drift**
+- Proporción de predicciones en una clase cambia → **concept drift**
+- Latencia de inferencia supera un límite
+- Porcentaje de datos faltantes supera un umbral
+:::
+
+::: {.fragment}
+Las alertas deben llegar donde el equipo **realmente las vea** (Slack, email, PagerDuty) y tener suficiente contexto para actuar.
+:::
+
+# Calidad de Datos: Great Expectations {background-color="#2a2a2a"}
+
+## El Problema
+
+::: {.incremental}
+- Las métricas del modelo pueden degradarse por **problemas en los datos de entrada**
+- Un pipeline que ingesta datos con una columna renombrada o valores fuera de rango puede producir predicciones incorrectas sin ningún error en los logs
+- Sin validaciones automáticas, estos problemas pasan desapercibidos días o semanas
+:::
+
+## Definir Expectativas
+
+```python
+# La columna 'magnitud' nunca debe ser nula
+expect_column_values_to_not_be_null("magnitud")
+
+# El tipo espectral debe ser un valor conocido
+expect_column_values_to_be_in_set(
+    "tipo_espectral", ["Ia", "Ib", "Ic", "II", "IIn", "IIb"]
+)
+
+# Temperatura en rango físicamente razonable
+expect_column_values_to_be_between(
+    "temperatura_K", min_value=2000, max_value=50000
+)
+
+# Menos del 5% de nulos en 'redshift'
+expect_column_values_to_not_be_null("redshift", mostly=0.95)
+```
+
+## El Flujo de GX
+
+::: {.incremental}
+1. **Connect** — conectar a la fuente de datos (CSV, BD, S3...)
+2. **Create** — definir las expectativas sobre los datos
+3. **Validate** — ejecutar las validaciones contra los datos actuales
+4. **Share** — generar un reporte de resultados legible por el equipo
+:::
+
+::: {.fragment}
+GX hace que los problemas de calidad sean **detectables y auditables** de forma sistemática — no dependes de que alguien los note manualmente.
+:::
+
+# Resumen {background-color="#1a1a1a"}
+
+## El Stack Completo
+
+| Componente | Herramientas | Propósito |
+|---|---|---|
+| Métricas de negocio | Metabase, Looker | Conectar modelo con valor real |
+| Métricas analíticas | MLflow, W&B | Comparar experimentos y versiones |
+| Logging | MLflow, JSON estructurado | Reproducibilidad y trazabilidad |
+| Dashboard | Grafana, Streamlit, Evidently | Detectar degradación visual |
+| Alertas | Slack, PagerDuty, email | Reacción ante eventos críticos |
+| Calidad de datos | Great Expectations | Detectar problemas en la entrada |
+
+## El Ciclo Completo
+
+::: {.incremental}
+1. **Definir** métricas de negocio y analíticas
+2. **Loggear** resultados con nombres claros y hashes
+3. **Visualizar** en dashboard de seguimiento
+4. **Alertar** ante eventos críticos
+5. **Validar** calidad de datos en cada ingesta
+6. **Actuar** y documentar cada decisión
+7. Repetir con cada versión del modelo y ciclo de re-entrenamiento
+:::
+
+# ¿Preguntas? {background-color="#2a2a2a"}
+
+## Referencias
+
+- [MLflow Tracking](https://mlflow.org/docs/latest/tracking.html)
+- [Great Expectations Docs](https://docs.greatexpectations.io/docs/home/)
+- [Métricas de series de tiempo](https://towardsdatascience.com/time-series-forecast-error-metrics-you-should-know-cc88b8c67f27)
+- [Métricas de regresión](https://machinelearningmastery.com/regression-metrics-for-machine-learning/)
+- [Evaluación de modelos ML](https://www.aiacceleratorinstitute.com/evaluating-machine-learning-models-metrics-and-techniques/)
+- [Video: seguimiento en producción](https://www.youtube.com/watch?v=3si6p6KTsbI)

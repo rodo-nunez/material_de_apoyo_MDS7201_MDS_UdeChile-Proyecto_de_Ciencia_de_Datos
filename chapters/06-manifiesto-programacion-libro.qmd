@@ -1,5 +1,12 @@
 # Manifiesto de Programación para Data Science
 
+::: {.callout-note}
+# Créditos
+
+Este capítulo fue modificado con IA en base a una clase diseñada por Rodolfo Núñez. Luego de eso, fue transformado a .qmd e integrado a este libro por Rodolfo Núñez. Para cualquier otra modificación, pueden revisar los commits del repositorio en donde se encuestra este libro.
+
+:::
+
 ## Introducción
 
 La calidad del código es fundamental en proyectos de Data Science. Un buen código no solo funciona correctamente, sino que es fácil de entender, mantener y modificar. En este capítulo exploraremos los principios y prácticas de programación que todo científico de datos debería dominar.
@@ -11,6 +18,8 @@ A diferencia del desarrollo de software tradicional, el código en Data Science 
 - Requiere reproducibilidad rigurosa
 - Combina análisis estadístico, visualización y machine learning
 - Evoluciona rápidamente durante la investigación
+
+En Entel creamos un manifiesto interno que nos proponíamos seguir para asegurar una buena calidad de código, con el objetivo de agilizar traspasos y así evitar problemas de colaboración en código.
 
 ::: {.callout-note}
 ## Código es Comunicación

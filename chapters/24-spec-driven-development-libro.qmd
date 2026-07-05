@@ -1,0 +1,324 @@
+# Spec-Driven Development
+
+::: {.callout-note}
+# Créditos
+
+Este capítulo fue creado con IA en base a ideas y especificaciones dadas por Rodolfo Núñez. Luego de eso, fue transformado a .qmd e integrado a este libro por Rodolfo Núñez. Para cualquier otra modificación, pueden revisar los commits del repositorio en donde se encuestra este libro.
+
+:::
+
+## El Problema del Vibe Coding
+
+Cuando un desarrollador o científico de datos trabaja con un asistente de IA sin estructura, el flujo habitual se parece a esto: se describe lo que se quiere en lenguaje natural, el modelo genera código, se revisa parcialmente, se acepta, se pide la siguiente cosa, y así sucesivamente. A este modo de trabajo se le ha llamado **vibe coding**: desarrollo guiado por la intuición del momento, sin especificaciones formales, sin contrato sobre qué debe producir el sistema, y sin validación sistemática de que lo producido es lo correcto.
+
+El vibe coding tiene sus ventajas — es rápido para prototipos, baja la fricción inicial y aprovecha bien la capacidad generativa de los modelos. Pero en proyectos reales, con múltiples iteraciones, múltiples colaboradores y requisitos que evolucionan, sus limitaciones se vuelven costosas:
+
+| Problema | Consecuencia |
+|---|---|
+| Sin especificación escrita | Cada conversación parte desde cero; el modelo no sabe qué se acordó antes |
+| Sin contrato de calidad | No hay criterio claro para decidir si algo está terminado |
+| Alucinaciones acumuladas | Errores pequeños en cada paso se propagan sin detección |
+| Sin trazabilidad | No se sabe por qué se tomó cada decisión de arquitectura |
+| Dependencia del contexto del chat | Si se borra la conversación, se pierde el "diseño" |
+
+**Spec-Driven Development (SDD)** es la respuesta estructurada a estos problemas. La idea central: antes de escribir código, acordar formalmente — entre humanos y entre humanos y agentes de IA — qué se va a construir, cómo se va a construir y cómo se va a verificar que esté bien construido.
+
+::: {.callout-note}
+## ¿Qué se gana con SDD?
+
+- Las especificaciones son artefactos persistentes — sobreviven a cualquier conversación
+- El agente tiene un contrato explícito que no puede ignorar
+- Cada cambio tiene un registro de por qué se hizo
+- La validación es automatizable porque los criterios están escritos
+
+¿Qué riesgos se mantienen? El modelo sigue pudiendo alucinar en la implementación. La especificación puede estar mal escrita. El contrato puede ser incompleto. SDD no elimina estos riesgos — los hace visibles y manejables.
+:::
+
+## SDD Sin IA
+
+Un punto importante que se pierde en las discusiones sobre agentes y LLMs: **Spec-Driven Development es valioso incluso sin inteligencia artificial**.
+
+El solo hecho de tener un contrato escrito — que define qué debe tener el proyecto, qué sería deseable y qué no debe tener bajo ninguna circunstancia — es una herramienta poderosa para cualquier equipo de desarrollo, con o sin IA. Cuando alguien nuevo entra al proyecto, el contrato es la primera lectura. Cuando se debate si una función debería incluirse, el contrato es el árbitro. Cuando el proyecto se acerca a un deadline, el contrato ayuda a decidir qué cortar.
+
+Lo que agrega la IA es velocidad de implementación — pero la disciplina de especificar antes de implementar es independiente del executor. Un equipo humano que sigue SDD produce sistemas más mantenibles, con menos deuda técnica y con decisiones más trazables, independientemente de si usa modelos de lenguaje o no.
+
+Cuando sí se usa IA, SDD cumple una función adicional: **limita el espacio de acción del modelo**. Un agente que tiene acceso a un contrato bien escrito puede ser evaluado contra él en cada paso. Esto reduce las alucinaciones no porque el modelo sea más inteligente, sino porque tiene criterios concretos con los que comparar su output.
+
+## OpenSpec: SDD para Asistentes de IA
+
+[OpenSpec](https://github.com/Fission-AI/OpenSpec) es un framework de código abierto que formaliza el proceso de Spec-Driven Development para proyectos que usan asistentes de IA. Su filosofía:
+
+```
+→ fluid not rigid
+→ iterative not waterfall
+→ easy not complex
+→ built for brownfield not just greenfield
+→ scalable from personal projects to enterprises
+```
+
+El flujo básico de OpenSpec se ve así:
+
+```
+You: /opsx:explore
+AI:  What would you like to explore?
+You: I want dark mode but I'm not sure how to do it cleanly.
+AI:  Cleanest path: CSS variables + a small theme context.
+     No new dependencies. Scope it?
+You: Yes.
+
+You: /opsx:propose add-dark-mode
+AI:  Created openspec/changes/add-dark-mode/
+     ✓ proposal.md  — por qué lo hacemos, qué cambia
+     ✓ specs/       — requisitos y escenarios
+     ✓ design.md    — enfoque técnico
+     ✓ tasks.md     — checklist de implementación
+
+You: /opsx:apply
+AI:  ✓ 1.1 Add theme context provider
+     ✓ 1.2 Create toggle component
+     ✓ 2.1 Add CSS variables
+     ✓ 2.2 Wire up localStorage
+     All tasks complete!
+
+You: /opsx:archive
+AI:  Archived to openspec/changes/archive/2025-01-23-add-dark-mode/
+```
+
+Cada cambio produce un conjunto de artefactos persistentes: la propuesta, las especificaciones, el diseño y el checklist de tareas. Estos artefactos son la memoria del proyecto — no dependen de que nadie recuerde la conversación.
+
+Los comandos principales de OpenSpec son:
+
+| Comando | Propósito |
+|---|---|
+| `/opsx:explore` | Explorar un problema antes de proponer una solución |
+| `/opsx:propose` | Crear los artefactos de especificación para un cambio |
+| `/opsx:apply` | Implementar las tareas definidas en la propuesta |
+| `/opsx:verify` | Verificar que la implementación cumple las especificaciones |
+| `/opsx:archive` | Archivar el cambio completado |
+| `/opsx:onboard` | Inicializar OpenSpec en un proyecto existente |
+
+## La Metodología Aplicada a Ciencia de Datos
+
+La metodología que se propone en este capítulo extiende y adapta SDD para proyectos de ciencia de datos, incorporando elementos de OpenSpec con un conjunto de skills organizadas en un flujo de trabajo claro.
+
+### El Contrato del Proyecto
+
+El artefacto central de todo el flujo es el **contrato**. Es un archivo Markdown con estructura definida que responde tres preguntas:
+
+- ¿Qué **debe** tener el proyecto? (requisitos obligatorios)
+- ¿Qué **sería bueno** que tuviera? (requisitos deseables)
+- ¿Qué **no debe tener** bajo ninguna circunstancia? (restricciones absolutas)
+
+El contrato define además los estándares de código, los criterios de calidad, las convenciones de nombres, los requisitos de seguridad, las métricas de éxito y cualquier otra restricción relevante para el dominio. Todo agente que interactúe con el proyecto debe cumplir con el contrato — no es una recomendación, es una condición de aceptación.
+
+Un contrato típico para un proyecto de ciencia de datos podría incluir secciones como:
+
+```markdown
+# Contrato del Proyecto: Sistema de Clasificación de Alertas ALeRCE
+
+## Debe tener
+- Pipeline reproducible con semilla fija
+- Métricas de evaluación: F1-macro, AUC-ROC por clase
+- Versioning de datos con DVC
+- Sin credenciales en el repositorio
+- Tests unitarios con cobertura mínima del 80%
+
+## Sería bueno tener
+- Dashboard de seguimiento de métricas (MLflow)
+- Validación de calidad de datos con Great Expectations
+- Documentación de decisiones de arquitectura (ADRs)
+
+## No debe tener bajo ninguna circunstancia
+- Rutas absolutas en el código
+- Notebooks en el pipeline de producción
+- Modelos entrenados commiteados al repositorio
+- Datos personales sin anonimizar
+```
+
+### El Flujo de Skills
+
+El flujo de trabajo completo se organiza en ocho skills. Cada skill es independiente — puede ejecutarse por separado o como parte de un orquestador que las encadena en orden. Lo importante es que el humano mantiene puntos de control explícitos a lo largo del proceso.
+
+#### Skill 1: Crear el Contrato
+
+La primera skill genera la estructura del contrato a partir de una descripción del proyecto en lenguaje natural. El agente hace preguntas, el humano responde, y el resultado es el archivo Markdown del contrato.
+
+Esta skill solo se ejecuta una vez al inicio del proyecto, pero el contrato debe mantenerse vivo — actualizarse cuando cambian los requisitos, las restricciones o el contexto.
+
+#### Skill 2: Setup del Ambiente
+
+Con el contrato creado, la segunda skill configura todo el ambiente de trabajo: estructura de carpetas, ambiente virtual, dependencias iniciales, configuración del repositorio, `.env.example`, `.gitignore`, y cualquier otro elemento que el contrato haya especificado como obligatorio.
+
+El output de esta skill es un repositorio vacío pero completamente estructurado, listo para recibir código. La estructura generada debe ser consistente con el contrato — si el contrato dice "sin notebooks en el pipeline", la carpeta `pipeline/` se crea sin ningún notebook.
+
+#### Skill 3: Especificación
+
+Inspirada directamente en OpenSpec (`/opsx:propose`), esta skill toma una descripción de una funcionalidad o cambio y produce tres artefactos:
+
+- **Especificación** (`specs/`): requisitos, escenarios de uso, criterios de aceptación
+- **Diseño de la solución** (`design.md`): enfoque técnico, decisiones de arquitectura, dependencias
+- **Lista de tareas** (`tasks.md`): checklist ordenado de implementación
+
+**Aquí se produce el punto de control humano más importante del flujo.** Antes de implementar cualquier cosa, un humano revisa los tres artefactos, los corrige si es necesario, y solo entonces aprueba el paso a la siguiente skill. Este es el momento en que el humano ejerce control real sobre lo que el sistema va a construir.
+
+#### Architecture Decision Records (ADRs)
+
+Durante la especificación y el diseño, el agente frecuentemente propone decisiones de arquitectura: elegir un formato de datos sobre otro, usar una librería específica, estructurar el pipeline de cierta manera. Cada vez que esto ocurra, debe crearse un **Architecture Decision Record (ADR)**.
+
+Un ADR es un documento corto (típicamente menos de una página) que registra:
+
+- El contexto y el problema que motivó la decisión
+- Las opciones consideradas
+- La decisión tomada y su justificación
+- Las consecuencias esperadas
+
+Los ADRs se guardan en `docs/adr/` con nombres del tipo `ADR-001-formato-de-datos.md`. Son parte del contrato vivo del proyecto — permiten que cualquier persona (o agente) entienda por qué el proyecto está estructurado como está.
+
+```markdown
+# ADR-001: Formato de almacenamiento de features
+
+## Contexto
+Las features del pipeline de clasificación se generan una vez y se usan
+en múltiples experimentos. Necesitamos un formato eficiente y portable.
+
+## Opciones consideradas
+- CSV: simple pero lento y sin tipos
+- Parquet: columnar, comprimido, con tipos — ideal para pandas/spark
+- Pickle: rápido pero no portable entre versiones de Python
+
+## Decisión
+Usar Parquet con compresión snappy.
+
+## Consecuencias
++ Lectura 10-50x más rápida que CSV para columnas seleccionadas
++ Compatible con el ecosistema Spark si el proyecto escala
+- Requiere pyarrow como dependencia adicional
+```
+
+#### Skill 4: Implementación
+
+Con los artefactos de especificación revisados y aprobados por el humano, la skill de implementación ejecuta el checklist de tareas definido en `tasks.md`. Cada tarea se marca como completada al terminar, y el agente trabaja respetando el contrato en cada paso.
+
+Si durante la implementación surge una decisión que no estaba contemplada en el diseño, el agente debe pausar y crear un ADR antes de continuar — no tomar la decisión silenciosamente.
+
+#### Skill 5: Validación contra el Contrato
+
+Una vez completada la implementación, la skill de validación verifica que el resultado cumple con el contrato del proyecto. Recorre cada requisito del contrato y evalúa si está satisfecho, produciendo un reporte de conformidad.
+
+Esta skill puede ejecutarse también en iteraciones intermedias — no solo al final. Es especialmente útil antes de abrir un Pull Request.
+
+#### Skill 6: Testgate
+
+El testgate verifica que los criterios de aceptación definidos en las especificaciones se cumplan con un nivel mínimo de cobertura. A diferencia de la validación (que evalúa el cumplimiento del contrato), el testgate ejecuta los tests y verifica que los resultados sean aceptables.
+
+Si el testgate falla, el flujo vuelve a la implementación — no avanza a producción con tests en rojo.
+
+#### Skill 7: Seguridad (OWASP Top 10)
+
+La skill de seguridad aplica los controles del [OWASP Top 10](https://owasp.org/www-project-top-ten/) al código del proyecto. En el contexto de ciencia de datos, esto incluye controles como:
+
+- Verificar que no hay credenciales hardcodeadas (A02: Cryptographic Failures)
+- Validar inputs antes de pasarlos a modelos o consultas (A03: Injection)
+- Verificar configuraciones de dependencias (A06: Vulnerable and Outdated Components)
+- Revisar manejo de datos sensibles (A02, A04)
+
+El output es un reporte de hallazgos con severidad y recomendación de corrección para cada uno.
+
+#### Skill 8: Concept Drift del Agente
+
+Esta skill aborda un problema específico de los sistemas basados en IA conversacional: **el drift de contexto del agente**. A medida que una conversación con un agente se extiende, el contexto acumulado puede hacer que el agente se desvíe gradualmente del contrato original del proyecto — adoptando convenciones distintas, tomando decisiones inconsistentes con las anteriores, o simplemente "olvidando" restricciones que se establecieron al inicio.
+
+::: {.callout-important}
+## Concept Drift del Agente ≠ Data Drift
+
+Este es un concepto diferente al **concept drift de datos** que se estudia en MLOps. El drift de contexto del agente se refiere a la desviación del comportamiento del agente respecto al contrato del proyecto, causada por la acumulación de contexto en la conversación. No tiene relación con cambios en la distribución de datos de producción.
+:::
+
+La skill de concept drift evalúa la coherencia entre el comportamiento reciente del agente y el contrato, identificando señales de desviación:
+
+- ¿El agente está usando convenciones de nombres distintas a las del contrato?
+- ¿Las decisiones recientes son consistentes con los ADRs existentes?
+- ¿El agente está respetando las restricciones absolutas del contrato?
+
+Esta skill está diseñada para ejecutarse periódicamente — idealmente como parte del proceso de CI/CD — no solo como validación puntual. Si detecta drift significativo, la acción correctiva es reiniciar el contexto del agente con el contrato como primer documento.
+
+### El Flujo Completo
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    FLUJO SDD COMPLETO                       │
+│                                                             │
+│  [1] Crear contrato                                         │
+│         │                                                   │
+│  [2] Setup del ambiente                                     │
+│         │                                                   │
+│  [3] Especificación ──→ Diseño ──→ Lista de tareas         │
+│         │                                                   │
+│         ▼                                                   │
+│    ┌──────────┐                                             │
+│    │  HUMANO  │  ← revisión y aprobación obligatoria       │
+│    └────┬─────┘                                             │
+│         │                                                   │
+│  [4] Implementación                                         │
+│         │                                                   │
+│  [5] Validación (contrato)                                  │
+│  [6] Testgate                                               │
+│  [7] Seguridad (OWASP)                                      │
+│         │                                                   │
+│         ▼                                                   │
+│    ¿Aprobado? ──── NO ──→ volver a [4]                     │
+│         │                                                   │
+│        SÍ                                                   │
+│         │                                                   │
+│    Producción                                               │
+│                                                             │
+│  [8] Concept drift ← corre periódicamente en CI/CD         │
+└─────────────────────────────────────────────────────────────┘
+```
+
+Las skills [5], [6] y [7] pueden ejecutarse en cualquier orden después de la implementación — no son estrictamente secuenciales. Y cada una puede ejecutarse de forma independiente en cualquier momento del ciclo de vida del proyecto.
+
+### Human in the Loop
+
+El punto de control humano entre la especificación y la implementación no es un detalle opcional — es el principio central de este flujo. Sin él, SDD se convierte en vibe coding con más documentación.
+
+El desarrollador es responsable de todo lo que hay en el producto, independientemente de si lo escribió un humano o un agente de IA. Esa responsabilidad requiere comprensión, y esa comprensión requiere revisión. La revisión de los artefactos de especificación — antes de que el agente implemente — es el momento en que el desarrollador ejerce ese control.
+
+Un agente puede generar una lista de tareas técnicamente correcta pero que resuelve el problema equivocado. Puede proponer un diseño que cumple los requisitos funcionales pero viola una restricción del contrato que no entendió bien. Puede hacer suposiciones razonables que resultan ser incorrectas para el dominio específico del proyecto.
+
+La revisión humana captura todo esto antes de que se traduzca en código.
+
+## Comparación con Vibe Coding
+
+| Dimensión | Vibe Coding | Spec-Driven Development |
+|---|---|---|
+| **Velocidad inicial** | Alta — sin fricción de especificación | Menor — requiere acordar antes de implementar |
+| **Velocidad a largo plazo** | Decrece — deuda técnica y rework | Estable — cada iteración parte de una base sólida |
+| **Trazabilidad** | Baja — las decisiones viven en el chat | Alta — cada decisión tiene un artefacto |
+| **Control del desarrollador** | Reactivo — se corrige lo que salió mal | Proactivo — se aprueba antes de implementar |
+| **Alucinaciones del modelo** | Se acumulan silenciosamente | Se detectan en la validación |
+| **Onboarding** | Difícil — el contexto está en el chat | Fácil — el contrato y los ADRs son la documentación |
+| **Adecuado para** | Prototipos, exploración, demos | Proyectos con múltiples iteraciones y colaboradores |
+
+## Resumen
+
+Spec-Driven Development no es una metodología rígida ni una herramienta específica — es un principio: **acordar antes de implementar, y verificar que lo implementado cumple lo acordado**. Ese principio es valioso con o sin IA, y se vuelve especialmente poderoso cuando se usa IA porque convierte al contrato en un límite explícito sobre el comportamiento del agente.
+
+El flujo propuesto en este capítulo organiza ese principio en ocho skills independientes que pueden ejecutarse por separado o en secuencia, con un punto de control humano obligatorio antes de la implementación. El contrato es el artefacto central, los ADRs son la memoria de las decisiones, y la skill de concept drift es el mecanismo de vigilancia continua para que el agente no se desvíe de lo acordado.
+
+::: {.callout-tip}
+## Para Explorar Más
+
+- [OpenSpec — GitHub](https://github.com/Fission-AI/OpenSpec)
+- [OpenSpec — Documentación](https://github.com/Fission-AI/OpenSpec/blob/main/docs/getting-started.md)
+- [OWASP Top 10](https://owasp.org/www-project-top-ten/)
+- [Architecture Decision Records — Michael Nygard](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions)
+- [Conventional Commits](https://www.conventionalcommits.org/) — complemento natural para proyectos con SDD
+:::
+
+## Referencias
+
+- Fission-AI. (2025). OpenSpec: Spec-driven development for AI coding assistants. [github.com/Fission-AI/OpenSpec](https://github.com/Fission-AI/OpenSpec)
+- Nygard, M. (2011). Documenting Architecture Decisions. [cognitect.com/blog](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions)
+- OWASP Foundation. (2021). OWASP Top Ten. [owasp.org](https://owasp.org/www-project-top-ten/)
+- Yao, S. et al. (2022). ReAct: Synergizing Reasoning and Acting in Language Models. [arXiv:2210.03629](https://arxiv.org/abs/2210.03629)

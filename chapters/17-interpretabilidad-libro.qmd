@@ -1,5 +1,12 @@
 # Interpretabilidad en Machine Learning
 
+::: {.callout-note}
+# Créditos
+
+Este capítulo fue modificado con IA en base a una clase diseñada por Francisco Föster. Luego de eso, fue transformado a .qmd e integrado a este libro por Rodolfo Núñez. Para cualquier otra modificación, pueden revisar los commits del repositorio en donde se encuestra este libro.
+
+:::
+
 Un aspecto importante y muchas veces ignorado del machine learning es la interpretabilidad. ¿Podemos entender cómo decide un modelo de clasificación o regresión para una muestra dada? ¿Está esa decisión de acuerdo con nuestra intuición?
 
 Es importante que un modelo sea capaz de explicar sus decisiones para comprobar lo siguiente:
@@ -41,8 +48,6 @@ Los métodos de interpretabilidad pueden producir distintos tipos de salidas:
 ### Ejemplo Motivacional: Estrellas Pulsantes
 
 Si tenemos un modelo de clasificación de estrellas pulsantes, ¿cuál es la contribución del período y la amplitud de las variaciones en la clasificación?
-
-![Ejemplo de clasificación de estrellas pulsantes con contribución de features](images/pulsating_stars.png)
 
 ## Métodos Agnósticos al Modelo
 
@@ -446,7 +451,7 @@ Los mismos principios se extienden a otros tipos de datos:
 
 Una aplicación astronómica reciente: clasificación de curvas de luz con mecanismos de atención en [Rojas et al. 2024](https://ui.adsabs.harvard.edu/abs/2024arXiv240705751R/abstract).
 
-![Pesos de atención en clasificación de curvas de luz astronómicas (Rojas et al. 2024)](images/attention.png)
+![Pesos de atención en clasificación de curvas de luz astronómicas (Rojas et al. 2024)](../chapter_files/images/interpretabilidad/attention.png)
 
 ## Resumen
 

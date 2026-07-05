@@ -1,5 +1,12 @@
 # Visualización de Datos
 
+::: {.callout-note}
+# Créditos
+
+Este capítulo fue modificado con IA en base a una clase diseñada por Francisco Föster. Luego de eso, fue transformado a .qmd e integrado a este libro por Rodolfo Núñez. Para cualquier otra modificación, pueden revisar los commits del repositorio en donde se encuestra este libro.
+
+:::
+
 La visualización es una de las herramientas más poderosas en Ciencia de Datos. No se trata solo de hacer gráficos bonitos: una buena visualización comunica información compleja de manera inmediata, revela patrones ocultos, y puede incluso salvar vidas. Una mala visualización puede engañar, confundir o simplemente desperdiciar la atención del lector.
 
 Este capítulo cubre los fundamentos de la visualización efectiva: por qué importa, cómo funciona la percepción humana, principios para datos multidimensionales, y las reglas prácticas que distinguen una visualización que comunica de una que no lo hace.
@@ -292,7 +299,12 @@ Los violin plots combinan la información del boxplot (mediana, cuartiles) con l
 
 ![Violin plots vs barras — el violin revela diferencias de distribución que la barra oculta](../chapter_files/images/vizualizacion/image61.png){fig-align="center" width="80%"}
 
-![Comparación raw data, boxplot y violin plot para el mismo dataset](../chapter_files/images/vizualizacion/image84.gif){fig-align="center" width="80%"}
+::: {.content-visible unless-format="pdf"}
+![Comparación entre raw data, boxplot y violin plot para distintos dataset, con boxplot constante](../chapter_files/images/vizualizacion/image84.gif){fig-align="center" width="80%"}
+:::
+::: {.content-visible when-format="pdf"}
+![Comparación entre raw data, boxplot y violin plot para distintos dataset, con boxplot constante.](../chapter_files/images/vizualizacion/image84.png){fig-align="center" width="80%"}
+:::
 
 ### No Usar Pie Charts ni Gráficos 3D
 

@@ -81,9 +81,9 @@ Ninguna estadística, parámetro, modelo, decisión ni feature derivada de los d
 ```{python}
 #| echo: false
 featfile = "../chapter_files/data/pkls/features_small.pickle"
-featfile_alternative = "MDS7201/libro/chapter_files/data/pkls/features_small.pickle"
+featfile_alternative = "chapter_files/data/pkls/features_small.pickle"
 xmatchfile = "../chapter_files/data/pkls/dfcrossmatches_small.pickle"
-xmatchfile_alternative = "MDS7201/libro/chapter_files/data/pkls/dfcrossmatches_small.pickle"
+xmatchfile_alternative = "chapter_files/data/pkls/dfcrossmatches_small.pickle"
 
 ordered_classes = ['SNIbc', 'SNII', 'SNIIn', 'SNIIb', 'SNIa', 'SLSN', 'TDE',
        'CV/Nova', 'AGN', 'QSO', 'Blazar', 'YSO', 

@@ -1,5 +1,12 @@
 # Introducción a Git
 
+::: {.callout-note}
+# Créditos
+
+Este capítulo fue modificado con IA en base a una clase diseñada por Rodolfo Núñez. Luego de eso, fue transformado a .qmd e integrado a este libro por Rodolfo Núñez. Para cualquier otra modificación, pueden revisar los commits del repositorio en donde se encuestra este libro.
+
+:::
+
 ## Introducción
 
 Git es probablemente la herramienta más importante que aprenderás en tu carrera como científico de datos. No es exageración decir que **no saber Git te hace perder muchos puntos** tanto en contextos académicos como profesionales.

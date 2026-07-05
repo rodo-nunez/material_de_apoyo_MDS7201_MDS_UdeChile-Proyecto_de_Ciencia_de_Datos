@@ -1,5 +1,12 @@
 # Git Intermedio
 
+::: {.callout-note}
+# Créditos
+
+Este capítulo fue modificado con IA en base a una clase diseñada por Rodolfo Núñez. Luego de eso, fue transformado a .qmd e integrado a este libro por Rodolfo Núñez. Para cualquier otra modificación, pueden revisar los commits del repositorio en donde se encuestra este libro.
+
+:::
+
 ## Introducción
 
 Ahora que dominas los conceptos básicos de Git, es momento de profundizar en técnicas más avanzadas que te harán un usuario mucho más eficiente y profesional. Este capítulo cubre desde la arquitectura interna de Git hasta workflows complejos y técnicas de resolución de problemas.

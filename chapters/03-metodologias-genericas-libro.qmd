@@ -1,5 +1,12 @@
 # Metodologías de Trabajo Genéricas
 
+::: {.callout-note}
+# Créditos
+
+Este capítulo fue modificado con IA en base a una clase diseñada por Rodolfo Núñez. Luego de eso, fue transformado a .qmd e integrado a este libro por Rodolfo Núñez. Para cualquier otra modificación, pueden revisar los commits del repositorio en donde se encuestra este libro.
+
+:::
+
 ## Introducción
 
 Mientras que las metodologías específicas de Ciencia de Datos (CRISP-DM, TDSP, etc.) abordan las particularidades del trabajo con datos y modelos, las metodologías de trabajo genéricas nos ofrecen marcos probados para gestionar proyectos, coordinar equipos y entregar valor de manera efectiva.

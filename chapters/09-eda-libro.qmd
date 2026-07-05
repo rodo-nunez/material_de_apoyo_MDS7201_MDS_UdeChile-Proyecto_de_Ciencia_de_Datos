@@ -1,5 +1,12 @@
 # Análisis Exploratorio de Datos (EDA)
 
+::: {.callout-note}
+# Créditos
+
+Este capítulo fue modificado con IA en base a una clase diseñada por Francisco Föster. Luego de eso, fue transformado a .qmd e integrado a este libro por Rodolfo Núñez. Para cualquier otra modificación, pueden revisar los commits del repositorio en donde se encuestra este libro.
+
+:::
+
 El Análisis Exploratorio de Datos (EDA, por su sigla en inglés) es una etapa fundamental en cualquier proyecto de Ciencia de Datos. Antes de construir modelos, debemos entender profundamente los datos con los que trabajamos: su estructura, calidad, distribuciones, relaciones entre variables y anomalías. Un buen EDA no es solo un paso preliminar — es el proceso que determina si el análisis posterior tendrá sentido.
 
 Este capítulo cubre el EDA de datos tabulares. Los datos de imágenes, series de tiempo y texto tienen técnicas propias que se verán en otros capítulos.
@@ -18,7 +25,7 @@ El marco SMART define objetivos que son:
 - **Relevant** (Relevantes): alineados con el negocio
 - **Time-bound** (Acotados en el tiempo): con plazos definidos
 
-![SMART Goals](../chapter_files/mediabag/smart.png)
+![SMART Goals](../chapter_files/images/eda/smart.png)
 
 ### Marco FAST
 
@@ -29,7 +36,7 @@ El marco FAST es una alternativa más orientada a organizaciones ágiles:
 - **Specific** (Específicos)
 - **Transparent** (Transparentes)
 
-![FAST Goals](../chapter_files/mediabag/fast.png)
+![FAST Goals](../chapter_files/images/eda/fast.png)
 
 ### Preguntas Clave para el EDA
 
@@ -232,7 +239,7 @@ import matplotlib.pyplot as plt
 try:
     df = pd.read_pickle("../chapter_files/data/pkls/features_small.pickle")
 except:
-    df = pd.read_pickle("MDS7201/libro/chapter_files/data/pkls/features_small.pickle")
+    df = pd.read_pickle("chapter_files/data/pkls/features_small.pickle")
 ```
 
 ```{python}
@@ -402,7 +409,7 @@ from sklearn.impute import KNNImputer
 try:
     df = pd.read_pickle("../chapter_files/data/pkls/features_small.pickle")
 except:
-    df = pd.read_pickle("MDS7201/libro/chapter_files/data/pkls/features_small.pickle")
+    df = pd.read_pickle("chapter_files/data/pkls/features_small.pickle")
 
 df = df.reset_index()
 df["fname"] = df.name + "_" + df.fid.astype(str)
@@ -435,7 +442,7 @@ Recargamos el dataset para el análisis estadístico:
 try:
     df = pd.read_pickle("../chapter_files/data/pkls/features_small.pickle")
 except:
-    df = pd.read_pickle("MDS7201/libro/chapter_files/data/pkls/features_small.pickle")
+    df = pd.read_pickle("chapter_files/data/pkls/features_small.pickle")
 
 df = df.reset_index()
 df["fname"] = df.name + "_" + df.fid.astype(str)
@@ -551,13 +558,13 @@ Power transforms son transformaciones paramétricas y monótonas que hacen los d
 - **Box-Cox**: requiere datos estrictamente positivos
 - **Yeo-Johnson**: soporta datos positivos y negativos
 
-![Box-Cox Transform](../chapter_files/mediabag/boxcox.png)
+![Box-Cox Transform](../chapter_files/images/eda/boxcox.png)
 
-![Yeo-Johnson Transform](../chapter_files/mediabag/yeo-johnson.png)
+![Yeo-Johnson Transform](../chapter_files/images/eda/yeo-johnson.png)
 
-![PowerTransform Comparison](../chapter_files/mediabag/powertransform.png)
+![PowerTransform Comparison](../chapter_files/images/eda/powertransform.png)
 
-![sklearn PowerTransformer](../chapter_files/mediabag/sklearn_powertransform.png)
+![sklearn PowerTransformer](../chapter_files/images/eda/sklearn_powertransform.png)
 
 ```{python}
 from sklearn.preprocessing import PowerTransformer
@@ -864,7 +871,7 @@ Para las visualizaciones estratificadas por clase, cargamos las etiquetas del da
 try:
     labels = pd.read_pickle("../chapter_files/data/pkls/dfcrossmatches_small.pickle")
 except:
-    labels = pd.read_pickle("MDS7201/libro/chapter_files/data/pkls/dfcrossmatches_small.pickle")
+    labels = pd.read_pickle("chapter_files/data/pkls/dfcrossmatches_small.pickle")
 
 labels
 ```

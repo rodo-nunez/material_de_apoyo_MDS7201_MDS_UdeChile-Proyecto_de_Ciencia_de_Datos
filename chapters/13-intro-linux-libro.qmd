@@ -1,5 +1,12 @@
 # Introducción a Linux y Bash
 
+::: {.callout-note}
+# Créditos
+
+Este capítulo fue modificado con IA en base a una clase diseñada por Rodolfo Núñez. Luego de eso, fue transformado a .qmd e integrado a este libro por Rodolfo Núñez. Para cualquier otra modificación, pueden revisar los commits del repositorio en donde se encuestra este libro.
+
+:::
+
 ## Introducción
 
 Linux es el sistema operativo dominante en servidores, cloud computing y desarrollo de Data Science. Aunque puedes hacer DS en Windows o Mac, conocer Linux es fundamental para trabajar con servidores, clusters de computación, y desplegar modelos en producción.
@@ -1001,7 +1008,7 @@ vim archivo.txt
 # n: Siguiente resultado
 ```
 
-![exit vim meme](https://i.kym-cdn.com/photos/images/newsfeed/000/089/026/sandwich.png)
+![exit vim meme](../chapter_files/images/linux/exit_vim.jpg)
 
 ::: {.callout-tip}
 ## Aprender Vim

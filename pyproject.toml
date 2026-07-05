@@ -1,19 +1,34 @@
 [project]
-name = "mds"
+name = "material_de_apoyo_mds201"
 version = "0.1.0"
 requires-python = ">=3.11,<3.14"
 
 dependencies = [
+    "dataclasses>=0.8",
+    "dowhy>=0.14",
     "imblearn",
     "jupyter",
     "lightgbm>=4.6.0",
     "matplotlib>=3.8",
+    "nbconvert>=7.17.1",
+    "networkx>=3.6.1",
     "numpy",
     "optuna>=4.9.0",
     "pacmap",
     "pandas",
+    "pathlib>=1.0.1",
+    "pydantic>=2.13.4",
+    "pydantic-ai>=1.107.0",
+    "pygraphviz>=1.14",
+    "python-dotenv>=1.2.2",
     "scipy",
+    "seaborn>=0.13.2",
+    "shap>=0.51.0",
+    "transformers>=5.12.1",
+    "torch>=2.12.0",
     "tsfresh>=0.21.2",
+    "typing>=3.10.0.0",
     "umap-learn>=0.5.12",
+    "xgboost>=3.2.0",
     "ydata-profiling",
 ]

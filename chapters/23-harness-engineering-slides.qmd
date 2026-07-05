@@ -1,0 +1,383 @@
+---
+title: "Harness Engineering"
+subtitle: "MDS7201 - Master of Data Science"
+author: "Universidad de Chile"
+format:
+  revealjs:
+    theme: [default, ../custom-slides.scss]
+    slide-number: true
+    chalkboard: true
+    preview-links: auto
+    code-fold: false
+    code-tools: true
+    transition: slide
+    background-transition: fade
+  beamer:
+    theme: Madrid
+    colortheme: default
+    fonttheme: professionalfonts
+    aspectratio: 169
+    navigation: horizontal
+    section-titles: true
+    toc: true
+---
+
+# El Problema con los LLMs "Desnudos" {background-color="#1a1a1a"}
+
+## Limitaciones Fundamentales
+
+| Limitación | Consecuencia práctica |
+|---|---|
+| **Sin estado** | Olvida todo al terminar la conversación |
+| **Sin acciones** | No puede ejecutar código ni llamar APIs |
+| **Amarrado al proveedor** | Cambiar de GPT a Claude requiere reescribir todo |
+| **Sin memoria** | No recuerda preferencias entre sesiones |
+| **Sin especialización** | Responde igual para cualquier tarea |
+
+::: {.fragment}
+Un **harness** resuelve todos estos problemas envolviendo el LLM con infraestructura reutilizable.
+:::
+
+## Anatomía de un Harness
+
+```
+┌──────────────────────────────────────────────────────────┐
+│                        HARNESS                           │
+│                                                          │
+│   ┌──────────┐   ┌────────┐   ┌──────────────────────┐ │
+│   │  Skills  │   │ Tools  │   │       Memory         │ │
+│   │          │   │        │   │  short │   long       │ │
+│   └────┬─────┘   └───┬────┘   └────────┬─────────────┘ │
+│        └─────────────┼─────────────────┘               │
+│                      ▼                                  │
+│             ┌─────────────────┐                         │
+│             │   Agent Loop    │  ← ReAct pattern        │
+│             │ (Reason + Act)  │                         │
+│             └────────┬────────┘                         │
+│                      │                                  │
+│             ┌────────▼────────┐                         │
+│             │    Provider     │  ← Ollama / Groq /      │
+│             │     (LLM)       │     Anthropic / OpenAI  │
+│             └─────────────────┘                         │
+└──────────────────────────────────────────────────────────┘
+```
+
+# Los Cinco Componentes {background-color="#2a2a2a"}
+
+## Provider — El Conector Intercambiable
+
+```python
+class BaseProvider(ABC):
+    @abstractmethod
+    def complete(self, messages: list[Message],
+                 system_prompt: str) -> LLMResponse:
+        ...
+```
+
+::: {.fragment}
+Cambiar de proveedor es cambiar **una línea** en `.env`:
+
+```bash
+LLM_PROVIDER=ollama    # hoy
+LLM_PROVIDER=anthropic # mañana — el resto del código no cambia
+```
+:::
+
+::: {.fragment}
+Principio **Open/Closed** (SOLID): abierto para agregar nuevos proveedores, cerrado para modificar el código existente.
+:::
+
+## Skills — Lo Que el Agente Sabe Hacer
+
+Las skills **transforman o enriquecen el prompt** antes de enviarlo al LLM. No producen efectos externos.
+
+```python
+class SummarizerSkill(BaseSkill):
+    name = "summarizer"
+    description = "Resume un texto en puntos clave concisos."
+
+    def execute(self, text: str, max_points: int = 5, **kwargs) -> SkillResult:
+        enriched_prompt = f"Resume en {max_points} puntos:\n{text}"
+        return SkillResult(output=enriched_prompt, success=True)
+```
+
+::: {.fragment}
+Otros ejemplos: forzar un idioma, estructurar output como JSON, razonar paso a paso (chain-of-thought).
+:::
+
+## Tools — Lo Que el Agente Puede Hacer
+
+Las tools **ejecutan acciones en el mundo real**. Producen efectos secundarios.
+
+```python
+class TerminalTool(BaseTool):
+    name = "terminal"
+    description = "Ejecuta un comando de shell y retorna el output."
+
+    def run(self, command: str = "", **kwargs) -> ToolResult:
+        result = subprocess.run(command, shell=True,
+                                capture_output=True, text=True)
+        return ToolResult(output=result.stdout,
+                          success=result.returncode == 0)
+```
+
+## Skills vs. Tools
+
+| | Skill | Tool |
+|---|---|---|
+| **¿Qué hace?** | Transforma el prompt | Ejecuta en el mundo real |
+| **¿Produce efectos?** | No | Sí |
+| **¿Necesita conexión?** | No | A veces |
+| **Ejemplo** | Resumir texto | Correr `ls -la` |
+
+::: {.callout-tip}
+## Regla Práctica
+¿Produce efectos secundarios observables desde fuera del agente? → **Tool**. ¿Solo transforma el razonamiento? → **Skill**.
+:::
+
+## Memory — Dos Capas
+
+::: {.columns}
+::: {.column width="50%"}
+**Corta (RAM)**
+
+Historial de la sesión actual. Se envía completa al LLM en cada llamada. Se pierde al cerrar.
+
+```python
+short_mem.add_turn(
+    "¿cuántos archivos hay?",
+    "Encontré 23 archivos .py"
+)
+messages = short_mem.get_messages()
+```
+
+*Analogía: pizarra que se borra al salir.*
+:::
+::: {.column width="50%"}
+**Larga (JSON)**
+
+Hechos y preferencias que persisten entre sesiones. Se escribe en disco.
+
+```python
+long_mem.save("nombre", "Carlos",
+              category="preferencia")
+# → escribe en memory/store.json
+
+long_mem.get("nombre")
+# → "Carlos" (en la próxima sesión)
+```
+
+*Analogía: cuaderno en el cajón.*
+:::
+:::
+
+## Agent Loop — El Patrón ReAct
+
+```
+Mensaje usuario
+      │
+      ▼
+  ┌───────┐
+  │ THINK │  ← LLM decide: ¿necesito una tool?
+  └───┬───┘
+      │
+  ¿tool?──── NO ──▶ Respuesta final ✓
+      │
+     SÍ
+      │
+      ▼
+  ┌───────┐
+  │  ACT  │  ← Ejecutar la tool
+  └───┬───┘
+      │
+      ▼
+  ┌─────────┐
+  │ OBSERVE │  ← Incorporar resultado al contexto
+  └────┬────┘
+       │
+       └──────▶ THINK (siguiente iteración)
+```
+
+# El Repositorio en Acción {background-color="#1a1a1a"}
+
+## Estructura del Proyecto
+
+```
+harness-engineering/
+├── main.py              # Entry point
+├── config.py            # Lee .env
+├── run.sh               # bash run.sh [--provider groq]
+├── providers/           # Conectores a LLMs
+│   ├── base_provider.py
+│   ├── ollama_provider.py    # Gratis, local
+│   ├── groq_provider.py      # Gratis, online
+│   └── anthropic_provider.py
+├── skills/              # Capacidades del agente
+├── tools/               # Acciones en el mundo real
+├── memory/
+│   ├── short_term.py
+│   └── long_term.py
+├── agents/
+│   └── simple_agent.py
+├── loops/
+│   └── agent_loop.py    # Ciclo ReAct
+└── tests/
+```
+
+## Instalación
+
+```bash
+# 1. Clonar el repo
+git clone https://github.com/tu-usuario/harness-engineering.git
+cd harness-engineering
+
+# 2. Instalar todo
+bash scripts/setup.sh
+
+# 3. Arrancar el agente
+bash run.sh
+```
+
+## Proveedores Disponibles
+
+| Proveedor | Tipo | Gratis | Key necesaria |
+|---|---|---|---|
+| `ollama` | Local | ✅ | ❌ |
+| `groq` | Online | ✅ | ✅ |
+| `anthropic` | Online | ❌ | ✅ |
+| `openai` | Online | ❌ | ✅ |
+
+```bash
+# Cambiar de proveedor: solo editar .env
+LLM_PROVIDER=groq
+GROQ_API_KEY=gsk_...
+
+# O como argumento:
+bash run.sh --provider groq
+```
+
+## El Loop por Dentro
+
+**Pregunta:** *"¿Cuántos archivos Python hay en este proyecto?"*
+
+::: {.incremental}
+1. El usuario escribe su pregunta
+2. El loop llama al LLM con historial + system prompt (con descripción de tools)
+3. El LLM responde con un tool call: `{"tool": "terminal", "args": {"command": "find . -name '*.py' | wc -l"}}`
+4. El loop detecta el bloque, parsea el JSON y ejecuta `TerminalTool`
+5. La tool retorna: `"23"`
+6. El resultado se agrega al contexto → LLM genera respuesta final: *"Hay 23 archivos Python."*
+:::
+
+::: {.fragment}
+El LLM nunca ejecutó el comando — **razonó** que necesitaba hacerlo y **declaró** la acción. El loop se encargó de la ejecución.
+:::
+
+# Agregar Componentes {background-color="#2a2a2a"}
+
+## Nueva Tool: Calculadora
+
+```bash
+bash scripts/add_tool.sh calculadora
+```
+
+```python
+# tools/calculadora.py
+class CalculadoraTool(BaseTool):
+    name: str = "calculadora"
+    description: str = (
+        "Evalúa expresiones matemáticas simples. "
+        "Útil para cálculos que el LLM podría hacer mal."
+    )
+
+    def run(self, expression: str = "", **kwargs) -> ToolResult:
+        try:
+            result = eval(expression, {"__builtins__": {}}, {})
+            return ToolResult(output=str(result), success=True)
+        except Exception as e:
+            return ToolResult(output=f"Error: {e}", success=False)
+```
+
+## Registrar la Tool
+
+```python
+# tools/__init__.py
+TOOL_REGISTRY = {
+    "terminal":    TerminalTool(),
+    "file_reader": FileReaderTool(),
+    "calculadora": CalculadoraTool(),  # ← nueva tool
+}
+```
+
+::: {.fragment}
+El agente ya puede usarla en la próxima sesión. **Sin modificar el loop ni el provider.**
+:::
+
+## Nueva Skill: Pensamiento Crítico
+
+```python
+# skills/pensamiento_critico.py
+class PensamientoCriticoSkill(BaseSkill):
+    name: str = "pensamiento_critico"
+
+    def execute(self, texto: str = "", **kwargs) -> SkillResult:
+        prompt = f"""
+Analiza el siguiente argumento:
+\"\"\"{texto}\"\"\"
+
+1. Supuesto principal
+2. Evidencia
+3. Posibles sesgos
+4. Conclusión alternativa
+""".strip()
+        return SkillResult(output=prompt, success=True,
+                           metadata={"skill": self.name})
+```
+
+# Harness vs. Frameworks {background-color="#1a1a1a"}
+
+## Cuándo Usar Cada Uno
+
+| Framework | Énfasis | Cuándo usarlo |
+|---|---|---|
+| **LangChain** | Cadenas y agentes genéricos | Prototipado rápido |
+| **LlamaIndex** | RAG y búsqueda sobre documentos | Q&A sobre bases de conocimiento |
+| **PydanticAI** | Outputs estructurados y type-safety | Pipelines con validación estricta |
+| **Harness propio** | Control total, sin dependencias | Sistemas críticos o requisitos específicos |
+
+::: {.fragment}
+Entender el harness desde cero es lo que permite **usar y depurar** los frameworks de producción con criterio.
+:::
+
+# Resumen {background-color="#2a2a2a"}
+
+## Los Cinco Componentes
+
+| Componente | Rol | Analogía |
+|---|---|---|
+| **Provider** | Conector intercambiable al LLM | Enchufe universal |
+| **Skills** | Transforman cómo responde el agente | Modos de operación |
+| **Tools** | Dan acceso al mundo real | Manos del agente |
+| **Memory corta** | Continuidad dentro de la sesión | Pizarra |
+| **Memory larga** | Persistencia entre sesiones | Cuaderno en el cajón |
+| **Agent Loop** | Ciclo ReAct de razonamiento | Cerebro orquestador |
+
+## Lo Que Deberías Llevarte
+
+::: {.incremental}
+- Un harness da al LLM **memoria, acciones, especialización e intercambiabilidad** de proveedores
+- Las **skills** transforman *cómo responde* el agente — las **tools** le dan acceso al mundo real
+- El patrón **ReAct** (Reason → Act → Observe) permite al agente actuar en múltiples pasos
+- Cambiar de proveedor es **una línea en `.env`** gracias a la abstracción de `BaseProvider`
+- El diseño modular hace que cada componente sea **testeable de forma aislada**
+:::
+
+# ¿Preguntas? {background-color="#1a1a1a"}
+
+## Referencias
+
+- Yao, S. et al. (2022). ReAct: Synergizing Reasoning and Acting in Language Models. [arXiv:2210.03629](https://arxiv.org/abs/2210.03629)
+- [Ollama — modelos locales gratuitos](https://ollama.com)
+- [Groq — API online gratuita](https://console.groq.com)
+- [LangChain](https://python.langchain.com)
+- [LlamaIndex](https://docs.llamaindex.ai)

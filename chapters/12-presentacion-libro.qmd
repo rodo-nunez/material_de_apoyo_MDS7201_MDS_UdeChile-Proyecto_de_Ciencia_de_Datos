@@ -1,5 +1,12 @@
 # Técnicas de Comunicación y Presentación
 
+::: {.callout-note}
+# Créditos
+
+Este capítulo fue modificado con IA en base a una clase diseñada por Rodolfo Núñez. Luego de eso, fue transformado a .qmd e integrado a este libro por Rodolfo Núñez. Para cualquier otra modificación, pueden revisar los commits del repositorio en donde se encuestra este libro.
+
+:::
+
 Presentar bien no es un talento innato: es un conjunto de habilidades que se aprenden y practican. Este capítulo integra tres perspectivas complementarias sobre la comunicación oral efectiva: las **5 Vocal Foundations** de Vinh Giang, el trabajo de **Matt Abrahams** sobre el manejo de la ansiedad y el pensamiento espontáneo, y las **110 técnicas de comunicación** de **David JP Phillips**.
 
 El objetivo no es convertirte en un orador profesional, sino darte herramientas concretas para comunicar mejor tus proyectos de datos a audiencias técnicas y no técnicas.

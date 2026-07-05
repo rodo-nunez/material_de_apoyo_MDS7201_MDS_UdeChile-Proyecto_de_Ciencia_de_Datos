@@ -1,5 +1,12 @@
 # Metodologías de Trabajo en Ciencia de Datos
 
+::: {.callout-note}
+# Créditos
+
+Este capítulo fue modificado con IA en base a una clase diseñada por Rodolfo Núñez. Luego de eso, fue transformado a .qmd e integrado a este libro por Rodolfo Núñez. Para cualquier otra modificación, pueden revisar los commits del repositorio en donde se encuestra este libro.
+
+:::
+
 ## Importancia de una Buena Metodología
 
 El éxito de un proyecto de Ciencia de Datos no depende únicamente de tener buenos datos o algoritmos sofisticados. Una metodología de trabajo sólida es fundamental para garantizar que los proyectos entreguen valor real y se completen exitosamente.
