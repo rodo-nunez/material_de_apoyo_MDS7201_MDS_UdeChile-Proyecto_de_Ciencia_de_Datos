@@ -49,8 +49,6 @@ Los métodos de interpretabilidad pueden producir distintos tipos de salidas:
 
 Si tenemos un modelo de clasificación de estrellas pulsantes, ¿cuál es la contribución del período y la amplitud de las variaciones en la clasificación?
 
-![Ejemplo de clasificación de estrellas pulsantes con contribución de features](images/pulsating_stars.png)
-
 ## Métodos Agnósticos al Modelo
 
 No siempre es posible construir modelos interpretables con el mismo poder predictivo que los modelos de caja negra. Por eso son útiles los métodos **agnósticos al modelo**: se aplican sobre cualquier modelo entrenado, sin requerir acceso a sus internos.

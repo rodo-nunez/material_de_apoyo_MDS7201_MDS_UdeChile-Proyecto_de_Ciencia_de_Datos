@@ -55,8 +55,6 @@ Si tenemos un modelo de clasificación de estrellas pulsantes:
 
 > ¿Cuál es la contribución del **período** y la **amplitud** en la clasificación?
 
-![](images/pulsating_stars.png){fig-align="center" width="65%"}
-
 ::: {.callout-note}
 ## Referencia
 Molnar, C. (2022). [*Interpretable Machine Learning*](https://christophm.github.io/interpretable-ml-book/)
