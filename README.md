@@ -3,7 +3,6 @@
 - **Libro**: Tema oscuro personalizado (darkly + custom.scss)
 - **Slides HTML**: Tema oscuro con custom-slides.scss
 - **Slides PDF**: Tema Madrid de Beamero render chapters/01-introduccion-slides.qmd
-```
 
 Para slides en PDF (Beamer):
 
