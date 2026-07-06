@@ -132,6 +132,17 @@ El curso evalúa tu desempeño mediante los siguientes componentes:
 | **Presentación Final** | 15% | Exposición oral del proyecto completo |
 | **Informe Final y Póster** | 15% | Documento técnico + póster |
 
+::: {.callout-note}
+# Sobre uso de IA
+
+El uso de IA está muy desaconsejado para preparar presentaciones. Lo pueden usar de forma responsable, pero deben entender cada palabra que esté en su presentación y ser capaces de explicarlo al revés y al derecho. Si una IA genera código, slides, imágenes, o lo que sea para ustedes, ustedes son los dueños de ese contenido.
+
+Uso irresponsable de IA puede bajarles la nota incluso a un 1.0 (ha pasado).
+
+Así que para evitar problemas, les sugerimos que no ocupen IA en sus presentaciones o que la ocupen para temas puntuales, como crear una imágen particular, crear una plantilla sobre la que escribirán u otros ejemplos que no tienen que ver con generar texto. El texto escríbanlo ustedes.
+
+:::
+
 ### Descripción de Hitos
 
 Los hitos corresponden a entregas periódicas que marcan el avance del proyecto:
