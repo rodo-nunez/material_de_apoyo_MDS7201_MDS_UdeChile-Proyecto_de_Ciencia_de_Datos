@@ -1210,4 +1210,3 @@ def calculate_metric(data):
 ```
 
 3. **Marcar como resuelto**
-```bash
