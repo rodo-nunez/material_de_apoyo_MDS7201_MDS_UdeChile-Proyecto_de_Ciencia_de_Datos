@@ -12,9 +12,11 @@ book:
     background: dark
   chapters:
     - index.qmd
+    
     - part: "Contenido del Curso"
       chapters:
         - chapters/01-introduccion-curso-libro.qmd
+
     - part: "Metodologías de Trabajo"
       chapters: 
         - chapters/02-metodologias-ds-libro.qmd
@@ -22,34 +24,41 @@ book:
         - chapters/04-metodologias-especificas-libro.qmd
         - chapters/05-herramientas-gestion-libro.qmd
         - chapters/06-manifiesto-programacion-libro.qmd
+
     - part: "Git"
       chapters: 
         - chapters/07-intro-git-libro.qmd
         - chapters/08-git-intermedio-libro.qmd
-    - part: "EDA, Visualización, Storytelling, Comunicación"
-      chapters:         
+        
+    - part: "EDA, Visualizacion, Storytelling, Comunicacion"
+      chapters: 
         - chapters/09-eda-libro.qmd
         - chapters/10-visualizacion-libro.qmd
         - chapters/11-storytelling-libro.qmd
         - chapters/12-presentacion-libro.qmd
+
     - part: "Linux, Cloud, Modularización y Ambientes virtuales"
       chapters:         
         - chapters/13-intro-linux-libro.qmd
         - chapters/14-intro-cloud-libro.qmd
         - chapters/15-modularizacion-libro.qmd
+
     - part: "Preprocessing, data curation, feature engineering, training and data leakage"
       chapters:    
         - chapters/16-preprocessing-libro.qmd
         - chapters/17-interpretabilidad-libro.qmd
         - chapters/18-causalidad-libro.qmd
+
     - part: "LLMs y Agentes"
       chapters:    
         - chapters/19-llms-libro.qmd
         - chapters/20-agentes-libro.qmd
+
     - part: "Documentación, Comunicación y traspaso del proyecto, y Seguimiento de métricas"
       chapters:    
         - chapters/21-documentacion-traspaso-libro.qmd
         - chapters/22-metricas-calidad-libro.qmd
+
     - part: "Harness Engineering y SDD"
       chapters:    
         - chapters/23-harness-engineering-libro.qmd
@@ -80,6 +89,7 @@ format:
     number-sections: true
     colorlinks: true
     lang: es
+    top-level-division: default
 
 language:
   title-block-author-single: "Autor"
