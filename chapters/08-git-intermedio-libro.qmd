@@ -1210,3 +1210,536 @@ def calculate_metric(data):
 ```
 
 3. **Marcar como resuelto**
+
+```bash
+git add src/analysis.py
+```
+
+4. **Completar el merge**
+
+```bash
+git commit
+# Git abre editor con mensaje de merge pre-llenado
+```
+
+### Herramientas para Conflictos
+
+**Usar mergetool:**
+
+```bash
+# Ver herramientas disponibles
+git mergetool --tool-help
+
+# Configurar herramienta por defecto
+git config --global merge.tool vscode
+git config --global mergetool.vscode.cmd 'code --wait $MERGED'
+
+# Abrir mergetool
+git mergetool
+```
+
+**Herramientas populares:**
+
+| Herramienta | Descripción |
+|---|---|
+| VS Code | Integrado, visual, muy recomendado |
+| vimdiff | Terminal, para usuarios de vim |
+| meld | GUI, open source, muy potente |
+| kdiff3 | GUI, muestra tres paneles |
+
+**En VS Code**, los conflictos se ven con botones "Accept Current Change", "Accept Incoming Change", "Accept Both Changes" — sin necesidad de editar el texto de marcadores.
+
+### Prevenir Conflictos
+
+La mejor estrategia es evitarlos:
+
+- **Pull antes de trabajar:** `git pull` antes de empezar cualquier sesión
+- **Ramas cortas:** features pequeñas que se integran rápido reducen divergencia
+- **Comunicación:** avisar al equipo qué archivos estás modificando
+- **Dividir el trabajo:** asignar archivos o módulos distintos a distintas personas
+
+```bash
+# Workflow que minimiza conflictos
+git pull                          # Siempre partir actualizado
+git checkout -b feature/mi-tarea  # Trabajar en rama propia
+# ... trabajo ...
+git pull origin main              # Actualizar antes de merge
+git merge main                    # Resolver conflictos ahora, no después
+git checkout main
+git merge feature/mi-tarea        # Merge limpio
+```
+
+## Rebase
+
+### `git merge` vs `git rebase`
+
+Ambos integran cambios de una rama a otra, pero de forma diferente.
+
+**`git merge`** preserva el historial completo — crea un commit de merge que une los dos branches:
+
+```
+    A---B---C  feature
+   /         \
+D---E---F---G  main (después del merge)
+```
+
+**`git rebase`** reescribe el historial — mueve los commits de tu rama encima de la rama destino:
+
+```
+# Antes del rebase
+D---E---F      main
+    \
+     A---B---C  feature
+
+# Después de git rebase main (desde feature)
+D---E---F      main
+         \
+          A'--B'--C'  feature (commits reescritos)
+```
+
+El resultado es un historial lineal y limpio, como si hubieras empezado a trabajar desde el último commit de main.
+
+### Cuándo Usar Cada Uno
+
+| Situación | Recomendación |
+|---|---|
+| Integrar feature terminada a main | `merge` — preserva contexto |
+| Actualizar tu rama con cambios de main | `rebase` — historial limpio |
+| Trabajo en equipo en la misma rama | `merge` — no reescribir historial compartido |
+| Preparar commits antes de PR | `rebase -i` — limpiar historial propio |
+
+::: {.callout-warning}
+## Regla de Oro del Rebase
+
+**Nunca hacer rebase de commits que ya están en el repositorio remoto y que otros podrían haber usado.** El rebase reescribe el historial — si alguien más tiene esos commits, su historial queda inconsistente con el tuyo.
+
+En la práctica: rebase libremente en ramas locales que no has pusheado, o en ramas personales de feature. Nunca en `main` o `develop`.
+:::
+
+### Rebase Básico
+
+```bash
+# Actualizar rama feature con últimos cambios de main
+git checkout feature/mi-analisis
+git rebase main
+
+# Si hay conflictos, resolverlos y continuar
+git add archivo_resuelto.py
+git rebase --continue
+
+# Cancelar rebase y volver al estado anterior
+git rebase --abort
+```
+
+### Rebase Interactivo
+
+`git rebase -i` (interactive) es una de las herramientas más poderosas de Git — permite reescribir el historial de commits antes de compartirlos:
+
+```bash
+# Rebase interactivo de los últimos 4 commits
+git rebase -i HEAD~4
+```
+
+Se abre un editor con algo como:
+
+```
+pick a1b2c3d feat: add data loading module
+pick b2c3d4e fix: correct path handling
+pick c3d4e5f wip: exploring approaches
+pick d4e5f6g docs: update README
+
+# Comandos:
+# p, pick = usar el commit tal cual
+# r, reword = usar el commit, editar el mensaje
+# e, edit = usar el commit, pausar para modificar
+# s, squash = fusionar con el commit anterior
+# f, fixup = fusionar con anterior, descartar mensaje
+# d, drop = eliminar el commit
+```
+
+**Casos de uso comunes:**
+
+```bash
+# Limpiar commits de "wip" antes de hacer PR
+pick a1b2c3d feat: add data loading module
+pick b2c3d4e fix: correct path handling
+squash c3d4e5f wip: exploring approaches   # ← fusionar con anterior
+reword d4e5f6g docs: update README          # ← editar mensaje
+
+# Eliminar un commit con errores
+pick a1b2c3d feat: add analysis
+drop b2c3d4e wrong commit to remove         # ← eliminar completamente
+pick c3d4e5f feat: finalize analysis
+```
+
+## Deshacer Cambios
+
+Git ofrece múltiples formas de deshacer, dependiendo de qué quieres preservar.
+
+### El Mapa de Opciones
+
+```
+¿Los cambios están en el Working Directory?
+    → git restore <file>           (descartar cambios sin commitear)
+
+¿Los cambios están en Staging?
+    → git restore --staged <file>  (sacar de staging, mantener en working dir)
+
+¿El commit está en el repositorio local?
+    → git commit --amend           (modificar el último commit)
+    → git reset --soft HEAD~1      (deshacer commit, mantener cambios en staging)
+    → git reset --mixed HEAD~1     (deshacer commit, mantener cambios en working dir)
+    → git reset --hard HEAD~1      (deshacer commit, BORRAR cambios — peligroso)
+    → git revert HEAD              (crear commit que revierte — seguro para compartido)
+
+¿El commit ya está en el remoto?
+    → git revert <hash>            (siempre usar revert, nunca reset)
+```
+
+### `git restore` — Deshacer Sin Commitear
+
+```bash
+# Descartar cambios en un archivo (volver al último commit)
+git restore src/analysis.py
+
+# Descartar TODOS los cambios sin commitear
+git restore .
+
+# Sacar archivo del staging (sin perder cambios)
+git restore --staged src/analysis.py
+```
+
+### `git reset` — Mover el Puntero HEAD
+
+```bash
+# Deshacer último commit, mantener cambios en staging
+git reset --soft HEAD~1
+
+# Deshacer último commit, mantener cambios en working dir (default)
+git reset --mixed HEAD~1
+git reset HEAD~1  # equivalente
+
+# Deshacer último commit y BORRAR todos los cambios
+git reset --hard HEAD~1
+```
+
+::: {.callout-warning}
+## `git reset --hard` es Destructivo
+
+`--hard` borra cambios permanentemente. Úsalo solo cuando estás seguro de que no necesitas nada de lo que estás deshaciendo, y nunca sobre commits ya pusheados al remoto.
+:::
+
+### `git revert` — Deshacer de Forma Segura
+
+`revert` crea un nuevo commit que invierte los cambios de un commit anterior. No reescribe historial — es la opción correcta cuando el commit ya está en el remoto:
+
+```bash
+# Revertir el último commit
+git revert HEAD
+
+# Revertir un commit específico por hash
+git revert a1b2c3d
+
+# Revertir sin abrir editor
+git revert HEAD --no-edit
+```
+
+### `git stash` — Guardar Trabajo Temporal
+
+Cuando necesitas cambiar de rama pero no quieres commitear trabajo a medias:
+
+```bash
+# Guardar cambios actuales en el stash
+git stash
+
+# Listar stashes guardados
+git stash list
+# stash@{0}: WIP on feature/analysis: abc123 Add EDA notebook
+# stash@{1}: WIP on main: def456 Update README
+
+# Recuperar último stash
+git stash pop
+
+# Recuperar stash específico
+git stash apply stash@{1}
+
+# Guardar stash con nombre descriptivo
+git stash push -m "trabajo en progreso: limpieza de datos"
+
+# Borrar stash sin aplicarlo
+git stash drop stash@{0}
+
+# Borrar todos los stashes
+git stash clear
+```
+
+## Comandos de Inspección
+
+### `git log` Avanzado
+
+```bash
+# Log con gráfico de ramas
+git log --graph --oneline --all
+
+# Log de un archivo específico
+git log --follow src/preprocessing.py
+
+# Log con diff de cada commit
+git log -p
+
+# Buscar commits por mensaje
+git log --grep="preprocessing"
+
+# Commits de un autor
+git log --author="Tu Nombre"
+
+# Commits en un rango de fechas
+git log --since="2024-01-01" --until="2024-06-30"
+
+# Commits que tocaron una función específica
+git log -L :nombre_funcion:archivo.py
+```
+
+### `git diff`
+
+```bash
+# Diferencias en working directory (sin commitear)
+git diff
+
+# Diferencias en staging
+git diff --staged
+
+# Diferencias entre dos branches
+git diff main..feature/analisis
+
+# Diferencias entre dos commits
+git diff abc123..def456
+
+# Solo nombres de archivos cambiados
+git diff --name-only main..feature/analisis
+```
+
+### `git blame`
+
+Muestra quién modificó cada línea de un archivo y en qué commit:
+
+```bash
+# Ver autoría línea por línea
+git blame src/model.py
+
+# Ignorar cambios de whitespace
+git blame -w src/model.py
+
+# Ver solo un rango de líneas
+git blame -L 10,30 src/model.py
+```
+
+Útil para entender el contexto de decisiones históricas — "¿por qué está así esta línea?" → `git blame` → hash del commit → `git show <hash>` para ver el contexto completo.
+
+### `git bisect`
+
+Encuentra el commit exacto que introdujo un bug usando búsqueda binaria:
+
+```bash
+# Iniciar bisect
+git bisect start
+
+# Marcar el commit actual como malo (tiene el bug)
+git bisect bad
+
+# Marcar un commit conocido como bueno (sin el bug)
+git bisect good v1.0
+
+# Git automáticamente hace checkout a la mitad del historial
+# Pruebas y marcas:
+git bisect good  # si este commit no tiene el bug
+git bisect bad   # si este commit tiene el bug
+
+# Git continúa la búsqueda binaria hasta encontrar el commit culpable
+# Al terminar:
+git bisect reset
+```
+
+## Pull Requests y Code Review
+
+### Qué es un Pull Request
+
+Un Pull Request (PR) es una solicitud para integrar los cambios de una rama a otra. Es el mecanismo central de colaboración en GitHub y GitLab.
+
+Un PR permite:
+
+- **Revisión de código** antes de que entre a la rama principal
+- **Discusión** sobre los cambios propuestos
+- **CI/CD automático** — correr tests y validaciones antes del merge
+- **Registro** del contexto de cada cambio
+
+### Anatomía de un Buen PR
+
+**Título:** conciso y descriptivo, igual que un commit message.
+
+```
+feat(preprocessing): add outlier detection using IQR method
+```
+
+**Descripción:**
+
+```markdown
+## ¿Qué hace este PR?
+Implementa detección de outliers para variables numéricas usando el método IQR.
+
+## ¿Por qué?
+Los outliers estaban afectando la convergencia del modelo de regresión.
+Ver issue #23.
+
+## Cambios principales
+- `src/preprocessing/outliers.py`: nueva función `cap_outliers()`
+- `tests/test_outliers.py`: tests unitarios con cobertura del 95%
+- `notebooks/03_outlier_analysis.ipynb`: análisis exploratorio
+
+## Cómo testear
+```bash
+pytest tests/test_outliers.py -v
+```
+
+## Notas para el reviewer
+La función usa `clip` en lugar de eliminar filas para preservar el tamaño de muestra.
+```
+
+### Hacer Code Review
+
+Al revisar el PR de otra persona:
+
+- **Revisar la lógica**, no solo el estilo
+- **Hacer preguntas**, no solo afirmaciones
+- **Aprobar lo que está bien**, no solo señalar lo que falta
+- **Distinguir entre bloqueante y sugerencia**
+
+```
+# Bloqueante (el PR no debería mergearse así)
+❌ "Este cálculo tiene un bug — divide por zero cuando el std es 0."
+
+# Sugerencia (mejoraría el código pero no bloquea)
+💡 "Consideraría usar median en lugar de mean aquí para mayor robustez."
+
+# Pregunta (quiero entender el contexto)
+❓ "¿Por qué elegiste IQR sobre z-score para esta variable? ¿Hay datos de soporte?"
+```
+
+## Herramientas Complementarias
+
+### `.gitignore`
+
+El archivo `.gitignore` define qué archivos no debe rastrear Git. Es fundamental en proyectos de Data Science:
+
+```gitignore
+# Ambientes virtuales
+venv/
+.venv/
+env/
+__pycache__/
+*.pyc
+
+# Datos (nunca commitear datos grandes o sensibles)
+data/raw/
+data/external/
+*.csv
+*.parquet
+*.pkl
+
+# Modelos entrenados (usar DVC en su lugar)
+models/*.pkl
+models/*.joblib
+models/*.h5
+
+# Credenciales
+.env
+*.key
+secrets.json
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# IDEs
+.vscode/settings.json
+.idea/
+*.swp
+
+# Outputs temporales
+_book/
+_freeze/
+*.log
+```
+
+**Generar un `.gitignore` base:**
+
+```bash
+# Usando gitignore.io (muy recomendado)
+curl -L https://www.toptal.com/developers/gitignore/api/python,jupyter,vscode > .gitignore
+```
+
+### DVC — Versionamiento de Datos
+
+Git no está diseñado para archivos grandes. DVC (Data Version Control) resuelve esto: versiona los datos en un almacenamiento externo (S3, GCS, Azure) y guarda solo un puntero en Git.
+
+```bash
+# Instalar
+pip install dvc
+
+# Inicializar en repo existente
+dvc init
+
+# Agregar datos al control de DVC
+dvc add data/raw/features.parquet
+# Crea data/raw/features.parquet.dvc (este sí va a Git)
+# Agrega data/raw/features.parquet al .gitignore automáticamente
+
+# Commitear el puntero
+git add data/raw/features.parquet.dvc .gitignore
+git commit -m "chore: track features dataset with DVC"
+
+# Configurar almacenamiento remoto
+dvc remote add -d s3remote s3://mi-bucket/dvc-storage
+
+# Push de datos
+dvc push
+
+# Cuando alguien clona el repo, puede obtener los datos con:
+dvc pull
+```
+
+DVC es especialmente relevante cuando el dataset del proyecto es grande — es exactamente el caso en proyectos con contrapartes reales donde los datos no pueden commitearse directamente.
+
+## Resumen
+
+Este capítulo cubrió las herramientas y prácticas que convierten el uso básico de Git en un flujo de trabajo profesional:
+
+| Tema | Herramienta/Concepto clave |
+|---|---|
+| Arquitectura interna | Blobs, trees, commits, objetos SHA |
+| Estrategias de branching | Git Flow, feature branches |
+| Mensajes de commit | Conventional Commits |
+| Conflictos | mergetool, estrategias de prevención |
+| Rebase | `rebase`, `rebase -i` para historial limpio |
+| Deshacer cambios | `restore`, `reset`, `revert`, `stash` |
+| Inspección | `log`, `diff`, `blame`, `bisect` |
+| Colaboración | Pull Requests, code review |
+| Herramientas | `.gitignore`, DVC |
+
+::: {.callout-tip}
+## Próximos Pasos
+
+Para continuar aprendiendo:
+
+- [Pro Git Book](https://git-scm.com/book/es/v2) — referencia completa y gratuita en español
+- [Oh Shit, Git!](https://ohshitgit.com/es) — guía práctica para situaciones de emergencia
+- [Conventional Commits](https://www.conventionalcommits.org/es/v1.0.0/) — especificación completa
+- [DVC Documentation](https://dvc.org/doc) — versionamiento de datos y modelos
+:::
+
+## Referencias
+
+- Chacon, S. & Straub, B. (2014). *Pro Git* (2nd ed.). Apress. [git-scm.com/book](https://git-scm.com/book/es/v2)
+- Conventional Commits Specification. [conventionalcommits.org](https://www.conventionalcommits.org/)
+- DVC Documentation. [dvc.org/doc](https://dvc.org/doc)
+- gitignore.io. [toptal.com/developers/gitignore](https://www.toptal.com/developers/gitignore)
