@@ -1603,7 +1603,7 @@ pytest tests/test_outliers.py -v
 
 ## Notas para el reviewer
 La función usa `clip` en lugar de eliminar filas para preservar el tamaño de muestra.
-```
+````
 
 ### Hacer Code Review
 
@@ -1680,7 +1680,7 @@ curl -L https://www.toptal.com/developers/gitignore/api/python,jupyter,vscode > 
 
 ### DVC — Versionamiento de Datos
 
-Git no está diseñado para archivos grandes. DVC (Data Version Control) resuelve esto: versiona los datos en un almacenamiento externo (S3, GCS, Azure) y guarda solo un puntero en Git.
+Git no está diseñado para archivos grandes. DVC (Data Version Control) resuelve esto: versiona los datos en un almacenamiento externo (S3, GCS, Azure) y guarda solo un puntero en Git. También pueden usar Git LFS.
 
 ```bash
 # Instalar
@@ -1706,7 +1706,7 @@ dvc push
 
 # Cuando alguien clona el repo, puede obtener los datos con:
 dvc pull
-```
+````
 
 DVC es especialmente relevante cuando el dataset del proyecto es grande — es exactamente el caso en proyectos con contrapartes reales donde los datos no pueden commitearse directamente.
 
