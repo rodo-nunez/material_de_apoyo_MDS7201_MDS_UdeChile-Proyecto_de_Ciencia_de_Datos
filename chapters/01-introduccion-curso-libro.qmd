@@ -7,6 +7,13 @@ Este capítulo fue modificado con IA en base a una clase diseñada por Francisco
 
 :::
 
+::: {.callout-note}
+# Formato
+
+Este libro fue creado con Quarto, lo que permite exportarlo a múltiples formatos. La versión HTML es interactiva y tiene elementos que no se pueden poner en pdf. Además, la versión pdf tiene largo de página fijo. Por lo que la forma recomendade de leer este material es en HTML. Pero la mayoría del libro es perfectamente legible en PDF, solo debes tener ese detalle en consideración y revisar el HTML cuando sientas que te haga falta.
+
+:::
+
 ## Propósito del Curso
 
 El curso **Proyecto de Ciencia de Datos (MDS7201)** tiene como objetivo principal que los estudiantes apliquen los conceptos fundamentales de la Ciencia de Datos en un proyecto práctico real. A través de este curso, obtendrás una visión integral de lo que implica llevar a cabo un proyecto de datos desde su concepción hasta la presentación de resultados.
@@ -131,6 +138,17 @@ El curso evalúa tu desempeño mediante los siguientes componentes:
 | **Hito 4** | 15% | Presentación de resultados y traspaso |
 | **Presentación Final** | 15% | Exposición oral del proyecto completo |
 | **Informe Final y Póster** | 15% | Documento técnico + póster |
+
+::: {.callout-note}
+# Sobre uso de IA
+
+El uso de IA está muy desaconsejado para preparar presentaciones. Lo pueden usar de forma responsable, pero deben entender cada palabra que esté en su presentación y ser capaces de explicarlo al revés y al derecho. Si una IA genera código, slides, imágenes, o lo que sea para ustedes, ustedes son los dueños de ese contenido.
+
+Uso irresponsable de IA puede bajarles la nota incluso a un 1.0 (ha pasado).
+
+Así que para evitar problemas, les sugerimos que no ocupen IA en sus presentaciones o que la ocupen para temas puntuales, como crear una imagen particular, crear una plantilla sobre la que escribirán u otros ejemplos que no tienen que ver con generar texto. El texto escríbanlo ustedes.
+
+:::
 
 ### Descripción de Hitos
 

@@ -139,7 +139,7 @@ La analogía útil: la memoria corta es una pizarra que se borra al salir de la 
 
 El loop es el cerebro del harness. Implementa el patrón **ReAct** (Reason + Act), propuesto por Yao et al. (2022):
 
-```
+```md
 Mensaje usuario
       │
       ▼
@@ -170,7 +170,7 @@ El ciclo continúa hasta que el LLM decide que tiene suficiente información par
 
 ### Estructura de un proyecto de ejemplo
 
-```
+```md
 harness-engineering/
 ├── main.py              # Entry point — arranca el loop interactivo
 ├── config.py            # Lee .env y expone Config global
@@ -253,7 +253,7 @@ providers = {
 
 Veamos qué pasa cuando el usuario pregunta: *"¿Cuántos archivos Python hay en este proyecto?"*
 
-```python
+````python
 # Paso 1: El usuario escribe su pregunta
 user_message = "¿Cuántos archivos Python hay en este proyecto?"
 
@@ -279,7 +279,7 @@ tool_result = "23"
 
 # Paso 6: El resultado se agrega al contexto y el LLM genera la respuesta final:
 final_response = "Hay 23 archivos Python en el proyecto."
-```
+````
 
 El LLM nunca ejecutó el comando — razonó que necesitaba hacerlo, lo declaró en formato estructurado, y el loop se encargó de la ejecución real. Esta separación entre razonamiento y acción es lo que hace al patrón ReAct robusto y auditable.
 
