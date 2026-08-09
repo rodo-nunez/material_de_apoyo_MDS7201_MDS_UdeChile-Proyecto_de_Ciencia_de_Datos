@@ -215,13 +215,28 @@ print("train:", X_train.shape, " test:", X_test.shape)
 ```
 
 ```{python}
+import json
+import os
+
 pipe = Pipeline(steps=[
     ("impute", SimpleImputer(strategy='median')),
     ("scale",  StandardScaler()),
-    ("model",  LogisticRegression(max_iter=2000)),
+    ("model", LogisticRegression(max_iter=2000)),
 ])
-pipe   # renderizado como diagrama gracias a set_config(display='diagram')
+
+with open(os.environ["QUARTO_EXECUTE_INFO"]) as f:
+    quarto_info = json.load(f)
+
+is_html = (
+    quarto_info["format"]["identifier"]["base-format"] == "html"
+)
+
+if is_html:
+    pipe   # renderizado como diagrama gracias a set_config(display='diagram')
+else:
+    print("Para ver el output interactivo, consulta la versión HTML.")
 ```
+
 
 ```{python}
 cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=RANDOM_STATE)
@@ -244,25 +259,39 @@ ax.set_title("Pipeline correcto — matriz de confusión");
 Este dataset es todo numérico, pero los datasets reales no lo son. `ColumnTransformer` enruta cada grupo de columnas a su propio sub-pipeline. Lo construimos ahora y lo reutilizamos en cada sección siguiente.
 
 ```{python}
+import json
+import os
+
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder
 
 numeric_cols = X_train.columns.tolist()
 
 numeric_pipe = Pipeline([
-    ("impute", SimpleImputer(strategy='median')),
-    ("scale",  StandardScaler()),
+    ("impute", SimpleImputer(strategy="median")),
+    ("scale", StandardScaler()),
 ])
 
 # Cuando existen categóricas, se enrutan a través de OneHotEncoder:
 preproc = ColumnTransformer(
     transformers=[
         ("num", numeric_pipe, numeric_cols),
-        # ("cat", OneHotEncoder(handle_unknown='ignore'), categorical_cols),
+        # ("cat", OneHotEncoder(handle_unknown="ignore"), categorical_cols),
     ],
-    remainder='drop',
+    remainder="drop",
 )
-preproc
+
+with open(os.environ["QUARTO_EXECUTE_INFO"]) as f:
+    quarto_info = json.load(f)
+
+is_html = (
+    quarto_info["format"]["identifier"]["base-format"] == "html"
+)
+
+if is_html:
+    preproc
+else:
+    print("Para ver el output interactivo, consulta la versión HTML.")
 ```
 
 ```{python}
