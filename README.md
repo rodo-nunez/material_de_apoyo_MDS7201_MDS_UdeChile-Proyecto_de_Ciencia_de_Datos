@@ -1,3 +1,27 @@
+# Proyecto de Ciencia de Datos
+
+Este repositorio contiene el libro, diapositivas, códigos, datos e imágenes del curso Proyecto de Ciencia de Datos. 
+
+El libro está hecho en Quarto, pensado para ser exportado principalmente a HTML, en donde mantiene sus elementos interactivos. Puedes exportarlo a PDF también si así lo deseas, pero habrá algunos elementos que no se renderearán y algunos márgenes que no se respetarán.
+
+Al momento de escribir esto, el libro está suficientemente completo, con algunos errores en el capítulo de agentes, por lo que ese código no se ejecuta al renderear. Además, las slides son podrían estar levemente desactualizadas después de algunos ajustes manuales en el libro. Está pendiente ejecutar un proceso de homologación automática.
+
+Si quieres renderear tú mismo, puedes setear tu ambiente virtual con uv
+
+```bash
+uv sync
+```
+
+y usar 
+
+```bash
+quarto render --to html
+```
+
+para renderear a HTML. El rendereo a PDF requiere instalar tinytex o algúna otra herramienta que permita renderear de .tex a .pdf.
+
+El resto del README fue generado con IA. Para dudas de Quarto, revisar [documentación oficial de Quarto](https://quarto.org/docs/guide/): 
+
 ## 🎨 Temas
 
 - **Libro**: Tema oscuro personalizado (darkly + custom.scss)
